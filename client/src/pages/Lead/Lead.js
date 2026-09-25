@@ -1,89 +1,81 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
- 
+
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import { useNavigate } from "react-router-dom";
- 
+
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
 import axios from "axios";
- 
-import { format } from "date-fns";
- 
-import { IoTicketOutline } from "react-icons/io5";
+
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
-import { MdOutlineAnalytics, MdOutlineModeEdit, MdOutlineQueryStats } from "react-icons/md";
- 
+import {
+  MdOutlineAnalytics,
+  MdOutlineModeEdit,
+  MdOutlineQueryStats,
+} from "react-icons/md";
+
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { TbLoader2 } from "react-icons/tb";
- 
- 
- 
+
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import QuickAccess from "../../utlis/QuickAccess";
- 
+
 import NewTicketModal from "../../utlis/NewTicketModal";
 import { ActionsCell } from "./ActionsCell";
 import DateRangePopover from "../../utlis/DateRangePopover";
-import { DateFilterFn } from "../../utlis/DateFilterFn";
-import { TiFilter } from "react-icons/ti";
-import { NumberFilterPortal, NumderFilterFn } from "../../utlis/NumberFilterPortal";
-import { LuRefreshCcw } from "react-icons/lu";
+
+import {
+  NumberFilterPortal,
+  NumderFilterFn,
+} from "../../utlis/NumberFilterPortal";
 import { useSelector } from "react-redux";
 import RefreshLeadsButton from "./ui/RefreshLeadsButton";
-import { Box, LinearProgress } from "@mui/material";
+
 import getLeadColumns from "./table/columns";
-import WonLeadsStats from "./userLeadChart/UserLeadChart";
-import UserLeadChart from "./userLeadChart/UserLeadChart";
-import { BsGraphUpArrow } from "react-icons/bs";
+
 import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import EmailDetailDrawerNewWrapper from "../../components/shared/EmailDetailDrawerNewWrapper";
 import FollowupDateFilter from "./ui/FollowupDateFilter";
-import SelectedUsers from "../../components/SelectedUsers";
-import { usePersistedUsers } from "../../hooks/usePersistedUsers";
+
 import { LEADS_SOURCES } from "../../constants/constants";
 import RelatedConversationsSidebar from "../../components/shared/RelatedConversationsSidebar/RelatedConversationsSidebar";
+import SelectedUsersNew from "../../components/SelectedUsersNew";
+import { usePersistedUsersNew } from "../../hooks/usePersistedUsersNew";
 
 const updates_object_init = {
-      companyName: '',
-      clientName: '',
-      jobHolder: '',
-      department: '',
-      source: '',
-      brand: '',
-      lead_Source: '',
-      followUpDate: '',
-      JobDate: '',
-      Note: '',
-      stage: '',
-      status: '',
-      value: '',
-      number: '',
-      leadUser: ''
-}
-
-
- 
+  companyName: "",
+  clientName: "",
+  jobHolder: "",
+  department: "",
+  source: "",
+  brand: "",
+  lead_Source: "",
+  followUpDate: "",
+  JobDate: "",
+  Note: "",
+  stage: "",
+  status: "",
+  value: "",
+  number: "",
+  leadUser: "",
+};
 
 export default function Lead() {
-
-
   const navigate = useNavigate();
 
-
-  const  auth  = useSelector((state) => state.auth.auth);
-
+  const auth = useSelector((state) => state.auth.auth);
 
   const [selectedTab, setSelectedTab] = useState("progress");
   const [isLoading, setIsLoading] = useState(false);
 
   const [showUserLeadChart, setShowUserLeadChart] = useState(false);
- 
+
   const [leadData, setLeadData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [users, setUsers] = useState([]);
@@ -91,126 +83,107 @@ export default function Lead() {
   const [load, setLoad] = useState(false);
   const [valueTotal, setValueTotal] = useState(0);
 
+  // const [showNewTicketModal, setShowNewTicketModal] = useState(false);
+  // const [clientCompanyName, setClientCompanyName] = useState("");
+  // const [clientCompanyId, setClientCompanyId] = useState("");
 
-    // const [showNewTicketModal, setShowNewTicketModal] = useState(false);
-    // const [clientCompanyName, setClientCompanyName] = useState("");
-    // const [clientCompanyId, setClientCompanyId] = useState("");
- 
-    // const [clientEmail, setClientEmail] = useState("");
+  // const [clientEmail, setClientEmail] = useState("");
 
-    // const [clientName, setClientName] = useState("");    
-    // const [companyName, setCompanyName] = useState("");
+  // const [clientName, setClientName] = useState("");
+  // const [companyName, setCompanyName] = useState("");
 
-    const [newTicket, setNewTicket] = useState({
-      open: false,
+  const [newTicket, setNewTicket] = useState({
+    open: false,
 
-      clientId: "",
-      email: "",
-      type: "client",
+    clientId: "",
+    email: "",
+    type: "client",
 
-      clientName: "",
-      companyName: ""
-    });
+    clientName: "",
+    companyName: "",
+  });
 
-
-    const [showSendModal, setShowSendModal] = useState(false);
-      const [access, setAccess] = useState([]);
-
-      
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [access, setAccess] = useState([]);
 
   const [showJobHolder, setShowJobHolder] = useState(true);
   const [active1, setActive1] = useState("");
 
-
-
- 
-const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsers("leads:selected_users", userName);
+  const { selectedUsers, setSelectedUsers, toggleUser, resetUsers } =
+    usePersistedUsersNew({
+      storage_key: "leads:selected_users",
+      users: users,
+      current_user: auth?.user,
+    });
 
   const [emailPopup, setEmailPopup] = useState({
     open: false,
-    email: '',
-    clientName: ''
+    email: "",
+    clientName: "",
+  });
 
-  })
-  
-  
-    const [pagination, setPagination] = useState({
-            pageIndex: 0,
-            pageSize: 30, // ✅ default page size
-          });
-  
-  
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 30, // ✅ default page size
+  });
 
-
-  
   const anchorRef = useRef(null);
 
-const [filterInfo, setFilterInfo] = useState({
-  col: null,
-  value: "",
-  type: "eq",
-});
-
-
-
-const handleFilterClick = (e, colKey) => {
-  e.stopPropagation();
-  anchorRef.current = e.currentTarget;
-  setFilterInfo({
-    col: colKey,
+  const [filterInfo, setFilterInfo] = useState({
+    col: null,
     value: "",
     type: "eq",
   });
-};
 
+  const handleFilterClick = (e, colKey) => {
+    e.stopPropagation();
+    anchorRef.current = e.currentTarget;
+    setFilterInfo({
+      col: colKey,
+      value: "",
+      type: "eq",
+    });
+  };
 
-const handleCloseFilter = () => {
-  setFilterInfo({ col: null, value: "", type: "eq" });
-  anchorRef.current = null;
-};
+  const handleCloseFilter = () => {
+    setFilterInfo({ col: null, value: "", type: "eq" });
+    anchorRef.current = null;
+  };
 
-const applyFilter = (e) => {
-  e.stopPropagation()
-  const { col, value, type } = filterInfo;
-  if (col && value) {
-    table.getColumn(col)?.setFilterValue({ type, value: parseFloat(value) });
-  }
-  handleCloseFilter();
-};
+  const applyFilter = (e) => {
+    e.stopPropagation();
+    const { col, value, type } = filterInfo;
+    if (col && value) {
+      table.getColumn(col)?.setFilterValue({ type, value: parseFloat(value) });
+    }
+    handleCloseFilter();
+  };
 
+  // With Loading
+  const getEmails = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets`,
+      );
+      if (data) {
+        // setEmailData(data.emails);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
+  // Get Auth Access
+  useEffect(() => {
+    if (auth.user) {
+      const filterAccess = auth.user.role.access
+        .filter((role) => role.permission === "Tickets")
+        .flatMap((jobRole) => jobRole.subRoles);
 
+      setAccess(filterAccess);
+    }
+  }, [auth]);
 
-
-      // With Loading
-      const getEmails = async () => {
-        try {
-          const { data } = await axios.get(
-            `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets`
-          );
-          if (data) {
-            // setEmailData(data.emails);
-          }
-        } catch (error) {
-          console.log(error);
-        }
-      };
-
-
-        // Get Auth Access
-        useEffect(() => {
-          if (auth.user) {
-            const filterAccess = auth.user.role.access
-              .filter((role) => role.permission === "Tickets")
-              .flatMap((jobRole) => jobRole.subRoles);
-      
-            setAccess(filterAccess);
-          }
-        }, [auth]);
-
-
-
-  
   // const leadSource2 = [
   //   "Upwork",
   //   "Fiverr",
@@ -228,7 +201,6 @@ const applyFilter = (e) => {
   const leadSource = useMemo(() => {
     return [...LEADS_SOURCES];
   }, []);
-
 
   const stages = ["Interest", "Decision", "Action"];
   const brands = ["Affotax", "Outsource", "OTL"];
@@ -261,57 +233,51 @@ const applyFilter = (e) => {
     jobDeadline: "",
     yearEnd: "",
 
-    email: ""
+    email: "",
   });
   const [active, setActive] = useState(false);
   const [selectFilter, setSelectFilter] = useState("");
 
-
-  
   // BULK EDITING
   const [rowSelection, setRowSelection] = useState({});
-  
+
   const [showEdit, setShowEdit] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const [updates, setUpdates] = useState(updates_object_init)
-
+  const [updates, setUpdates] = useState(updates_object_init);
 
   const handle_on_change_update = (e) => {
-    setUpdates(prev => {
+    setUpdates((prev) => {
       return {
         ...prev,
-        [e.target.name]: e.target.value
-      }
-    })
-  }
-  
+        [e.target.name]: e.target.value,
+      };
+    });
+  };
+
   // -------Update Bulk Leads------------->
 
   const updateBulkLeads = async (e) => {
     e.preventDefault();
     setIsUpdating(true);
 
- 
-
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/leads/update/bulk/leads`,
         {
           rowSelection: Object.keys(rowSelection).filter(
-            (id) => rowSelection[id] === true
+            (id) => rowSelection[id] === true,
           ),
-          updates
-        }
+          updates,
+        },
       );
 
       if (data) {
         setUpdates(updates_object_init);
         toast.success("Leads Updated💚💚");
-        getAllLeads()
+        getAllLeads();
       }
     } catch (error) {
-       
       console.log(error?.response?.data?.message);
       toast.error("Something went wrong!");
     } finally {
@@ -319,64 +285,38 @@ const applyFilter = (e) => {
     }
   };
 
-
-
   // --------------Job_Holder Length---------->
 
   const getJobHolderCount = (user, status) => {
- 
-    if(user === "All") {
-      return leadData.filter((lead) =>
-        lead?.status === status
-      )?.length;
+    if (user === "All") {
+      return leadData.filter((lead) => lead?.status === status)?.length;
     }
-    return leadData.filter((lead) =>
-      lead?.jobHolder === user && lead?.status === status
+    return leadData.filter(
+      (lead) => lead?.jobHolder === user && lead?.status === status,
     )?.length;
   };
-    
 
+  const [ticketMap, setTicketMap] = useState({});
 
-
-
-
-
-
-const [ticketMap, setTicketMap] = useState({});
-
-useEffect(() => {
-  const fetchTicketCounts = async () => {
-    try {
-      const {data} = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/leads/available-tickets?status=${selectedTab}`);
-      if(data) {
-        setTicketMap(data.ticketMap || {});
-
+  useEffect(() => {
+    const fetchTicketCounts = async () => {
+      try {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/available-tickets?status=${selectedTab}`,
+        );
+        if (data) {
+          setTicketMap(data.ticketMap || {});
+        }
+      } catch (err) {
+        console.error("Error fetching ticket counts", err);
       }
+    };
 
-    } catch (err) {
-      console.error("Error fetching ticket counts", err);
-    }
-  };
-
-  fetchTicketCounts();
-}, [selectedTab]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    fetchTicketCounts();
+  }, [selectedTab]);
 
   const [showcolumn, setShowColumn] = useState(false);
-      const boxRef = useRef(null);
+  const boxRef = useRef(null);
   const columnData = [
     "leadRef",
     "companyName",
@@ -414,7 +354,7 @@ useEffect(() => {
 
   const [columnVisibility, setColumnVisibility] = useState(() => {
     const savedVisibility = JSON.parse(
-      localStorage.getItem("columnVisibilityLead")
+      localStorage.getItem("columnVisibilityLead"),
     );
     return (
       savedVisibility ||
@@ -431,83 +371,72 @@ useEffect(() => {
       [column]: !columnVisibility[column],
     };
     setColumnVisibility(updatedVisibility);
-    localStorage.setItem("columnVisibilityLead", JSON.stringify(updatedVisibility));
+    localStorage.setItem(
+      "columnVisibilityLead",
+      JSON.stringify(updatedVisibility),
+    );
   };
 
-
-    const user_leads_count_map = useMemo(() => {
+  const user_leads_count_map = useMemo(() => {
     return Object.fromEntries(
-      userName.map((user) => [user, getJobHolderCount(user, selectedTab)])
+      userName.map((user) => [user, getJobHolderCount(user, selectedTab)]),
     );
   }, [userName, selectedTab, getJobHolderCount]);
- 
-const renderColumnControls = () => (
-  <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
-    {/* Header */}
-    <header className="px-5 py-3 border-b">
-      <h3 className="text-sm font-semibold text-slate-800">
-        View settings
-      </h3>
-    </header>
 
-    {/* Content */}
-    <div className="grid grid-cols-2 divide-x">
-      {/* LEFT — Columns */}
-      <section className="px-5 py-4">
-        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-          Columns
-        </h4>
+  const renderColumnControls = () => (
+    <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
+      {/* Header */}
+      <header className="px-5 py-3 border-b">
+        <h3 className="text-sm font-semibold text-slate-800">View settings</h3>
+      </header>
 
-        <ul className="space-y-1 list-decimal">
-          {Object.keys(columnVisibility)?.map((column) => (
-            <li key={column}>
-              <label
-                className="flex items-center justify-between rounded-md px-2 py-1.5
+      {/* Content */}
+      <div className="grid grid-cols-2 divide-x">
+        {/* LEFT — Columns */}
+        <section className="px-5 py-4">
+          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+            Columns
+          </h4>
+
+          <ul className="space-y-1 list-decimal">
+            {Object.keys(columnVisibility)?.map((column) => (
+              <li key={column}>
+                <label
+                  className="flex items-center justify-between rounded-md px-2 py-1.5
                            text-sm text-slate-700 cursor-pointer
                            hover:bg-slate-50 transition"
-              >
-                <span className="capitalize">{column}</span>
-                <input
-                  type="checkbox"
-                  checked={columnVisibility[column]}
-                  onChange={() => toggleColumnVisibility(column)}
-                  className="h-4 w-4 accent-orange-600"
-                />
-              </label>
-            </li>
-          ))}
-        </ul>
-      </section>
+                >
+                  <span className="capitalize">{column}</span>
+                  <input
+                    type="checkbox"
+                    checked={columnVisibility[column]}
+                    onChange={() => toggleColumnVisibility(column)}
+                    className="h-4 w-4 accent-orange-600"
+                  />
+                </label>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-      {/* RIGHT — Users */}
-      <section className="px-5 py-4">
-        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-          Users
-        </h4>
+        {/* RIGHT — Users */}
+        <section className="px-5 py-4">
+          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+            Users
+          </h4>
 
-        <div className="h-full overflow-y-auto space-y-1 pr-1">
-          <SelectedUsers
-            selectedUsers={selectedUsers}
-            setSelectedUsers={setSelectedUsers}
-            userNameArr={userName}
-            countMap={user_leads_count_map}
-            label={"lead"}
-          />
-        </div>
-      </section>
-    </div>
-  </section>
-);
-
-
-
-
-
-
-
-
-
- 
+          <div className="h-full overflow-y-auto space-y-1 pr-1">
+            <SelectedUsersNew
+              selectedUsers={selectedUsers}
+              setSelectedUsers={setSelectedUsers}
+              users={users}
+              current_user={auth?.user}
+            />
+          </div>
+        </section>
+      </div>
+    </section>
+  );
 
   // -------Get All Leads-------
   const getAllLeads = async () => {
@@ -515,32 +444,28 @@ const renderColumnControls = () => (
     try {
       if (selectedTab === "progress") {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/progress/lead`
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/progress/lead`,
         );
         if (data) {
           setLeadData(data.leads);
-          
         }
       } else if (selectedTab === "won") {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/won/lead`
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/won/lead`,
         );
         if (data) {
           setLeadData(data.leads);
-           
         }
       } else {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/lost/lead`
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/lost/lead`,
         );
         if (data) {
           setLeadData(data.leads);
-           
         }
       }
     } catch (error) {
       console.log(error);
-       
     } finally {
       setIsLoading(false);
     }
@@ -554,9 +479,9 @@ const renderColumnControls = () => (
   useEffect(() => {
     const totalvalue = filteredData.reduce(
       (acc, item) => acc + Number(item.value || 0),
-      0
+      0,
     );
-    
+
     setValueTotal(totalvalue);
   }, [filteredData]);
 
@@ -565,7 +490,7 @@ const renderColumnControls = () => (
     try {
       if (selectedTab === "progress") {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/progress/lead`
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/progress/lead`,
         );
         if (data) {
           setLeadData(data.leads);
@@ -573,7 +498,7 @@ const renderColumnControls = () => (
         }
       } else if (selectedTab === "won") {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/won/lead`
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/won/lead`,
         );
         if (data) {
           setLeadData(data.leads);
@@ -581,7 +506,7 @@ const renderColumnControls = () => (
         }
       } else {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/lost/lead`
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/lost/lead`,
         );
         if (data) {
           setLeadData(data.leads);
@@ -614,50 +539,48 @@ const renderColumnControls = () => (
     return totalLead > 0 ? ((sourceCount / totalLead) * 100).toFixed(0) : 0;
   };
 
-
-
-
-  
   function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
     const savedSet = new Set(savedOrder);
- 
+
     // Preserve the order from savedOrder, but only if the username still exists in the fetched data
-    const ordered = savedOrder.filter(name => fetchedUsernames.includes(name));
-    
+    const ordered = savedOrder.filter((name) =>
+      fetchedUsernames.includes(name),
+    );
+
     // Add any new usernames that aren't in the saved order
-    const newOnes = fetchedUsernames.filter(name => !savedSet.has(name));
-    
+    const newOnes = fetchedUsernames.filter((name) => !savedSet.has(name));
+
     return [...ordered, ...newOnes];
   }
-
-
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
       );
       setUsers(
         data?.users?.filter((user) =>
-          user.role?.access?.some((item) => item?.permission.includes("Leads"))
-        ) || []
+          user.role?.access?.some((item) => item?.permission.includes("Leads")),
+        ) || [],
       );
 
       const userNameArr = data?.users
-      ?.filter((user) =>
-        user.role?.access.some((item) => item?.permission.includes("Leads"))
-      )
-      .map((user) => user.name)
+        ?.filter((user) =>
+          user.role?.access.some((item) => item?.permission.includes("Leads")),
+        )
+        .map((user) => user.name);
 
-      setUserName(userNameArr );
+      setUserName(userNameArr);
 
-      const savedOrder = JSON.parse(localStorage.getItem("leads_usernamesOrder"));
-        if(savedOrder) {
-          const savedUserNames = mergeWithSavedOrder(userNameArr, savedOrder);
-          
-            setUserName(savedUserNames)
-        }
+      const savedOrder = JSON.parse(
+        localStorage.getItem("leads_usernamesOrder"),
+      );
+      if (savedOrder) {
+        const savedUserNames = mergeWithSavedOrder(userNameArr, savedOrder);
+
+        setUserName(savedUserNames);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -668,34 +591,16 @@ const renderColumnControls = () => (
     // eslint-disable-next-line
   }, []);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
- 
   //   Create New Lead
   const handleCreateLead = async () => {
     try {
       const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/leads/create/lead`,
-        { ...formData }
+        { ...formData },
       );
       if (data) {
         setLeadData((prevData) =>
-          prevData ? [...prevData, data.lead] : [data.lead]
+          prevData ? [...prevData, data.lead] : [data.lead],
         );
         getAllLeads();
       }
@@ -721,7 +626,7 @@ const renderColumnControls = () => (
         Swal.fire(
           "Updated!",
           `Your lead ${status || "Update"} successfully!.`,
-          "success"
+          "success",
         );
       }
     });
@@ -734,17 +639,17 @@ const renderColumnControls = () => (
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/leads/update/lead/${leadId}`,
-        { status: status }
+        { status: status },
       );
       if (data?.success) {
         const updateLead = data?.lead;
 
         setLeadData((prevData) =>
-          prevData.filter((item) => item._id !== updateLead._id)
+          prevData.filter((item) => item._id !== updateLead._id),
         );
         if (filteredData) {
           setFilteredData((prevData) =>
-            prevData.filter((item) => item._id !== updateLead._id)
+            prevData.filter((item) => item._id !== updateLead._id),
           );
         }
         getAllLeads();
@@ -776,7 +681,7 @@ const renderColumnControls = () => (
   const handleDeleteLead = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/leads/delete/lead/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/leads/delete/lead/${id}`,
       );
       if (data) {
         const filteredData = leadData?.filter((item) => item._id !== id);
@@ -804,7 +709,7 @@ const renderColumnControls = () => (
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/leads/update/lead/${leadId}`,
-        { ...updateData }
+        { ...updateData },
       );
       if (data?.success) {
         const updatedLead = data?.lead;
@@ -818,22 +723,21 @@ const renderColumnControls = () => (
         //   );
         // }
 
-
-         // ✅ Update leadData in-place instead of filtering it out
-      setLeadData((prevData) =>
-        prevData.map((item) =>
-          item._id === updatedLead._id ? updatedLead : item
-        )
-      );
-
-      // ✅ If you maintain filteredData, also update it
-      if (filteredData) {
-        setFilteredData((prevData) =>
+        // ✅ Update leadData in-place instead of filtering it out
+        setLeadData((prevData) =>
           prevData.map((item) =>
-            item._id === updatedLead._id ? updatedLead : item
-          )
+            item._id === updatedLead._id ? updatedLead : item,
+          ),
         );
-      }
+
+        // ✅ If you maintain filteredData, also update it
+        if (filteredData) {
+          setFilteredData((prevData) =>
+            prevData.map((item) =>
+              item._id === updatedLead._id ? updatedLead : item,
+            ),
+          );
+        }
         setFormData({
           companyName: "",
           clientName: "",
@@ -889,13 +793,12 @@ const renderColumnControls = () => (
           followUpDate,
           JobDate,
           stage,
-          jobDeadline: new Date().toISOString()
-
-        }
+          jobDeadline: new Date().toISOString(),
+        },
       );
       if (data) {
         setLeadData((prevData) =>
-          prevData ? [...prevData, data.lead] : [data.lead]
+          prevData ? [...prevData, data.lead] : [data.lead],
         );
         getAllLeads();
       }
@@ -905,83 +808,72 @@ const renderColumnControls = () => (
     }
   };
 
-
-
-
-
   const [isEmailSidebarOpen, setIsEmailSidebarOpen] = useState(false);
-const [selectedEmailLead, setSelectedEmailLead] = useState(null);
+  const [selectedEmailLead, setSelectedEmailLead] = useState(null);
 
+  const openEmailSidebar = (ticket) => {
+    setSelectedEmailLead(ticket);
+    setIsEmailSidebarOpen(true);
+  };
 
-const openEmailSidebar = (ticket) => {
-  setSelectedEmailLead(ticket);
-  setIsEmailSidebarOpen(true);
-};
-
-const closeEmailSidebar = () => {
-  setIsEmailSidebarOpen(false);
-  setSelectedEmailLead(null);
-};
-
-
+  const closeEmailSidebar = () => {
+    setIsEmailSidebarOpen(false);
+    setSelectedEmailLead(null);
+  };
 
   const columns = useMemo(
     () => {
+      const allColumns = getLeadColumns({
+        setSelectFilter,
+        setFormData,
+        handleUpdateData,
+        users,
+        departments,
+        sources,
+        brands,
+        leadSource,
+        auth,
 
+        anchorRef,
+        handleFilterClick,
 
+        NumderFilterFn,
 
-const allColumns = getLeadColumns({
-  setSelectFilter,
-  setFormData,
-  handleUpdateData,
-  users,
-  departments,
-  sources,
-  brands,
-  leadSource,
-  auth,
-   
-  anchorRef,
-  handleFilterClick,
-   
-  NumderFilterFn,
-   
-  DateRangePopover,
-  valueTotal,
-  ActionsCell,
-  selectedTab,
-setNewTicket,
-  handleCopyLead,
-  handleLeadStatus,
-  handleDeleteLeadConfirmation,
-  stages,
+        DateRangePopover,
+        valueTotal,
+        ActionsCell,
+        selectedTab,
+        setNewTicket,
+        handleCopyLead,
+        handleLeadStatus,
+        handleDeleteLeadConfirmation,
+        stages,
 
- 
+        setEmailPopup,
+        ticketMap,
+        openEmailSidebar,
+      });
 
-  setEmailPopup,
-  ticketMap,
-  openEmailSidebar
-});
-
- 
-
-
-
-return allColumns.filter((col) => columnVisibility[col.accessorKey]);
-
-
-
-
-
-
-
-
+      return allColumns.filter((col) => columnVisibility[col.accessorKey]);
     },
 
     // eslint-disable-next-line
-    [users, auth, leadData,departments,sources,brands, leadSource,selectedTab,
+    [
+      users,
+      auth,
+      leadData,
+      departments,
+      sources,
+      brands,
+      leadSource,
+      selectedTab,
       stages,
-        load, valueTotal, filteredData, showcolumn, columnVisibility]
+      load,
+      valueTotal,
+      filteredData,
+      showcolumn,
+      columnVisibility,
+    ],
   );
 
   // Clear table Filter
@@ -995,27 +887,21 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
     columns,
     data: leadData || [],
 
-     
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-    state: { rowSelection,
+    state: {
+      rowSelection,
       isLoading: isLoading,
       showSkeletons: false,
-      
 
-      pagination
-     
-
-      
-      },
+      pagination,
+    },
     enableBatchRowSelection: true,
- 
-
 
     getRowId: (row) => row._id,
     enableStickyHeader: true,
     enableStickyFooter: true,
-    muiTableContainerProps: { sx: { maxHeight: "850px", overflowX: 'auto' } },
+    muiTableContainerProps: { sx: { maxHeight: "850px", overflowX: "auto" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -1029,15 +915,13 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
       pagination: { pageSize: 30 },
       pageSize: 30,
       density: "compact",
-  //      columnPinning: {
-  //     right: ['actions'], 
-  // },
-       
+      //      columnPinning: {
+      //     right: ['actions'],
+      // },
     },
 
     onPaginationChange: setPagination, // ✅ Hook for page changes
-        autoResetPageIndex: false,
-     
+    autoResetPageIndex: false,
 
     muiTableHeadCellProps: {
       style: {
@@ -1051,10 +935,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
     muiTableBodyCellProps: {
       sx: {
         border: "1px solid rgba(203, 201, 201, 0.5)",
- 
       },
-
-      
     },
     muiTableProps: {
       sx: {
@@ -1079,110 +960,46 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
     setFilteredData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 
+  // a little function to help us with reordering the result
+  const reorder = (list, startIndex, endIndex) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
 
+    return result;
+  };
 
+  //  -----------Handle drag end---------
+  const handleUserOnDragEnd = (result) => {
+    const items = reorder(
+      selectedUsers,
+      result.source.index,
+      result.destination.index,
+    );
+    localStorage.setItem("leads_usernamesOrder", JSON.stringify(items));
+    setSelectedUsers(items);
+  };
 
+  const setColumnFromOutsideTable = (colKey, filterVal) => {
+    const col = table.getColumn(colKey);
+    return col.setFilterValue(filterVal);
+  };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // a little function to help us with reordering the result
-    const reorder = (list, startIndex, endIndex) => {
-      const result = Array.from(list);
-      const [removed] = result.splice(startIndex, 1);
-      result.splice(endIndex, 0, removed);
-    
-      return result;
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (boxRef.current && !boxRef.current.contains(event.target)) {
+        setShowColumn(false);
+      }
     };
-  
-  
-      //  -----------Handle drag end---------
-    const handleUserOnDragEnd = (result) => {
-   
-      const items = reorder( selectedUsers, result.source.index, result.destination.index );
-      localStorage.setItem("leads_usernamesOrder", JSON.stringify(items));
-      setSelectedUsers(items)
-  
+
+    if (showcolumn) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
     };
- 
-    
-
-    
-        
-    
-        const setColumnFromOutsideTable = (colKey, filterVal) => {
-    
-          const col = table.getColumn(colKey);
-          return col.setFilterValue(filterVal);
-        }
-    
-
-
-
-
-
-        
-            useEffect(() => {
-            const handleClickOutside = (event) => {
-              if (boxRef.current && !boxRef.current.contains(event.target)) {
-                setShowColumn(false);
-              }
-            };
-        
-            if (showcolumn) {
-              document.addEventListener("mousedown", handleClickOutside);
-            }
-        
-            return () => {
-              document.removeEventListener("mousedown", handleClickOutside);
-            };
-          }, [showcolumn]);
-
-
-
-
+  }, [showcolumn]);
 
   return (
     <>
@@ -1193,9 +1010,8 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
               Leads
             </h1>
 
-
             {
-              // auth?.user?.role?.name === 'Admin' && 
+              // auth?.user?.role?.name === 'Admin' &&
               <span
                 className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
                 onClick={() => {
@@ -1207,23 +1023,26 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
               </span>
             }
             <QuickAccess />
-            {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
+            {isAdmin(auth) && (
+              <span className=" ">
+                {" "}
+                <OverviewForPages />{" "}
+              </span>
+            )}
           </div>
 
-
-
-         
           {/* ---------Template Buttons */}
           <div className="flex items-center gap-4">
-
-          <button
+            {/* <button
               className={`${style.button1} text-[15px] flex items-center gap-1`}
               onClick={() => setShowSendModal(true)}
               style={{ padding: ".4rem 1rem" }}
             >
-             <span className="text-xl "><IoTicketOutline /></span> New Ticket 
-            </button>
-
+              <span className="text-xl ">
+                <IoTicketOutline />
+              </span>{" "}
+              New Ticket
+            </button> */}
 
             <button
               className={`${style.button1} text-[15px] `}
@@ -1284,9 +1103,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
               <MdOutlineAnalytics className="h-7 w-7" />
             </button>
 
-
-
-              {/* <div className="flex justify-center items-center  mt-[1.2rem]   ">
+            {/* <div className="flex justify-center items-center  mt-[1.2rem]   ">
                   <span
                       className={` p-2 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
                           showUserLeadChart && "bg-orange-500 text-white"
@@ -1301,104 +1118,75 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                   </span>
               </div> */}
 
+            {/* Edit Multiple Job Button */}
 
-              
+            <div className="flex justify-center items-center  mt-[1.2rem]   ">
+              <span
+                className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+                  showEdit && "bg-orange-500 text-white"
+                }`}
+                onClick={() => {
+                  setShowEdit(!showEdit);
+                }}
+                title="Edit Multiple Jobs"
+              >
+                <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
+              </span>
+            </div>
 
-              {/* Edit Multiple Job Button */}
-
-              <div className="flex justify-center items-center  mt-[1.2rem]   ">
-                  <span
-                      className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
-                          showEdit && "bg-orange-500 text-white"
-                            }`}
-                      onClick={() => {
-                        setShowEdit(!showEdit);
-                      }}
-                      title="Edit Multiple Jobs"
-                  >
-                    <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
-                  </span>
-              </div>
-
-          
-
-         
-
-              
             {/* Hide & Show Button And Fixed Component*/}
-          <div className="flex justify-center items-center  mt-[1.2rem]   ">
-            <div
-              className={`  p-[6px]  rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border  ${
-                showcolumn && "bg-orange-500 text-white"
-              }`}
-              onClick={() => setShowColumn(!showcolumn)}
-            >
-              {showcolumn ? (
-                <GoEyeClosed className="text-[22px]" />
-              ) : (
-                <GoEye className="text-[22px]" />
+            <div className="flex justify-center items-center  mt-[1.2rem]   ">
+              <div
+                className={`  p-[6px]  rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border  ${
+                  showcolumn && "bg-orange-500 text-white"
+                }`}
+                onClick={() => setShowColumn(!showcolumn)}
+              >
+                {showcolumn ? (
+                  <GoEyeClosed className="text-[22px]" />
+                ) : (
+                  <GoEye className="text-[22px]" />
+                )}
+              </div>
+              {showcolumn && (
+                <div
+                  className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto hidden1  "
+                  ref={boxRef}
+                >
+                  {renderColumnControls()}
+                </div>
               )}
             </div>
-            {showcolumn && (
-              <div className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto hidden1  " ref={boxRef}>
-                {renderColumnControls()}
-              </div>
-            )}
-          </div>
 
-
-
-
-           { auth?.user?.role?.name === "Admin" &&
-              (
-                <span
+            {auth?.user?.role?.name === "Admin" && (
+              <span
                 className={`p-[6px] rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  mt-[1.2rem] ${
                   showJobHolder && "bg-orange-500 text-white"
                 }`}
                 onClick={() => {
-                   
-                  setShowJobHolder(prev => !prev);
+                  setShowJobHolder((prev) => !prev);
                 }}
                 title="Filter by Job Holder"
               >
                 <IoBriefcaseOutline className="  cursor-pointer text-[22px] " />
-              
               </span>
-              )
-            }
+            )}
 
+            {auth?.user?.role?.name === "Admin" && (
+              <button
+                title="Go to Leads Analytics"
+                className="  p-[6px] rounded-md  bg-gray-50 hover:bg-orange-500 hover:text-white  hover:shadow-md transition   border  mt-[1.2rem] cursor-pointer"
+                onClick={() => navigate("/leads/stats")}
+              >
+                <MdOutlineQueryStats className="   text-[22px] " />
+              </button>
+            )}
 
-           {auth?.user?.role?.name === "Admin" && (
-       
-          <button
-            title="Go to Leads Analytics"
-            className="  p-[6px] rounded-md  bg-gray-50 hover:bg-orange-500 hover:text-white  hover:shadow-md transition   border  mt-[1.2rem] cursor-pointer"
-            onClick={() => navigate("/leads/stats")}
-          >
-           
-             <MdOutlineQueryStats className="   text-[22px] "/>
-          </button>
-        
-      )}
-
-
-
-
-            { auth?.user?.role?.name === "Admin" &&
-              (
-               <div className=" mt-[1.2rem] ">
-                <RefreshLeadsButton   getAllLeads={getAllLeads}/>
-                </div>
-              )
-            }
-
-            
-
-
-
-
-
-
+            {auth?.user?.role?.name === "Admin" && (
+              <div className=" mt-[1.2rem] ">
+                <RefreshLeadsButton getAllLeads={getAllLeads} />
+              </div>
+            )}
           </div>
           {load && (
             <div className="py-3">
@@ -1406,52 +1194,44 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
             </div>
           )}
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
-          
 
-
-
-          
-
-                    {/* ----------Job_Holder Summery Filters---------- */}
-                    {auth?.user?.role?.name === "Admin" && showJobHolder &&  (
-              <>
-                <div className="w-full  py-2 ">
-                  <div className="flex items-center flex-wrap gap-4">
-                    <DragDropContext onDragEnd={handleUserOnDragEnd}>
-                      <Droppable droppableId="users0" direction="horizontal">
-                        {(provided) => (
+          {/* ----------Job_Holder Summery Filters---------- */}
+          {auth?.user?.role?.name === "Admin" && showJobHolder && (
+            <>
+              <div className="w-full  py-2 ">
+                <div className="flex items-center flex-wrap gap-4">
+                  <DragDropContext onDragEnd={handleUserOnDragEnd}>
+                    <Droppable droppableId="users0" direction="horizontal">
+                      {(provided) => (
+                        <div
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                          className="flex items-center gap-3 overflow-x-auto hidden1"
+                        >
                           <div
-                            {...provided.droppableProps}
+                            className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                              active1 === "All" &&
+                              "  border-b-2 text-orange-600 border-orange-600"
+                            }`}
                             ref={provided.innerRef}
-                            className="flex items-center gap-3 overflow-x-auto hidden1"
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            onClick={() => {
+                              setActive1("All");
+                              setColumnFromOutsideTable("jobHolder", "");
+                            }}
                           >
-                            
+                            All ( {getJobHolderCount("All", selectedTab)})
+                          </div>
 
-                            <div
-                                      className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                                        active1 === "All" &&
-                                        "  border-b-2 text-orange-600 border-orange-600"
-                                      }`}
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      onClick={() => {
-                                        setActive1("All");
-                                        setColumnFromOutsideTable('jobHolder', "");
-                                       
-                                      }}
-                                    >
-                                     All  ( {getJobHolderCount("All", selectedTab)})
-
-                                    </div>
-
-
-                            {selectedUsers.filter(uName => getJobHolderCount(uName, selectedTab) > 0).map((user, index) => {
-
-                          
-
-                                return (
-                                  <Draggable
+                          {selectedUsers
+                            .filter(
+                              (uName) =>
+                                getJobHolderCount(uName, selectedTab) > 0,
+                            )
+                            .map((user, index) => {
+                              return (
+                                <Draggable
                                   key={user}
                                   draggableId={user}
                                   index={index}
@@ -1466,58 +1246,38 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
                                       onClick={() => {
-                                        setActive1(user)
-                                        setColumnFromOutsideTable('jobHolder', user);
-                                         
-                                        
+                                        setActive1(user);
+                                        setColumnFromOutsideTable(
+                                          "jobHolder",
+                                          user,
+                                        );
                                       }}
                                     >
-                                      
-                                      {user} ( {getJobHolderCount(user, selectedTab)})
-
+                                      {user} ({" "}
+                                      {getJobHolderCount(user, selectedTab)})
                                     </div>
                                   )}
-                                  
-                                  
                                 </Draggable>
+                              );
+                            })}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
 
-                                
-                                
-                              )
-
-                            }
-                                
-                              )}
-                            {provided.placeholder}
-                          </div>
-                        )}
-                      </Droppable>
-                    </DragDropContext>
-
-
-                     <div className=" px-5 border-l ">
-
-            <FollowupDateFilter setColumnFromOutsideTable={setColumnFromOutsideTable} />
-            </div>
-
-
-
+                  <div className=" px-5 border-l ">
+                    <FollowupDateFilter
+                      setColumnFromOutsideTable={setColumnFromOutsideTable}
+                    />
                   </div>
-
-                   
-
-
-           
-            
                 </div>
-                <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
-              </>
-            )}
+              </div>
+              <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
+            </>
+          )}
 
-
-
-
-{active && (
+          {active && (
             <>
               <div className="flex flex-col gap-2  py-1 px-4">
                 <h3 className="font-semibold text-lg">Lead Source </h3>
@@ -1541,22 +1301,16 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
               </div>
               <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
             </>
-
-            
           )}
 
-
-
-
-                  {/* Update Bulk Jobs */}
-        {showEdit && (
-          <div className="w-full  p-4 ">
-            <form
-              onSubmit={updateBulkLeads}
-              className="w-full grid grid-cols-12 gap-4 max-2xl:grid-cols-8  "
-            >
-
-                <div className="inputBox w-full" >
+          {/* Update Bulk Jobs */}
+          {showEdit && (
+            <div className="w-full  p-4 ">
+              <form
+                onSubmit={updateBulkLeads}
+                className="w-full grid grid-cols-12 gap-4 max-2xl:grid-cols-8  "
+              >
+                <div className="inputBox w-full">
                   <input
                     name="companyName"
                     type="text"
@@ -1568,7 +1322,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                   <span>Company Name</span>
                 </div>
 
-                <div className="inputBox w-full" >
+                <div className="inputBox w-full">
                   <input
                     name="clientName"
                     type="text"
@@ -1579,98 +1333,87 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                   <span>Client Name</span>
                 </div>
 
-              <div className="w-full">
-                <select
-                  name="jobHolder"
-                  value={updates.jobHolder}
-                  
-                  onChange={handle_on_change_update}
-                  className={`${style.input} w-full`}
-                   
-                >
-                  <option value="empty">Job Holder</option>
-                  {users.map((jobHold, i) => (
-                    <option value={jobHold.name} key={i}>
-                      {jobHold.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="w-full">
+                  <select
+                    name="jobHolder"
+                    value={updates.jobHolder}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full`}
+                  >
+                    <option value="empty">Job Holder</option>
+                    {users.map((jobHold, i) => (
+                      <option value={jobHold.name} key={i}>
+                        {jobHold.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="w-full">
-                <select
-                  name="leadUser"
-                  value={updates.leadUser}
-                  
-                  onChange={handle_on_change_update}
-                  className={`${style.input} w-full`}
-                   
-                >
-                  <option value="empty">Lead</option>
-                  {users.map((jobHold, i) => (
-                    <option value={jobHold.name} key={i}>
-                      {jobHold.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="w-full">
+                  <select
+                    name="leadUser"
+                    value={updates.leadUser}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full`}
+                  >
+                    <option value="empty">Lead</option>
+                    {users.map((jobHold, i) => (
+                      <option value={jobHold.name} key={i}>
+                        {jobHold.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="w-full">
-                <select
-                  name="department"
-                  value={updates.department}
-                  
-                  onChange={handle_on_change_update}
-                  className={`${style.input} w-full`}
-                   
-                >
-                  <option value="empty">Department</option>
-                  {departments.map((department, i) => (
-                    <option value={department} key={i}>
-                      {department}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="w-full">
+                  <select
+                    name="department"
+                    value={updates.department}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full`}
+                  >
+                    <option value="empty">Department</option>
+                    {departments.map((department, i) => (
+                      <option value={department} key={i}>
+                        {department}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="w-full">
-                <select
-                  name="source"
-                  value={updates.source}
-                  
-                  onChange={handle_on_change_update}
-                  className={`${style.input} w-full`}
-                  
-                >
-                  <option value="empty">Source</option>
-                  {sources.map((source, i) => (
-                    <option value={source} key={i}>
-                      {source}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="w-full">
+                  <select
+                    name="source"
+                    value={updates.source}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full`}
+                  >
+                    <option value="empty">Source</option>
+                    {sources.map((source, i) => (
+                      <option value={source} key={i}>
+                        {source}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="w-full">
-                <select
-                  name="brand"
-                  value={updates.brand}
-                  
-                  onChange={handle_on_change_update}
-                  className={`${style.input} w-full`}
-                   
-                >
-                  <option value="empty">Brand</option>
-                  {brands.map((brand, i) => (
-                    <option value={brand} key={i}>
-                      {brand}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="w-full">
+                  <select
+                    name="brand"
+                    value={updates.brand}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full`}
+                  >
+                    <option value="empty">Brand</option>
+                    {brands.map((brand, i) => (
+                      <option value={brand} key={i}>
+                        {brand}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-
-              <div className="inputBox w-full" >
+                <div className="inputBox w-full">
                   <input
                     name="value"
                     type="text"
@@ -1681,7 +1424,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                   <span>Value</span>
                 </div>
 
-                <div className="inputBox w-full" >
+                <div className="inputBox w-full">
                   <input
                     name="number"
                     type="text"
@@ -1692,100 +1435,77 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                   <span>Number</span>
                 </div>
 
-         
-
-
-         
                 <div className="w-full">
-                    <select
-                      name="lead_Source"
-                      value={updates.lead_Source}
-                      
-                      onChange={handle_on_change_update}
-                      className={`${style.input} w-full`}
-                       
-                    >
-                      <option value="empty">Lead Source</option>
-                      {leadSource.map((el, i) => (
-                        <option value={el} key={i}>
-                          {el}
-                        </option>
-                      ))}
-                    </select>
-              </div>
+                  <select
+                    name="lead_Source"
+                    value={updates.lead_Source}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full`}
+                  >
+                    <option value="empty">Lead Source</option>
+                    {leadSource.map((el, i) => (
+                      <option value={el} key={i}>
+                        {el}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                  
-                      
+                <div className="inputBox">
+                  <input
+                    type="date"
+                    name="followUpDate"
+                    value={updates.followUpDate}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full `}
+                  />
+                  <span>Follow-Up Deadline</span>
+                </div>
 
-              <div className="inputBox" >
-                <input
-                  type="date"
-                  name="followUpDate"
-                  value={updates.followUpDate}
-                  onChange={handle_on_change_update}
-                  className={`${style.input} w-full `}
-                />
-                <span>Follow-Up Deadline</span>
-              </div>
+                <div className="inputBox">
+                  <input
+                    type="date"
+                    name="JobDate"
+                    value={updates.JobDate}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full `}
+                  />
+                  <span>Job Date</span>
+                </div>
 
+                <div className="">
+                  <select
+                    name="stage"
+                    value={updates.stage}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full`}
+                  >
+                    <option value="empty">Stage</option>
+                    {stages.map((el, i) => (
+                      <option value={el} key={i}>
+                        {el}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="inputBox" >
-                <input
-                  type="date"
-                  name="JobDate"
-                  value={updates.JobDate}
-                  onChange={handle_on_change_update}
-                  className={`${style.input} w-full `}
-                />
-                <span>Job Date</span>
-              </div>
-             
+                <div className="">
+                  <select
+                    name="status"
+                    value={updates.status}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full`}
+                  >
+                    <option value="empty">Status</option>
+                    {["progress", "won", "lost"].map((el, i) => (
+                      <option value={el} key={i}>
+                        {el}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-
-              
-              
-              <div className="">
-                    <select
-                      name="stage"
-                      value={updates.stage}
-                      
-                      onChange={handle_on_change_update}
-                      className={`${style.input} w-full`}
-                       
-                    >
-                      <option value="empty">Stage</option>
-                      {stages.map((el, i) => (
-                        <option value={el} key={i}>
-                          {el}
-                        </option>
-                      ))}
-                    </select>
-              </div>
-
-
-
-
-              <div className="">
-                    <select
-                      name="status"
-                      value={updates.status}
-                      
-                      onChange={handle_on_change_update}
-                      className={`${style.input} w-full`}
-                       
-                    >
-                      <option value="empty">Status</option>
-                      {['progress', 'won', 'lost'].map((el, i) => (
-                        <option value={el} key={i}>
-                          {el}
-                        </option>
-                      ))}
-                    </select>
-              </div>
-
-                
-
-              <div className="inputBox w-full col-span-2" >
+                <div className="inputBox w-full col-span-2">
                   <input
                     name="Note"
                     type="text"
@@ -1796,42 +1516,39 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                   <span>Note</span>
                 </div>
 
-             
-
-              <div className="w-full flex items-center justify-end  ">
-                <button
-                  className={`${style.button1} text-[15px] w-full `}
-                  type="submit"
-                  disabled={isUpdating}
-                  style={{ padding: ".5rem  " }}
-                >
-                  {isUpdating ? (
-                    <TbLoader2 className="h-5 w-5 animate-spin text-white" />
-                  ) : (
-                    <span>Save</span>
-                  )}
-                </button>
-              </div>
-            </form>
-            <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
-          </div>
-        )}
+                <div className="w-full flex items-center justify-end  ">
+                  <button
+                    className={`${style.button1} text-[15px] w-full `}
+                    type="submit"
+                    disabled={isUpdating}
+                    style={{ padding: ".5rem  " }}
+                  >
+                    {isUpdating ? (
+                      <TbLoader2 className="h-5 w-5 animate-spin text-white" />
+                    ) : (
+                      <span>Save</span>
+                    )}
+                  </button>
+                </div>
+              </form>
+              <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
+            </div>
+          )}
         </>
 
         {/* ---------Table Detail---------- */}
         <div className="w-full h-full">
           <div className="w-full min-h-[10vh] relative ">
-              <div className="h-full hidden1 overflow-y-auto relative">
-                {/* {showUserLeadChart && <WonLeadsStats  users={users} auth={auth} active1={active1}/> } */}
-                { !showUserLeadChart && <MaterialReactTable table={table} /> }
-              </div>
+            <div className="h-full hidden1 overflow-y-auto relative">
+              {/* {showUserLeadChart && <WonLeadsStats  users={users} auth={auth} active1={active1}/> } */}
+              {!showUserLeadChart && <MaterialReactTable table={table} />}
             </div>
+          </div>
         </div>
       </div>
 
-
       {/* ---------------------Send Email Modal------------------ */}
-      {showSendModal && (
+      {/* {showSendModal && (
         <div className="fixed top-0 left-0 z-[999] w-full h-full py-1 bg-gray-700/70 flex items-center justify-center">
           <SendEmailModal
             setShowSendModal={setShowSendModal}
@@ -1839,96 +1556,75 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
             access={access}
           />
         </div>
+      )} */}
+
+      {/* ---------------New Ticket Modal------------- */}
+      {newTicket.open && (
+        <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
+          <SendEmailModal
+            onClose={() =>
+              setNewTicket((prev) => ({
+                ...prev,
+                open: false,
+                email: "",
+                clientId: "",
+                type: "",
+                clientName: "",
+                companyName: "",
+              }))
+            }
+            onSuccess={() =>
+              setNewTicket((prev) => ({
+                ...prev,
+                open: false,
+                email: "",
+                clientId: "",
+                type: "",
+                clientName: "",
+                companyName: "",
+              }))
+            }
+            defaults={{
+              clientId: newTicket.clientId,
+              email: newTicket.email,
+              type: newTicket.type,
+            }}
+            meta={{
+              clientName: newTicket.clientName,
+              companyName: newTicket.companyName,
+            }}
+          />
+        </div>
       )}
 
+      <RelatedConversationsSidebar
+        open={isEmailSidebarOpen}
+        onClose={closeEmailSidebar}
+        id={selectedEmailLead?._id}
+        type="lead"
+        companyName={selectedEmailLead?.brand?.toLowerCase()}
+      />
 
-       {/* ---------------New Ticket Modal------------- */}
-            {newTicket.open && (
-              <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
-                {/* <NewTicketModal
-                  setShowSendModal={setShowNewTicketModal}
-                  
-                  clientCompanyName={clientCompanyName}
+      {/* ---------------Sent/Received PopOver Filter------------- */}
 
-                  clientEmail= {clientEmail}
+      {filterInfo.col && anchorRef.current && (
+        <NumberFilterPortal
+          anchorRef={anchorRef}
+          value={filterInfo.value}
+          filterType={filterInfo.type}
+          onApply={applyFilter}
+          onClose={handleCloseFilter}
+          setValue={(val) => setFilterInfo((f) => ({ ...f, value: val }))}
+          setFilterType={(type) => setFilterInfo((f) => ({ ...f, type }))}
+        />
+      )}
 
-                  clientName={clientName}
-                  companyName={companyName}
-                /> */}
-
-
-
-
-                 <SendEmailModal
-                                        onClose={() => setNewTicket((prev) => ({ ...prev, open: false, email: "", clientId: "", type: "", clientName: "", companyName: "" })) }
-                                        onSuccess={() =>  setNewTicket((prev) => ({ ...prev, open: false,  email: "", clientId: "", type: "", clientName: "", companyName: "" })) }
-                
-                                        defaults={{
-                                          clientId: newTicket.clientId,
-                                          email: newTicket.email,
-                                          type: newTicket.type,
-                                           
-                                        }}
-
-                                        meta = {{clientName: newTicket.clientName, companyName: newTicket.companyName}}
-                                         
-                
-                
-                
-                                      />
-
-
-
-
-
-
-
-
-
-
-
-
-              </div>
-            )}
-
-             <RelatedConversationsSidebar
-              open={isEmailSidebarOpen}
-              onClose={closeEmailSidebar}
-              id={selectedEmailLead?._id}
-               type = "lead"
-              companyName={selectedEmailLead?.brand?.toLowerCase()}
-             
-             
-            />
-
-
-
-
-
-
-
-
-       {/* ---------------Sent/Received PopOver Filter------------- */}
-
-            {filterInfo.col && anchorRef.current && (
-              <NumberFilterPortal
-                anchorRef={anchorRef}
-                value={filterInfo.value}
-                filterType={filterInfo.type}
-                onApply={applyFilter}
-                onClose={handleCloseFilter}
-                setValue={(val) => setFilterInfo((f) => ({ ...f, value: val }))}
-                setFilterType={(type) => setFilterInfo((f) => ({ ...f, type }))}
-              />
-            )}
-
-            {
-              emailPopup.open && <EmailDetailDrawerNewWrapper {...emailPopup} setEmailPopup={setEmailPopup}/>
-
-            }
-
-
-           
+      {emailPopup.open && (
+        <EmailDetailDrawerNewWrapper
+          {...emailPopup}
+          setEmailPopup={setEmailPopup}
+        />
+      )}
     </>
   );
 }

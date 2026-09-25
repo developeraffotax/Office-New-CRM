@@ -45,6 +45,8 @@ import { useSavedFilters } from "../../components/SavedFilters/useSavedFilters";
 import { CiFilter } from "react-icons/ci";
 import SavedFiltersPanel from "../../components/SavedFilters/SavedFiltersPanel";
 import { isTeamLead } from "../../utlis/checkPermission";
+import { usePersistedUsersNew } from "../../hooks/usePersistedUsersNew";
+import SelectedUsersNew from "../../components/SelectedUsersNew";
 
 const AllTasks = ({ justShowTable = false }) => {
   const dispatch = useDispatch();
@@ -112,9 +114,15 @@ const AllTasks = ({ justShowTable = false }) => {
   const [isUpload, setIsUpdate] = useState(false);
   const [reload, setReload] = useState(false);
 
-  const { selectedUsers, setSelectedUsers } = usePersistedUsers(
-    "tasks:selected_users",
-    userName,
+  const { selectedUsers, setSelectedUsers } = usePersistedUsersNew(
+    
+    
+   
+    {
+      storage_key: "tasks:selected_users",
+        users: users,
+        current_user:  auth?.user
+    }
   );
 
   // ==========================================
@@ -795,12 +803,13 @@ const AllTasks = ({ justShowTable = false }) => {
           </h4>
 
           <div className="h-full overflow-y-auto space-y-1 pr-1">
-            <SelectedUsers
+            <SelectedUsersNew
               selectedUsers={selectedUsers}
               setSelectedUsers={setSelectedUsers}
-              userNameArr={userName}
+              users={users}
               countMap={userTaskCountMap}
               label={"task"}
+              current_user={auth?.user}
             />
           </div>
         </section>

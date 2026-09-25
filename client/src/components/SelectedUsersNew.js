@@ -1,17 +1,30 @@
+import { getJuniorsList } from "../utlis/getJuniorsList";
 
-const SelectedUsers = ({ userNameArr, selectedUsers, setSelectedUsers, countMap, label }) => {
+ 
+const SelectedUsersNew = ({
+  users,
+  selectedUsers,
+  setSelectedUsers,
+  countMap,
+  label,
+  current_user,
+}) => {
+  const juniors = getJuniorsList(users, current_user);
+
   return (
     <div className="space-y-0.5">
-      {userNameArr.map((user) => {
-        const isSelected = selectedUsers.includes(user);
-        const count = countMap[user] || 0;
+      {juniors.map((user) => {
+        const isSelected = selectedUsers.includes(user.name);
+        const count = countMap[user.name] || 0;
 
         return (
           <div
-            key={user}
+            key={user._id}
             onClick={() => {
               setSelectedUsers((prev) =>
-                prev.includes(user) ? prev.filter((u) => u !== user) : [...prev, user]
+                prev.includes(user.name)
+                  ? prev.filter((name) => name !== user.name)
+                  : [...prev, user.name]
               );
             }}
             className={`group relative flex items-center justify-between gap-3 px-3 py-2 cursor-pointer transition-all duration-200 border-l-2 ${
@@ -23,8 +36,8 @@ const SelectedUsers = ({ userNameArr, selectedUsers, setSelectedUsers, countMap,
             <div className="flex items-center gap-2.5 min-w-0 flex-1">
               {/* Modern Checkbox */}
               <div className={`relative flex-shrink-0 w-4 h-4 rounded transition-all ${
-                isSelected 
-                  ? 'bg-orange-600' 
+                isSelected
+                  ? 'bg-orange-600'
                   : 'bg-white border-2 border-slate-300 group-hover:border-slate-400'
               }`}>
                 {isSelected && (
@@ -39,12 +52,12 @@ const SelectedUsers = ({ userNameArr, selectedUsers, setSelectedUsers, countMap,
                 <span className={`text-sm font-medium truncate leading-tight ${
                   isSelected ? 'text-slate-900' : 'text-slate-700'
                 }`}>
-                  {user}
+                  {user.name}
                 </span>
               </div>
             </div>
 
-            {/* Count Badge - Enterprise Style */}
+            {/* Count Badge */}
             <div className={`flex-shrink-0 flex items-center gap-1.5 px-2 py-1 rounded-full transition-all ${
               isSelected
                 ? 'bg-orange-100'
@@ -68,11 +81,4 @@ const SelectedUsers = ({ userNameArr, selectedUsers, setSelectedUsers, countMap,
   );
 };
 
-
-export default SelectedUsers;
-
-
-
-
-
- 
+export default SelectedUsersNew;

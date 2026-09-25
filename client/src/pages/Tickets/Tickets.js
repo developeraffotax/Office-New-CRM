@@ -4,7 +4,6 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 import Loader from "../../utlis/Loader";
-import { format } from "date-fns";
 
 import { style } from "../../utlis/CommonStyle";
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
@@ -12,30 +11,21 @@ import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import toast from "react-hot-toast";
 import axios from "axios";
 
-import {
-  MdCheckCircle,
-  MdInsertComment,
-  MdOutlineModeEdit,
-  MdRemoveRedEye,
-} from "react-icons/md";
-import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
+import { MdOutlineModeEdit } from "react-icons/md";
+
 import Swal from "sweetalert2";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import QuickAccess from "../../utlis/QuickAccess";
-import { TbLoader2, TbLogs } from "react-icons/tb";
-import { filterByRowId } from "../../utlis/filterByRowId";
+import { TbLoader2 } from "react-icons/tb";
+
 import ActivityLogDrawer from "../../components/Modals/ActivityLogDrawer";
-import {
-  NumberFilterPortal,
-  NumderFilterFn,
-} from "../../utlis/NumberFilterPortal";
-import { TiFilter } from "react-icons/ti";
-import { Drawer } from "@mui/material";
+import { NumberFilterPortal } from "../../utlis/NumberFilterPortal";
+
 import EmailDetailDrawer from "./EmailDetailDrawer";
 import { useSelector } from "react-redux";
-import { LuRefreshCcw } from "react-icons/lu";
+
 import RefreshTicketsButton from "./ui/RefreshTicketsButton";
 import { getTicketsColumns } from "./table/columns";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
@@ -47,12 +37,17 @@ import { GoEye, GoEyeClosed } from "react-icons/go";
 import { useSocket } from "../../context/socketProvider";
 import UserTicketChart from "./userTicketChart/UserTicketChart";
 import { BsGraphUpArrow } from "react-icons/bs";
-import { usePersistedUsers } from "../../hooks/usePersistedUsers";
-import SelectedUsers from "../../components/SelectedUsers";
- 
-import RelatedConversationsSidebar from "../../components/shared/RelatedConversationsSidebar/RelatedConversationsSidebar";
 
-const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "", leadUser: "" };
+import RelatedConversationsSidebar from "../../components/shared/RelatedConversationsSidebar/RelatedConversationsSidebar";
+import SelectedUsersNew from "../../components/SelectedUsersNew";
+import { usePersistedUsersNew } from "../../hooks/usePersistedUsersNew";
+
+const updates_object_init = {
+  jobHolder: "",
+  jobStatus: "",
+  jobDate: "",
+  leadUser: "",
+};
 const jobStatusOptions = [
   "Quote",
   "Data",
@@ -62,7 +57,6 @@ const jobStatusOptions = [
   "Submission",
   "Billing",
   "Feedback",
-  
 ];
 const companyData = ["Affotax", "Outsource"];
 const status = ["Read", "Unread", "Send"];
@@ -117,8 +111,6 @@ export default function Tickets() {
   const [showJobHolder, setShowJobHolder] = useState(true);
   const [active1, setActive1] = useState("");
 
-
-
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 50, // ✅ default page size
@@ -132,24 +124,18 @@ export default function Tickets() {
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
   const [activityDrawerTicketId, setActivityDrawerTicketId] = useState("");
 
-
-
-
-
   const [isEmailSidebarOpen, setIsEmailSidebarOpen] = useState(false);
-const [selectedEmailTicket, setSelectedEmailTicket] = useState(null);
+  const [selectedEmailTicket, setSelectedEmailTicket] = useState(null);
 
+  const openEmailSidebar = (ticket) => {
+    setSelectedEmailTicket(ticket);
+    setIsEmailSidebarOpen(true);
+  };
 
-const openEmailSidebar = (ticket) => {
-  setSelectedEmailTicket(ticket);
-  setIsEmailSidebarOpen(true);
-};
-
-const closeEmailSidebar = () => {
-  setIsEmailSidebarOpen(false);
-  setSelectedEmailTicket(null);
-};
-
+  const closeEmailSidebar = () => {
+    setIsEmailSidebarOpen(false);
+    setSelectedEmailTicket(null);
+  };
 
   const anchorRef = useRef(null);
 
@@ -163,7 +149,11 @@ const closeEmailSidebar = () => {
   const [ticketSubject, setTicketSubject] = useState("");
 
   const { selectedUsers, setSelectedUsers, toggleUser, resetUsers } =
-    usePersistedUsers("tickets:selected_users", userName);
+    usePersistedUsersNew({
+      storage_key: "tickets:selected_users",
+      users: users,
+      current_user: auth?.user,
+    });
 
   const socket = useSocket();
 
@@ -539,10 +529,7 @@ const closeEmailSidebar = () => {
     }
   };
 
-
-
-
-    const updateLeadUser = async (ticketId, leadUser) => {
+  const updateLeadUser = async (ticketId, leadUser) => {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
@@ -580,9 +567,6 @@ const closeEmailSidebar = () => {
       toast.error(error.response?.data?.message || "An error occurred");
     }
   };
-
-
-
 
   const updateJobDate = async (ticketId, jobDate) => {
     try {
@@ -766,26 +750,21 @@ const closeEmailSidebar = () => {
   // ----------------------------
   // 📑 Columns
   // ----------------------------
- const columns = useMemo(() => {
-  const result = getTicketsColumns(ctx);
+  const columns = useMemo(() => {
+    const result = getTicketsColumns(ctx);
 
-  console.log("MRT COLUMNS:", result);
+    console.log("MRT COLUMNS:", result);
 
-  return Array.isArray(result) ? result.filter(Boolean) : [];
-}, [ctx]);
+    return Array.isArray(result) ? result.filter(Boolean) : [];
+  }, [ctx]);
 
-const tableData = useMemo(() => {
-  return Array.isArray(emailData)
-    ? emailData.filter(Boolean)
-    : [];
-}, [emailData]);
-
- 
-
+  const tableData = useMemo(() => {
+    return Array.isArray(emailData) ? emailData.filter(Boolean) : [];
+  }, [emailData]);
 
   const table = useMaterialReactTable({
     columns,
-    
+
     data: tableData || [],
     enableStickyHeader: true,
     enableStickyFooter: true,
@@ -859,8 +838,6 @@ const tableData = useMemo(() => {
     },
   });
 
- 
-
   useEffect(() => {
     getAllUsers();
   }, []);
@@ -878,8 +855,6 @@ const tableData = useMemo(() => {
       setAccess(filterAccess);
     }
   }, [auth]);
-
- 
 
   useEffect(() => {
     if (comment_taskId) {
@@ -957,12 +932,11 @@ const tableData = useMemo(() => {
             </h4>
 
             <div className="h-full overflow-y-auto space-y-1 pr-1">
-              <SelectedUsers
+              <SelectedUsersNew
                 selectedUsers={selectedUsers}
                 setSelectedUsers={setSelectedUsers}
-                userNameArr={userName}
-                countMap={user_tickets_count_map}
-                label={"ticket"}
+                users={users}
+                current_user={auth?.user}
               />
             </div>
           </section>
@@ -1218,7 +1192,7 @@ const tableData = useMemo(() => {
                       </select>
                     </div>
 
-                     <div className="w-full">
+                    <div className="w-full">
                       <select
                         name="leadUser"
                         value={updates.leadUser}
@@ -1233,8 +1207,6 @@ const tableData = useMemo(() => {
                         ))}
                       </select>
                     </div>
-
-
 
                     <div className="">
                       <select
@@ -1335,7 +1307,6 @@ const tableData = useMemo(() => {
             />
           </div>
         )}
- 
 
         {open && (
           <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm  h-full     ">
@@ -1392,14 +1363,11 @@ const tableData = useMemo(() => {
         )}
 
         <RelatedConversationsSidebar
-  open={isEmailSidebarOpen}
-  onClose={closeEmailSidebar}
-  id={selectedEmailTicket?._id}
-  
-  companyName={selectedEmailTicket?.company?.toLowerCase()}
- 
- 
-/>
+          open={isEmailSidebarOpen}
+          onClose={closeEmailSidebar}
+          id={selectedEmailTicket?._id}
+          companyName={selectedEmailTicket?.company?.toLowerCase()}
+        />
 
         {filterInfo.col && anchorRef.current && (
           <NumberFilterPortal

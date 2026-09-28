@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { MdInsertComment } from "react-icons/md";
 
-export const createCommentsColumn = ({ auth, setCommentTaskId, setIsComment }) => ({
+export const createCommentsColumn = ({ auth, setCommentTaskId, setIsComment, setCommentAnchorEl }) => ({
   accessorKey: "comments",
   header: "Comments",
   Cell: ({ cell, row }) => {
@@ -19,9 +19,10 @@ export const createCommentsColumn = ({ auth, setCommentTaskId, setIsComment }) =
     return (
       <div
         className="flex items-center justify-center gap-1 relative w-full h-full"
-        onClick={() => {
+        onClick={(e) => {
           setCommentTaskId(row.original._id);
           setIsComment(true);
+          setCommentAnchorEl(e.currentTarget)
         }}
       >
         <div className="relative">

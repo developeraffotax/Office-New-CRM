@@ -72,9 +72,10 @@ export const actionsColumn = (ctx) => {
 
           <div
             className="flex items-center justify-center gap-1 relative w-full h-full"
-            onClick={() => {
+            onClick={(e) => {
               ctx.setCommentTicketId(row.original._id);
               ctx.setIsComment(true);
+              ctx.setCommentAnchorEl(e.currentTarget)
             }}
           >
             <div className="relative">

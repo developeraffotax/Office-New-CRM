@@ -42,6 +42,7 @@ import { isAdmin } from "../../utlis/isAdmin";
 import SelectedUsers from "../../components/SelectedUsers";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import { useClickOutside } from "../../utlis/useClickOutside";
+import AnchoredPopover from "../../components/AnchoredPopover";
 
 
 const colVisibility = {
@@ -78,6 +79,12 @@ export default function Goals() {
   const [showGraph, setShowGraph] = useState(false);
   const [selectChart, setSelectChart] = useState("Line & Bar");
   const [isComment, setIsComment] = useState(false);
+    const [commentAnchorEl, setCommentAnchorEl] = useState(null);
+  
+  const closeComment = () => {
+    setIsComment(false);
+    setCommentAnchorEl(null);
+  };
   const [commentTaskId, setCommentTaskId] = useState("");
   const commentStatusRef = useRef(null);
   const [rowSelection, setRowSelection] = useState({});
@@ -478,6 +485,7 @@ export default function Goals() {
         goalTypes,
         setCommentTaskId,
         setIsComment,
+        setCommentAnchorEl,
         setShowGoalDetail,
         setNote,
         handleCopyGoal,
@@ -1141,22 +1149,27 @@ const getGoalsCount = useCallback((user) => {
 
         {/* ------------Comment Modal---------*/}
 
-        {isComment && (
-          <div
-            ref={commentStatusRef}
-            className="fixed bottom-4 right-4 w-[30rem] max-h-screen z-[999]  flex items-center justify-center"
-          >
-            <JobCommentModal
-              setIsComment={setIsComment}
+         
+
+         {isComment && (
+          <AnchoredPopover open={isComment} anchorEl={commentAnchorEl} onClose={closeComment}>
+            {(maxHeight) => (
+              <JobCommentModal
+                setIsComment={setIsComment}
               jobId={commentTaskId}
               setJobId={setCommentTaskId}
               users={userName}
               type={"Goals"}
               getTasks1={getGoals}
               page={"Goals"}
-            />
-          </div>
+                anchored
+                maxHeight={maxHeight}
+              />
+            )}
+          </AnchoredPopover>
         )}
+
+
       </div>
     </>
   );

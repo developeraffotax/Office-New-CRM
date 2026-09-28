@@ -41,6 +41,7 @@ import { BsGraphUpArrow } from "react-icons/bs";
 import RelatedConversationsSidebar from "../../components/shared/RelatedConversationsSidebar/RelatedConversationsSidebar";
 import SelectedUsersNew from "../../components/SelectedUsersNew";
 import { usePersistedUsersNew } from "../../hooks/usePersistedUsersNew";
+import AnchoredPopover from "../../components/AnchoredPopover";
 
 const updates_object_init = {
   jobHolder: "",
@@ -103,6 +104,12 @@ export default function Tickets() {
   const [access, setAccess] = useState([]);
 
   const [isComment, setIsComment] = useState(false);
+    const [commentAnchorEl, setCommentAnchorEl] = useState(null);
+  
+  const closeComment = () => {
+    setIsComment(false);
+    setCommentAnchorEl(null);
+  };
   const commentStatusRef = useRef(null);
   const [commentTicketId, setCommentTicketId] = useState("");
 
@@ -726,6 +733,7 @@ export default function Tickets() {
       setActivityDrawerTicketId,
       setCommentTicketId,
       setIsComment,
+      setCommentAnchorEl,
       handleUpdateTicketStatusConfirmation,
       handleDeleteTicketConfirmation,
       openEmailSidebar,
@@ -1294,22 +1302,28 @@ export default function Tickets() {
 
         {/* ------------Comment Modal---------*/}
 
-        {isComment && (
-          <div
-            ref={commentStatusRef}
-            className="fixed bottom-4 right-4 w-[30rem] max-h-screen z-[999]  flex items-center justify-center"
-          >
-            <JobCommentModal
-              setIsComment={setIsComment}
+        
+
+
+              {isComment && (
+          <AnchoredPopover open={isComment} anchorEl={commentAnchorEl} onClose={closeComment}>
+            {(maxHeight) => (
+              <JobCommentModal
+                setIsComment={setIsComment}
               jobId={commentTicketId}
               setJobId={setCommentTicketId}
               users={userName}
               type={"ticket"}
               getTasks1={getEmails}
               page={"ticket"}
-            />
-          </div>
+                anchored
+                maxHeight={maxHeight}
+              />
+            )}
+          </AnchoredPopover>
         )}
+
+
 
         {open && (
           <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm  h-full     ">

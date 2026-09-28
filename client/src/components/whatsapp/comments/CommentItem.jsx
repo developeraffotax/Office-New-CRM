@@ -24,17 +24,15 @@ export default function CommentItem({ comment, currentUserId }) {
 const renderContent = (text) => {
   const mentionClass = "font-semibold px-1 py-0.5 rounded bg-blue-50 text-blue-700";
 
-  return text.split(/(@\w+(?:\s\w+)?)/g).map((part, index) => {
-    if (!part.startsWith("@")) {
-      return part;
-    }
-
-    return (
+  return text.split(/(@\w+)/g).map((part, index) =>
+    part.startsWith("@") ? (
       <span key={index} className={mentionClass}>
         {part}
       </span>
-    );
-  });
+    ) : (
+      part
+    )
+  );
 };
 
   return (

@@ -155,6 +155,11 @@ export default function UserLeadChart({  }) {
   const defaultUsers = () =>
     isAdmin(auth) ? [] : [auth?.user?.name].filter(Boolean);
 
+
+  const [showTargets, setShowTargets] = useState(false); // set true to show by default
+
+
+
   const [selectedUsers, setSelectedUsers] = useState(defaultUsers());
   const [users, setUsers] = useState([]);
   const [teams, setTeams] = useState([]);
@@ -286,38 +291,31 @@ export default function UserLeadChart({  }) {
   // ApexCharts series list: target series first (hidden by default, same
   // color, dashed/faded), then the actual series, per user — mirrors the
   // original Target/Actual ordering.
-  const chartSeries = useMemo(() => {
-    const metricKey = metric === "count" ? "counts" : "values";
-    const targetKey = metric === "count" ? "targetCounts" : "targetValues";
+const chartSeries = useMemo(() => {
+  const metricKey = metric === "count" ? "counts" : "values";
+  const targetKey = metric === "count" ? "targetCounts" : "targetValues";
 
-    const out = [];
-    rawSeries.forEach((s, idx) => {
-      // Defensive fallbacks — a response missing one of these keys (e.g. a
-      // partially-failed request) used to hand ApexCharts an `undefined`
-      // data array and crash deep inside its internals.
-      const targetData = Array.isArray(s[targetKey])
-        ? s[targetKey]
-        : new Array(categories.length).fill(0);
-      const actualData = Array.isArray(s[metricKey])
-        ? s[metricKey]
-        : new Array(categories.length).fill(0);
+  const zeros = () => new Array(categories.length).fill(0);
 
+  const out = [];
+  rawSeries.forEach((s, idx) => {
+    if (showTargets) {
       out.push({
         name: `${s.user} (Target)`,
-        data: targetData,
-        hidden: true,
+        data: Array.isArray(s[targetKey]) ? s[targetKey] : zeros(),
         _color: getUserColor(idx),
         _isTarget: true,
       });
-      out.push({
-        name: s.user,
-        data: actualData,
-        _color: getUserColor(idx),
-        _isTarget: false,
-      });
+    }
+    out.push({
+      name: s.user,
+      data: Array.isArray(s[metricKey]) ? s[metricKey] : zeros(),
+      _color: getUserColor(idx),
+      _isTarget: false,
     });
-    return out;
-  }, [rawSeries, metric, categories]);
+  });
+  return out;
+}, [rawSeries, metric, categories, showTargets]);
 
   const options = useMemo(() => {
     const isBar = chartType === "bar";
@@ -363,7 +361,7 @@ export default function UserLeadChart({  }) {
         min: 0,
       },
       colors,
-      legend: { position: "top" },
+      legend: { position: "top", showForSingleSeries: true },
       dataLabels: {
         enabled: true,
         offsetY: isBar ? -20 : 0,
@@ -374,21 +372,25 @@ export default function UserLeadChart({  }) {
         },
         background: { enabled: !isBar },
         formatter: function (val, opts) {
-          const { seriesIndex, dataPointIndex, w } = opts;
-          const isTargetSeries = seriesIndex % 2 === 0;
-          if (!isTargetSeries) {
-            const targetVal =
-              w.config.series[seriesIndex - 1]?.data[dataPointIndex];
-            if (targetVal) {
-              const percent = ((val / targetVal) * 100).toFixed(0);
-              return `${formatCompactNumber(val)} (${percent}%)`;
-            }
-          }
-          return formatCompactNumber(val);
-        },
+  const { seriesIndex, dataPointIndex, w } = opts;
+  const name = w.config.series[seriesIndex]?.name || "";
+
+  if (name.endsWith(" (Target)")) return formatCompactNumber(val);
+
+  const targetKey = metric === "count" ? "targetCounts" : "targetValues";
+  const targetVal = rawSeries.find((s) => s.user === name)?.[targetKey]?.[
+    dataPointIndex
+  ];
+
+  if (targetVal) {
+    const percent = ((val / targetVal) * 100).toFixed(0);
+    return `${formatCompactNumber(val)} (${percent}%)`;
+  }
+  return formatCompactNumber(val);
+},
       },
     };
-  }, [chartType, categories, chartSeries, metric]);
+  }, [chartType, categories, chartSeries, metric, rawSeries]);
 
   // const headerLabel =
   //   selectedUsers.length === 1
@@ -401,6 +403,10 @@ export default function UserLeadChart({  }) {
       : selectedUsers.length === 1
       ? selectedUsers[0]
       : `${selectedUsers.length} users`;
+
+
+      const isAllUsers =
+  selectedUsers.length === 0 || selectedUsers.includes("All");
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -630,6 +636,18 @@ export default function UserLeadChart({  }) {
             </Box>
 
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+               <ToggleButtonGroup size="small" sx={toggleGroupSx}>
+  <ToggleButton
+    value="targets"
+    selected={showTargets}
+    onChange={() => setShowTargets((v) => !v)}
+  >
+    Targets
+  </ToggleButton>
+</ToggleButtonGroup>
+
+
+
               <ToggleButtonGroup
                 size="small"
                 exclusive
@@ -640,6 +658,9 @@ export default function UserLeadChart({  }) {
                 <ToggleButton value="value">Value</ToggleButton>
                 <ToggleButton value="count">Count</ToggleButton>
               </ToggleButtonGroup>
+
+             
+
 
               <ToggleButtonGroup
                 size="small"
@@ -667,16 +688,28 @@ export default function UserLeadChart({  }) {
           </Stack>
 
           {hasLoadedOnce ? (
-            <Chart
-              key={`${chartType}-${metric}-${rawSeries
-                .map((s) => s.user)
-                .join("|")}`}
-              ref={chartRef}
-              options={options}
-              series={chartSeries}
-              type={chartType}
-              height={500}
-            />
+            <Box
+  sx={
+    showTargets
+      ? {
+          // targets are every odd legend item (1st, 3rd, ...) because
+          // each target is pushed right before its user's actual series
+          "& .apexcharts-legend-series:nth-child(odd)": { display: "none" },
+        }
+      : undefined
+  }
+>
+  <Chart
+    key={`${chartType}-${metric}-${showTargets}-${rawSeries
+      .map((s) => s.user)
+      .join("|")}`}
+    ref={chartRef}
+    options={options}
+    series={chartSeries}
+    type={chartType}
+    height={500}
+  />
+</Box>
           ) : (
             <Box
               sx={{

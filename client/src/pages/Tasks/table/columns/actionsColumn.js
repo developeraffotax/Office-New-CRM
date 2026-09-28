@@ -31,10 +31,11 @@ export const actionsColumn = (ctx) => {
           <span
             title="View Comments"
             className="flex items-center justify-center gap-1 relative w-full h-full"
-            onClick={() => {
-              ctx.setCommentTaskId(row.original._id);
-              ctx.setIsComment(true);
-            }}
+           onClick={(e) => {
+    ctx.setCommentAnchorEl(e.currentTarget);
+    ctx.setCommentTaskId(row.original._id);
+    ctx.setIsComment(true);
+  }}
           >
             {" "}
             <div className="relative">

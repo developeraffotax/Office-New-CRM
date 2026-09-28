@@ -75,6 +75,7 @@ import { isTeamLead } from "../../utlis/checkPermission";
 import { LEADS_SOURCES } from "../../constants/constants";
 import SelectedUsersNew from "../../components/SelectedUsersNew";
 import { usePersistedUsersNew } from "../../hooks/usePersistedUsersNew";
+import AnchoredPopover from "../../components/AnchoredPopover";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -114,6 +115,12 @@ export default function AllJobs() {
   const [clientId, setClientId] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [isComment, setIsComment] = useState(false);
+    const [commentAnchorEl, setCommentAnchorEl] = useState(null);
+  
+  const closeComment = () => {
+    setIsComment(false);
+    setCommentAnchorEl(null);
+  };
   const [jobId, setJobId] = useState("");
   const [isShow, setIsShow] = useState(false);
   const [note, setNote] = useState("");
@@ -1412,6 +1419,7 @@ export default function AllJobs() {
       comment_taskId,
       setJobId,
       setIsComment,
+      setCommentAnchorEl
     };
   }, [jobId, isComment, comment_taskId]);
 
@@ -2700,23 +2708,25 @@ export default function AllJobs() {
         </div>
       )}
       {/* ------------Comment Modal---------*/}
-
-      {isComment && (
-        <div
-          ref={commentStatusRef}
-          className="fixed bottom-4 right-4 w-[30rem] max-h-screen z-[999]  flex items-center justify-center"
-        >
-          <JobCommentModal
-            setIsComment={setIsComment}
+{isComment && (
+  <AnchoredPopover open={isComment} anchorEl={commentAnchorEl} onClose={closeComment}>
+    {(maxHeight) => (
+      <JobCommentModal
+      setIsComment={setIsComment}
             jobId={jobId}
             setJobId={setJobId}
             users={users}
             type={"Jobs"}
             getTasks1={allClientJobData}
             page={"job"}
-          />
-        </div>
-      )}
+ 
+        anchored
+        maxHeight={maxHeight}
+      />
+    )}
+  </AnchoredPopover>
+)}
+     
 
       {/* -------------Stop Timer Btn-----------*/}
       {isShow && (

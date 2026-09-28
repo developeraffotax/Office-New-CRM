@@ -1,22 +1,25 @@
 import React, { useEffect, useRef, useState } from "react";
-import { IoClose } from "react-icons/io5";
+import {
+  FiX,
+  FiMessageCircle,
+  FiLoader,
+  FiSend,
+  FiAtSign,
+  FiZap,
+} from "react-icons/fi";
 
 import "froala-editor/js/froala_editor.pkgd.min.js";
 import "froala-editor/css/froala_editor.pkgd.min.css";
 import "froala-editor/css/froala_style.min.css";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { style } from "../../utlis/CommonStyle";
-import { BiLoaderCircle } from "react-icons/bi";
 import EmojiPicker from "emoji-picker-react";
 import { BsEmojiSmile } from "react-icons/bs";
 import { format } from "date-fns";
 import { AiFillLike, AiOutlineLike } from "react-icons/ai";
-import Loader from "../../utlis/Loader";
 
 import {
   Menu,
-  MenuItem,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -24,21 +27,16 @@ import {
   Button,
   TextField,
   IconButton,
-  Tabs,
-  Tab,
   Typography,
 } from "@mui/material";
 import {
   Close,
   DeleteOutline,
   EditOutlined,
-  MessageRounded,
-  MoreVert,
   Add as AddIcon,
 } from "@mui/icons-material";
 
 import { useSelector } from "react-redux";
-import { GoDotFill } from "react-icons/go";
 
 export default function JobCommentModal({
   setIsComment,
@@ -48,6 +46,8 @@ export default function JobCommentModal({
   type,
   getTasks1,
   page,
+  anchored = false, // sized by the parent popover (width 340 + maxHeight)
+  maxHeight = 480,
 }) {
   const auth = useSelector((state) => state.auth.auth);
   const [loading, setLoading] = useState(false);
@@ -241,8 +241,6 @@ export default function JobCommentModal({
       " " +
       comment.slice(comment.length);
 
- 
-
     setSelectedUser(user);
 
     setComment(newText);
@@ -355,7 +353,6 @@ export default function JobCommentModal({
           `${process.env.REACT_APP_API_URL}/api/v1/client/job/comments/${jobId}`
         );
         if (data) {
- 
           setCommentData(data?.comments?.comments);
         }
       } else if (type === "Task") {
@@ -619,438 +616,477 @@ export default function JobCommentModal({
     }
   };
 
-  // --------AutoScroll------->
-  useEffect(() => {
-    const messageContainer = document.getElementById("message-container");
-    if (messageContainer) {
-      messageContainer.scrollTo({
-        top: messageContainer.scrollHeight,
-        behavior: "smooth",
-      });
-    }
-  }, [commentData]);
+  // ==========================================
+  // UI
+  // ==========================================
+  const mentionClass =
+    "font-semibold px-1 py-0.5 rounded bg-blue-50 text-blue-700";
+
+  const panelSize = anchored
+    ? ""
+    : page === "detail"
+    ? "w-full h-[33rem] 2xl:h-[40rem]"
+    : "w-[400px] max-w-full max-h-[36rem]";
+
+  const canSend = !(loading || !comment);
 
   return (
     <>
       <div
         ref={commentStatusRef}
-        className="w-full h-full flex items-center justify-center"
+        style={anchored ? { width: 340, maxHeight } : undefined}
+        className={`flex flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg shadow-slate-400/60 font-inter ${panelSize}`}
       >
+        {/* Header */}
         <div
-          className={`w-[45rem]  ${
-            page === "detail"
-              ? " bg-gray-50 h-[33rem] 2xl:h-[40rem]"
-              : " bg-gray-50 max-h-[36rem]"
-          } rounded-md shadow-md  border flex flex-col gap-2`}
+          className={`flex-shrink-0 px-3 py-2 flex items-center justify-between border-b border-slate-200 bg-white ${
+            page === "detail" ? "hidden" : ""
+          }`}
         >
-          <div
-            className={`flex items-center justify-between py-2 px-3 ${
-              page === "detail" && "hidden"
-            }`}
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="flex h-5 w-5 items-center justify-center rounded bg-slate-800 text-white flex-shrink-0">
+              <FiMessageCircle size={15} />
+            </div>
+            <h3 className="text-[15px] font-semibold text-slate-900 leading-none">
+              Comments
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setJobId("");
+              setIsComment(false);
+            }}
+            className="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors flex-shrink-0"
           >
-            <h3 className="text-[18px] font-semibold text-black">Comments</h3>
-            <span
-              onClick={() => {
-                setJobId("");
-                setIsComment(false);
+            <FiX size={15} />
+          </button>
+        </div>
+
+        {/* -----------------Display-Comments------------ */}
+        <div
+          id="message-container"
+          className="flex-1 min-h-0 overflow-y-auto px-3 py-2.5 space-y-2.5 bg-white custom-scrollbar overscroll-contain"
+        >
+          {isLoading ? (
+            <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-1.5 py-10">
+              <FiLoader className="animate-spin" size={18} />
+              <p className="text-[11px] font-medium">Loading…</p>
+            </div>
+          ) : !commentData || commentData.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center py-10">
+              <div className="mb-2.5 flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-300">
+                <FiMessageCircle size={18} />
+              </div>
+              <p className="text-[12px] font-medium text-slate-600">
+                No comments yet
+              </p>
+              <p className="mt-0.5 text-[11px] text-slate-400">
+                Start the conversation below
+              </p>
+            </div>
+          ) : (
+            commentData.map((comment) => {
+              const isMe =
+                Boolean(comment?.user?._id) &&
+                comment.user._id === auth?.user?.id;
+
+              return (
+                <div
+                  key={comment._id}
+                  className={`flex flex-col w-full ${
+                    isMe ? "items-end" : "items-start"
+                  }`}
+                >
+                  {/* Meta row */}
+                  <div
+                    className={`flex items-center gap-1.5 mb-1 ${
+                      isMe ? "flex-row-reverse" : "flex-row"
+                    }`}
+                  >
+                    <img
+                      src={
+                        comment?.user?.avatar
+                          ? comment?.user?.avatar
+                          : "/profile1.jpeg"
+                      }
+                      alt="Avatar"
+                      className="h-5 w-5 flex-shrink-0 rounded-full object-cover ring-1 ring-slate-200"
+                    />
+                    <span className="text-[11px] font-semibold text-slate-700">
+                      {isMe ? "You" : comment?.user?.name}
+                    </span>
+                    <span className="text-[10px] text-slate-400 tabular-nums">
+                      {format(new Date(comment?.createdAt), "dd MMM yyyy · h:mm a")}
+                    </span>
+                  </div>
+
+                  {/* Bubble + actions */}
+                  <div
+                    className={`flex flex-col ${
+                      isMe ? "items-end" : "items-start"
+                    } max-w-[85%]`}
+                  >
+                    <div
+                      className={`px-3 py-2 text-[13px] leading-snug rounded-md ${
+                        isMe
+                          ? "bg-slate-800 text-white rounded-br-sm"
+                          : "bg-slate-100 text-slate-800 rounded-bl-sm"
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap break-words">
+                        {comment?.comment.split(/(@\w+)/g).map((part, i) =>
+                          part.startsWith("@") ? (
+                            <span key={i} className={mentionClass}>
+                              {part}
+                            </span>
+                          ) : (
+                            part
+                          )
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 mt-1 px-0.5">
+                      <button
+                        type="button"
+                        className={`inline-flex items-center gap-1 text-[11px] transition-colors ${
+                          commentLikes[comment._id]
+                            ? "text-blue-600"
+                            : "text-slate-400 hover:text-slate-600"
+                        }`}
+                        onClick={() =>
+                          commentLikes[comment?._id]
+                            ? unlikeComment(comment?._id)
+                            : likeComment(comment?._id)
+                        }
+                      >
+                        {commentLikes[comment._id] ? (
+                          <AiFillLike size={13} />
+                        ) : (
+                          <AiOutlineLike size={13} />
+                        )}
+                        <span className="tabular-nums">
+                          {likeCounts[comment?._id] || 0}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-slate-700 transition-colors"
+                        onClick={() => {
+                          setCommentId(comment?._id);
+                          setShowReply(!shopReply);
+                        }}
+                      >
+                        Reply
+                        <span className="tabular-nums">
+                          ({comment?.commentReplies?.length || 0})
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ----------Comm_Replies----------- */}
+                  {shopReply && comment._id === commentId && (
+                    <div className="w-full mt-1.5 pl-3 border-l border-slate-200 ml-2.5">
+                      <form
+                        onSubmit={handleCommentReply}
+                        className="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 focus-within:ring-2 focus-within:ring-slate-300/60 focus-within:border-slate-300 transition-shadow"
+                      >
+                        <input
+                          placeholder="Write a reply…"
+                          onClick={() => setShowReplyEmoji(false)}
+                          value={commentReply}
+                          required
+                          onChange={(e) => setCommentReply(e.target.value)}
+                          className="w-full px-0.5 py-1 text-[13px] text-slate-800 placeholder:text-slate-400 outline-none bg-transparent"
+                        />
+                        <div className="flex items-center justify-between mt-1">
+                          <button
+                            type="button"
+                            title="Add Emoji"
+                            onClick={() => setShowReplyEmoji(!showReplyEmoji)}
+                            className="text-slate-400 hover:text-slate-600 transition-colors"
+                          >
+                            <BsEmojiSmile size={15} />
+                          </button>
+
+                          <button
+                            type="submit"
+                            disabled={replyLoading || !comment}
+                            className={`inline-flex items-center justify-center h-7 min-w-[3.25rem] px-3 text-[11px] font-semibold rounded-md transition-colors ${
+                              replyLoading || !comment
+                                ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                                : "bg-slate-800 text-white hover:bg-slate-700 active:bg-slate-900"
+                            }`}
+                          >
+                            {replyLoading ? (
+                              <FiLoader className="animate-spin" size={12} />
+                            ) : (
+                              "Reply"
+                            )}
+                          </button>
+                        </div>
+                      </form>
+
+                      {showReplyEmoji && (
+                        <div className="mt-1.5">
+                          <EmojiPicker
+                            width="100%"
+                            height={260}
+                            onEmojiClick={onEmojiClickReply}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {shopReply &&
+                    comment?.commentReplies?.length > 0 && (
+                      <div className="w-full mt-1.5 pl-3 border-l border-slate-200 ml-2.5 space-y-2">
+                        {comment.commentReplies.map((commentReply) => (
+                          <div key={commentReply._id} className="w-full">
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <img
+                                src={
+                                  commentReply?.user?.avatar
+                                    ? commentReply?.user?.avatar
+                                    : "/profile1.jpeg"
+                                }
+                                alt="Avatar"
+                                className="h-4 w-4 flex-shrink-0 rounded-full object-cover ring-1 ring-slate-200"
+                              />
+                              <span className="text-[11px] font-semibold text-slate-700">
+                                {commentReply?.user?.name}
+                              </span>
+                              <span className="text-[10px] text-slate-400 tabular-nums">
+                                {format(
+                                  new Date(commentReply?.createdAt),
+                                  "MMM dd 'at' p"
+                                )}
+                              </span>
+                            </div>
+                            <p className="px-3 py-2 text-[13px] leading-snug rounded-md rounded-tl-sm bg-slate-100 text-slate-800 whitespace-pre-wrap break-words">
+                              {commentReply?.reply}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* --------Add Comment-------- */}
+        <div className="flex-shrink-0 border-t border-slate-200 bg-slate-50/80 px-3 py-2.5">
+          {/* Quick replies */}
+          <div className="mb-2">
+            <button
+              type="button"
+              onClick={(e) => setQuickReplyAnchorEl(e.currentTarget)}
+              className="inline-flex items-center gap-1 h-6 px-2 rounded-md border border-slate-200 bg-white text-[11px] font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+            >
+              <FiZap size={11} />
+              Quick replies
+            </button>
+            <Menu
+              anchorEl={quickReplyAnchorEl}
+              open={Boolean(quickReplyAnchorEl)}
+              onClose={() => setQuickReplyAnchorEl(null)}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "left",
+              }}
+              transformOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+              }}
+              slotProps={{
+                paper: {
+                  sx: {
+                    width: 320,
+                    maxHeight: 360,
+                    mt: -0.5,
+                    borderRadius: 1.5,
+                    px: 0.5,
+                    py: 0.5,
+                    boxShadow: 6,
+                  },
+                },
               }}
             >
-              <IoClose className="text-black cursor-pointer h-6 w-6 " />
-            </span>
-          </div>
-          <hr className="w-full h-[1px] bg-gray-500" />
-          {/* -----------------Display-Comments------------ */}
-          <div
-            className="w-full max-h-[75%] bg-white overflow-y-auto py-3 px-3 flex flex-col gap-3"
-            id="message-container"
-          >
-            <>
-              {isLoading ? (
-                <div className="max-h-[15rem] w-full">
-                  <Loader />
-                </div>
-              ) : (
-                <>
-                  {commentData &&
-                    commentData?.map((comment, i) => (
-                      <div
-                        className=" w-full flex flex-col gap-1 border border-gray-400 py-1 rounded-md "
-                        key={comment._id}
-                      >
-                        {/*  */}
-                        <div className="flex items-center justify-between px-2">
-                          <div className="flex items-center gap-1">
-                            <img
-                              src={
-                                comment?.user?.avatar
-                                  ? comment?.user?.avatar
-                                  : "/profile1.jpeg"
-                              }
-                              alt="Avatar"
-                              className="rounded-full w-[2.2rem] h-[2.2rem] border-2 border-orange-500"
-                            />
-                            <span className="font-medium text-black text-[16px]">
-                              {comment?.user?.name}
-                            </span>
-                          </div>
-                          <span className="text-[12px] font-light text-gray-500">
-                            {format(
-                              new Date(comment?.createdAt),
-                              "dd MMM yyyy, h:mm a"
-                            )}
-                          </span>
-                        </div>
-                        {/* <hr className="w-full h-[1px] bg-gray-300" /> */}
-                        {/* M */}
-                        <div className="w-full px-2 py-1  ">
-                          <div className="ml-9 bg-orange-50 text-gray-800 text-[13px] px-3 py-1.5 rounded-lg rounded-tl-none">
-                            {comment?.comment.split(/(@\w+)/g).map((part, i) =>
-                              part.startsWith("@") ? (
-                                <span
-                                  key={i}
-                                  className="text-blue-600 font-semibold"
-                                >
-                                  {part}
-                                </span>
-                              ) : (
-                                part
-                              )
-                            )}
-                          </div>
-                        </div>
+              <div className="p-2">
+                <h3 className="text-[12px] font-semibold text-slate-800 mb-1.5">
+                  Saved replies
+                </h3>
 
-                        <hr className="w-full h-[1px] bg-gray-100" />
-                        <div className="flex items-center justify-between px-4 ">
-                          <span
-                            className="flex items-center cursor-pointer"
-                            onClick={() =>
-                              commentLikes[comment?._id]
-                                ? unlikeComment(comment?._id)
-                                : likeComment(comment?._id)
-                            }
-                          >
-                            {commentLikes[comment._id] ? (
-                              <AiFillLike className="h-5 w-5 text-orange-600" />
-                            ) : (
-                              <AiOutlineLike className="h-5 w-5 text-gray-900 dark:text-white" />
-                            )}
-                            ({likeCounts[comment?._id] || 0})
-                          </span>
-                          <span
-                            className="flex gap-1 cursor-pointer relative "
-                            onClick={() => {
-                              setCommentId(comment?._id);
-                              setShowReply(!shopReply);
+                {templates.filter((t) => t.type === type).length === 0 ? (
+                  <div className="text-[12px] text-slate-500 p-1">
+                    No templates available
+                  </div>
+                ) : (
+                  templates
+                    .filter((t) => t.type === type)
+                    .map((t) => (
+                      <div
+                        key={t._id}
+                        onClick={() => {
+                          sendComment(t.text);
+                          setQuickReplyAnchorEl(null);
+                        }}
+                        className="flex items-center justify-between p-1 hover:bg-slate-50 rounded-md cursor-pointer transition"
+                      >
+                        <div className="text-[13px] text-slate-800 truncate max-w-[200px] pr-3">
+                          {t.text}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenTemplateDialog(t);
                             }}
                           >
-                            <span className="h-[12px] font-medium text-orange-500 hover:text-orange-600 transition-all duration-200 ">
-                              Reply
-                            </span>
-                            <span className="">
-                              ({comment?.commentReplies.length})
-                            </span>
-                          </span>
+                            <EditOutlined fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteTemplate(t._id);
+                            }}
+                          >
+                            <DeleteOutline
+                              fontSize="small"
+                              className="text-red-400"
+                            />
+                          </IconButton>
                         </div>
-                        {/* ----------Comm_Replies----------- */}
-                        {shopReply && comment._id === commentId && (
-                          <>
-                            <hr className="w-full h-[1px] bg-gray-200" />
-                            <div className="flex items-start gap-1 w-full mt-1 px-4 ">
-                              <form
-                                onSubmit={handleCommentReply}
-                                className="w-full border border-orange-500 rounded-md px-2 py-1"
-                              >
-                                <input
-                                  placeholder="Enter your reply here..."
-                                  onClick={() => setShowReplyEmoji(false)}
-                                  value={commentReply}
-                                  required
-                                  onChange={(e) =>
-                                    setCommentReply(e.target.value)
-                                  }
-                                  className="h-[2.4rem] w-full rounded-md  outline-none  resize-none py-1 px-2"
-                                ></input>
-                                <div className="flex items-center justify-between  ">
-                                  <div className="relative " title="Add Emoji">
-                                    <span
-                                      onClick={() =>
-                                        setShowReplyEmoji(!showReplyEmoji)
-                                      }
-                                    >
-                                      <BsEmojiSmile className="text-yellow-600 z-20 h-6 w-6 cursor-pointer" />
-                                    </span>
-                                    {showReplyEmoji && (
-                                      <span className="fixed bottom-[10rem] right-[30rem] z-40">
-                                        <EmojiPicker
-                                          onEmojiClick={onEmojiClickReply}
-                                        />
-                                      </span>
-                                    )}
-                                  </div>
-
-                                  <button
-                                    disabled={replyLoading || !comment}
-                                    className={`${style.btn} ${
-                                      !comment &&
-                                      "cursor-not-allowed opacity-[.5]"
-                                    }   ${
-                                      replyLoading && "cursor-no-drop"
-                                    } shadow`}
-                                  >
-                                    {replyLoading ? (
-                                      <BiLoaderCircle className="w-5 h-5 animate-spin text-white" />
-                                    ) : (
-                                      "Reply"
-                                    )}
-                                  </button>
-                                </div>
-                              </form>
-                            </div>
-                          </>
-                        )}
-                        {shopReply &&
-                          comment?.commentReplies?.map((commentReply, i) => (
-                            <div className="w-full " key={commentReply._id}>
-                              <div className="flex flex-col gap-2 ml-8 py-1 px-1 ">
-                                {/* map */}
-                                <div className="flex flex-col ga1 rounded-md border py-1">
-                                  <div className="flex items-center justify-between px-2">
-                                    <div className="flex items-center gap-1">
-                                      <img
-                                        src={
-                                          commentReply?.user?.avatar
-                                            ? commentReply?.user?.avatar
-                                            : "/profile1.jpeg"
-                                        }
-                                        alt="Avatar"
-                                        className="rounded-full w-[2rem] h-[2rem] border-2 border-sky-500"
-                                      />
-                                      <span className="font-medium text-black text-[16px]">
-                                        {commentReply?.user?.name}
-                                      </span>
-                                    </div>
-                                    <span className="text-[12px] font-light text-gray-500">
-                                      {format(
-                                        new Date(commentReply?.createdAt),
-                                        "MMM dd 'at' p"
-                                      )}
-                                    </span>
-                                  </div>
-                                  {/* M */}
-                                  <div className="w-full px-2 py-1 ">
-                                    <p className="rounded-lg rounded-tl-none bg-orange-200 py-1 px-2 ml-4">
-                                      {commentReply?.reply}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
                       </div>
-                    ))}
-                </>
-              )}
-            </>
-          </div>
-          {/* --------Add Comm... */}
-
-          <div className="flex items-center justify-between px-4 py-2">
-            <div className="relative inline-block w-fit">
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={(e) => setQuickReplyAnchorEl(e.currentTarget)}
-              >
-                💬 Quick Replies
-              </Button>
-              <Menu
-                anchorEl={quickReplyAnchorEl}
-                open={Boolean(quickReplyAnchorEl)}
-                onClose={() => setQuickReplyAnchorEl(null)}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "left",
-                }}
-                transformOrigin={{
-                  vertical: "center",
-                  horizontal: "center",
-                }}
-                slotProps={{
-                  paper: {
-                    sx: {
-                      width: 360,
-                      maxHeight: 420,
-                      mt: 1.5,
-                      borderRadius: 2,
-                      px: 1,
-                      py: 0.5,
-                      boxShadow: 6,
-                      ml: 0, // margin from left of button (optional)
-                    },
-                  },
-                }}
-              >
-                <div className="p-2">
-                  <h3 className="text-sm font-semibold text-gray-800 mb-2 ">
-                    Saved Replies
-                  </h3>
-
-                  {templates.filter((t) => t.type === type).length === 0 ? (
-                    <div className="text-sm text-gray-500 p-1">
-                      No templates available
-                    </div>
-                  ) : (
-                    templates
-                      .filter((t) => t.type === type)
-                      .map((t) => (
-                        <div
-                          key={t._id}
-                          onClick={() => {
-                            sendComment(t.text);
-                            setQuickReplyAnchorEl(null);
-                          }}
-                          className="flex items-center justify-between p-1 hover:bg-gray-50 rounded-md cursor-pointer transition"
-                        >
-                          <div className="text-sm text-gray-800 truncate max-w-[220px] pr-3">
-                            {t.text}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenTemplateDialog(t);
-                              }}
-                            >
-                              <EditOutlined fontSize="small" />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteTemplate(t._id);
-                              }}
-                            >
-                              <DeleteOutline
-                                fontSize="small"
-                                className="text-red-400"
-                              />
-                            </IconButton>
-                          </div>
-                        </div>
-                      ))
-                  )}
-                </div>
-
-                <div className="border-t border-gray-200 mt-2 pt-2 px-3">
-                  <div
-                    onClick={() => handleOpenTemplateDialog(null)}
-                    className="flex items-center justify-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 py-2 rounded-md cursor-pointer transition"
-                  >
-                    <AddIcon fontSize="small" />
-                    Add New Template
-                  </div>
-                </div>
-              </Menu>
-            </div>
-          </div>
-
-          <div className={`flex flex-col gap-4 px-4 py-1 mb-2`}>
-            <div className="flex items-start gap-1 w-full  ">
-              <div className="w-[3.7rem] h-[3.7rem]">
-                <img
-                  src={
-                    auth?.user?.avatar ? auth?.user?.avatar : "/profile1.jpeg"
-                  }
-                  alt="Avatar"
-                  className="rounded-full w-[3.4rem] h-[3.4rem] border-2 border-orange-500"
-                />
+                    ))
+                )}
               </div>
-              <form
-                onSubmit={handleComment}
-                className="w-full border border-orange-500 rounded-md px-2 py-1"
-              >
-                <div className="relative w-full">
-                  {/* Highlighted mirror div */}
-                  <div
-                    className="absolute inset-0 whitespace-pre-wrap break-words text-sm text-gray-800 p-1 pointer-events-none"
-                    dangerouslySetInnerHTML={{
-                      __html: comment
-                        .replace(/&/g, "&amp;")
-                        .replace(/</g, "&lt;")
-                        .replace(/>/g, "&gt;")
-                        .replace(
-                          /@(\w+)/g,
-                          '<span class="text-blue-500 text-sm ">@$1</span>'
-                        )
-                        .replace(/\n$/g, "\n "),
-                    }}
-                  />
 
-                  {/* Actual textarea */}
-                  <textarea
-                    ref={textareaRef}
-                    value={comment}
-                    onChange={handleInputChange}
-                    placeholder="Write a comment..."
-                    className="relative w-full resize-none text-sm border-none outline-none p-1 bg-transparent text-transparent caret-black"
-                    rows={1}
-                    onKeyDown={handleKeyDown}
-                  />
+              <div className="border-t border-slate-200 mt-1 pt-1.5 px-2">
+                <div
+                  onClick={() => handleOpenTemplateDialog(null)}
+                  className="flex items-center justify-center gap-2 text-[13px] font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 py-1.5 rounded-md cursor-pointer transition"
+                >
+                  <AddIcon fontSize="small" />
+                  Add new template
+                </div>
+              </div>
+            </Menu>
+          </div>
 
-                  {showSuggestions && (
-                    <ul
-                      id="mention-list"
-                      className="absolute bottom-[110%] left-0 w-48 bg-white rounded-lg border border-gray-200 shadow-lg max-h-48 overflow-y-auto z-10"
-                    >
-                      {suggestions.map((user, index) => (
-                        <li
-                          key={index}
-                          ref={(el) => (suggestionRefs.current[index] = el)}
-                          onClick={() => handleMentionClick(user)}
-                          className={`flex items-center gap-2 px-3 py-2 text-sm cursor-pointer transition m-0 ${
+          {showPicker && (
+            <div className="mb-2">
+              <EmojiPicker
+                width="100%"
+                height={260}
+                onEmojiClick={onEmojiClick}
+              />
+            </div>
+          )}
+
+          <form
+            onSubmit={handleComment}
+            className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-2 focus-within:ring-2 focus-within:ring-slate-300/60 focus-within:border-slate-300 transition-shadow"
+          >
+            <div className="relative w-full">
+              {/* Highlighted mirror div */}
+              <div
+                className="absolute inset-0 whitespace-pre-wrap break-words text-[13px] leading-snug text-slate-800 pointer-events-none"
+                dangerouslySetInnerHTML={{
+                  __html: comment
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/@(\w+)/g, '<span class="text-blue-600">@$1</span>')
+                    .replace(/\n$/g, "\n "),
+                }}
+              />
+
+              {/* Actual textarea */}
+              <textarea
+                ref={textareaRef}
+                value={comment}
+                onChange={handleInputChange}
+                placeholder="Write a comment… (@ to mention)"
+                className="relative block w-full resize-none overflow-hidden border-none outline-none p-0 bg-transparent text-[13px] leading-snug text-transparent caret-slate-800 placeholder:text-slate-400"
+                rows={1}
+                onKeyDown={handleKeyDown}
+              />
+
+              {showSuggestions && suggestions?.length > 0 && (
+                <div className="absolute bottom-full left-0 mb-2.5 w-52 bg-white rounded-md shadow-lg border border-slate-200 overflow-hidden z-50">
+                  <div className="px-2.5 py-1.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                      Mention
+                    </span>
+                    <FiAtSign className="text-slate-300" size={11} />
+                  </div>
+                  <ul id="mention-list" className="max-h-44 overflow-y-auto py-1 m-0 p-0 list-none">
+                    {suggestions.map((user, index) => (
+                      <li
+                        key={index}
+                        ref={(el) => (suggestionRefs.current[index] = el)}
+                        onClick={() => handleMentionClick(user)}
+                        className={`flex items-center gap-2 px-2.5 py-1.5 text-[13px] cursor-pointer transition-colors m-0 ${
+                          index === highlightedIndex
+                            ? "bg-slate-100 text-slate-900"
+                            : "text-slate-600 hover:bg-slate-50"
+                        }`}
+                      >
+                        <div
+                          className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ${
                             index === highlightedIndex
-                              ? "bg-orange-100 text-orange-700"
-                              : "hover:bg-gray-100"
+                              ? "bg-slate-300 text-slate-800"
+                              : "bg-slate-100 text-slate-500"
                           }`}
                         >
-                          <GoDotFill className="h-3 w-3 text-orange-500" />
-                          <span>{user}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                          {user?.charAt(0)}
+                        </div>
+                        <span className="font-medium truncate">{user}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-
-                <div className="flex items-center justify-between  ">
-                  <div className="relative " title="Add Emoji">
-                    <span onClick={() => setShowPicker(!showPicker)}>
-                      <BsEmojiSmile className="text-yellow-600 z-20 h-6 w-6 cursor-pointer" />
-                    </span>
-                    {showPicker && (
-                      <span className="absolute bottom-5 right-5 z-40">
-                        <EmojiPicker onEmojiClick={onEmojiClick} />
-                      </span>
-                    )}
-                  </div>
-
-                  <button
-                    disabled={loading || !comment}
-                    className={`${style.btn} ${
-                      !comment && "cursor-not-allowed opacity-[.5]"
-                    }   ${loading && "cursor-no-drop"} shadow`}
-                    type="submit"
-                  >
-                    {loading ? (
-                      <BiLoaderCircle className="w-5 h-5 animate-spin text-white" />
-                    ) : (
-                      "Send"
-                    )}
-                  </button>
-                </div>
-              </form>
+              )}
             </div>
-          </div>
+
+            <div className="flex items-center justify-between mt-1.5">
+              <button
+                type="button"
+                title="Add Emoji"
+                onClick={() => setShowPicker(!showPicker)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <BsEmojiSmile size={16} />
+              </button>
+
+              <button
+                disabled={loading || !comment}
+                type="submit"
+                className={`inline-flex items-center gap-1.5 h-8 px-3.5 text-[12px] font-semibold rounded-md transition-colors ${
+                  canSend
+                    ? "bg-slate-800 text-white hover:bg-slate-700 active:bg-slate-900"
+                    : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                }`}
+              >
+                {loading ? (
+                  <FiLoader className="animate-spin" size={13} />
+                ) : (
+                  <>
+                    <span>Send</span>
+                    <FiSend size={12} />
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
 

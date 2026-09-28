@@ -47,6 +47,7 @@ import SavedFiltersPanel from "../../components/SavedFilters/SavedFiltersPanel";
 import { isTeamLead } from "../../utlis/checkPermission";
 import { usePersistedUsersNew } from "../../hooks/usePersistedUsersNew";
 import SelectedUsersNew from "../../components/SelectedUsersNew";
+import AnchoredPopover from "../../components/AnchoredPopover";
 
 const AllTasks = ({ justShowTable = false }) => {
   const dispatch = useDispatch();
@@ -80,6 +81,12 @@ const AllTasks = ({ justShowTable = false }) => {
   const [isShow, setIsShow] = useState(false);
 
   const [isComment, setIsComment] = useState(false);
+  const [commentAnchorEl, setCommentAnchorEl] = useState(null);
+
+const closeComment = () => {
+  setIsComment(false);
+  setCommentAnchorEl(null);
+};
   const [commentTaskId, setCommentTaskId] = useState("");
   const [userName, setUserName] = useState([]);
   const [showDetail, setShowDetail] = useState(false);
@@ -538,6 +545,7 @@ const AllTasks = ({ justShowTable = false }) => {
       setProjectName,
       setShowDetail,
       setCommentTaskId,
+      setCommentAnchorEl,
       setIsComment,
       createComplaint,
 
@@ -1533,21 +1541,22 @@ const AllTasks = ({ justShowTable = false }) => {
       {/* ------------Comment Modal---------*/}
 
       {isComment && (
-        <div
-          ref={commentStatusRef}
-          className="fixed bottom-4 right-4 w-[30rem] max-h-screen z-[999]  flex items-center justify-center"
-        >
-          <JobCommentModal
-            setIsComment={setIsComment}
-            jobId={commentTaskId}
-            setJobId={setCommentTaskId}
-            users={userName}
-            type={"Task"}
-            getTasks1={refetchTasks}
-            page={"task"}
-          />
-        </div>
-      )}
+  <AnchoredPopover open={isComment} anchorEl={commentAnchorEl} onClose={closeComment}>
+    {(maxHeight) => (
+      <JobCommentModal
+        setIsComment={setIsComment}
+        jobId={commentTaskId}
+        setJobId={setCommentTaskId}
+        users={userName}
+        type={"Task"}
+        getTasks1={refetchTasks}
+        page={"task"}
+        anchored
+        maxHeight={maxHeight}
+      />
+    )}
+  </AnchoredPopover>
+)}
 
       {/* -------------Stop Timer Btn-----------*/}
       {isShow && (

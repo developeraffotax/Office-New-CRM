@@ -16,6 +16,7 @@ import { TbLoader2 } from "react-icons/tb";
 export const actionsColumn = ({
   setJobId,
   setIsComment,
+  setCommentAnchorEl,
   setClientCompanyName,
   setClientCompanyId,
   setShowNewTicketModal,
@@ -175,9 +176,10 @@ export const actionsColumn = ({
           <div
             title="Comments"
             className="flex items-center justify-center gap-1 w-full h-full"
-            onClick={() => {
+            onClick={(e) => {
               setJobId(row.original._id);
               setIsComment(true);
+              setCommentAnchorEl(e.currentTarget);
             }}
           >
             <div className="relative">

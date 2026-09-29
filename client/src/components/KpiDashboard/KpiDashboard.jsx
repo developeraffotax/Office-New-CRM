@@ -41,6 +41,7 @@ import { useSelector } from "react-redux";
 import { getVisibleTabGroups } from "./utils/tabGroups";
 import { TAB_GROUPS } from "./constants";
 import QuickRangeButtons from "./QuickRangeButtons";
+import { isAdmin } from "../../utlis/checkPermission";
 
 // add near visibleTabGroups, module-level so the reference is stable across renders
 const EMPTY_SET = new Set();
@@ -248,8 +249,10 @@ export default function KpiDashboard() {
                 Clear Filters
               </Button>
             )}
-            <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-            <Button
+             { isAdmin(currentUser) &&  <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />}
+            {
+              isAdmin(currentUser) && (
+                  <Button
               color="info"
               //  size="medium"
               variant="text"
@@ -264,6 +267,9 @@ export default function KpiDashboard() {
             >
               {showStats ? "Hide Stats" : "Show Stats"}
             </Button>
+              )
+            }
+            
           </Stack>
 
           {/* Right Controls: Source & User Filters + Stats Toggle + Chart View Toggle */}
@@ -328,7 +334,7 @@ export default function KpiDashboard() {
         </Stack>
 
         {/* Stat cards */}
-        {showStats && (
+        { isAdmin(currentUser) && showStats && (
           <Box sx={{ width: "100%" }}>
             <PerformanceStats
               dateRange={dateRange}

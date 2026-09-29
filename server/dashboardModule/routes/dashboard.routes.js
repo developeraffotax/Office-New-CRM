@@ -56,6 +56,10 @@ router.get("/emails/chart/replies", setChartKey("emails.replies"));
 
 
 
+router.get("/proposals/chart/count", setChartKey("proposals.count"));
+
+
+
 
 
 

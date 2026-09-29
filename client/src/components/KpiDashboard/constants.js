@@ -3,6 +3,7 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import WorkIcon from '@mui/icons-material/Work';
 import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
 import ForwardToInboxIcon from "@mui/icons-material/ForwardToInbox";
+import ArticleIcon from '@mui/icons-material/Article';
 
 export const KPI_DASHBOARD_PERMISSION = "Kpi-Dashboard";
 
@@ -128,6 +129,24 @@ export const TAB_GROUPS = [
         isMulti: false,
         valueType: "count",
       },
+    ],
+  },
+
+
+
+
+   {
+    key: "proposals",
+    label: "Proposals",
+    icon: <ArticleIcon />,
+    tabs: [
+      {
+        chartKey: "proposals.count",
+        label: "Count",
+        isMulti: false,
+        valueType: "count",
+      },
+      
     ],
   },
 

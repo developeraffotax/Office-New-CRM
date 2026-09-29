@@ -58,7 +58,7 @@ export default function Roles() {
   ];
 
   const subRolesMapping = {
-    "Kpi-Dashboard": ["Sales", "Leads", "Subscriptions", "Tickets", "Jobs"],
+    "Kpi-Dashboard": ["Sales", "Leads", "Subscriptions",  "Jobs", "Emails", "Proposals"],
     Tasks: ["Projects", "Complain"],
     Jobs: ["Fee", "Source", "Data", "Edit", "Delete", "Complain", "Inactive", "Email", "Phone", "Masked Email", "Masked Phone"],
     Leads: [ "Delete"],

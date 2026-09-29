@@ -1,5 +1,6 @@
 import clientModel from "../../models/jobsModel.js";
 import subscriptionModel from "../../models/subscriptionModel.js";
+import proposalModel from "../../models/proposalModel.js";
 import leadModel from "../../models/leadModel.js";
 import EmailMessage from "../../emailModule/models/EmailMessage.js";
 
@@ -210,6 +211,21 @@ export const chartRegistry = {
   },
 
 
+
+
+
+    // --- PROPOSALS CHARTS ---
+  "proposals.count": {
+    label: "Proposal Count",
+    Model: proposalModel,
+    dateField: "createdAt",
+    valueConfig: { type: "count",   },
+    baseMatch: { },
+    allowedFilters: [
+      ["source", "source"],
+      ["jobHolder", "jobHolder"],
+    ],
+  },
 
 
  

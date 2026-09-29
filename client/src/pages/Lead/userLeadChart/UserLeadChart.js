@@ -37,6 +37,7 @@ import WonLeadStats from "./WonLeadStats";
 import ToggleStatsButton from "../ui/ToggleStatsButton";
 import UserFilterSelect from "../../../components/KpiDashboard/ui/UserFilterSelect";
 import { useSelector } from "react-redux";
+import UserLeadLegend from "./UserLeadLegend";
 
 dayjs.extend(quarterOfYear);
 
@@ -140,12 +141,12 @@ const getDateRange = (filter) => {
   }
 };
 
-export default function UserLeadChart({  }) {
+export default function UserLeadChart({}) {
   const chartRef = useRef(null);
   const [chartType, setChartType] = useState("bar");
   const [showStats, setShowStats] = useState(true);
 
-    const  auth  = useSelector((state) => state.auth.auth);
+  const auth = useSelector((state) => state.auth.auth);
   // Metric being charted. With multiple users on screen at once, plotting
   // count AND value together (like the old dual-axis version) gets unreadable
   // fast, so this picks one measure at a time; both are still available in
@@ -155,10 +156,8 @@ export default function UserLeadChart({  }) {
   const defaultUsers = () =>
     isAdmin(auth) ? [] : [auth?.user?.name].filter(Boolean);
 
-
-  const [showTargets, setShowTargets] = useState(false); // set true to show by default
-
-
+  const [showTargets, setShowTargets] = useState(true);
+  const [hiddenSeries, setHiddenSeries] = useState(() => new Set());
 
   const [selectedUsers, setSelectedUsers] = useState(defaultUsers());
   const [users, setUsers] = useState([]);
@@ -179,7 +178,7 @@ export default function UserLeadChart({  }) {
   };
 
   useEffect(() => {
-    const active =  "All";
+    const active = "All";
     setSelectedUsers(
       isAdmin(auth)
         ? active === "All"
@@ -187,7 +186,7 @@ export default function UserLeadChart({  }) {
           : [active]
         : [auth?.user?.name].filter(Boolean),
     );
-  }, [  auth]);
+  }, [auth]);
 
   const getAllUsers = useCallback(async () => {
     try {
@@ -287,35 +286,78 @@ export default function UserLeadChart({  }) {
     setDateRange(getDateRange(filter));
   };
 
+  const userTeamMap = useMemo(() => {
+    const norm = (s) => s?.trim().toLowerCase();
+    const teamNameById = Object.fromEntries(
+      teams.map((t) => [String(t._id), t.name]),
+    );
+
+    const map = {};
+    users.forEach((u) => {
+      if (!u?.name) return;
+      const teamId = typeof u.team === "object" ? u.team?._id : u.team;
+      const teamName =
+        (teamId && teamNameById[String(teamId)]) ||
+        (typeof u.team === "object" ? u.team?.name : null);
+      if (teamName) map[norm(u.name)] = teamName;
+    });
+    return map;
+  }, [users, teams]);
+
+  // A "real" user selection (not empty, not "All")
+  const hasUserSelection =
+    selectedUsers.length > 0 && !selectedUsers.includes("All");
+  const showTargetSeries = showTargets;
+
+  // Reset legend toggles when the series set changes
+  useEffect(() => {
+    setHiddenSeries(new Set());
+  }, [selectedUsers, showTargetSeries]);
+
+  const toggleSeries = (name) =>
+    setHiddenSeries((prev) => {
+      const next = new Set(prev);
+      next.has(name) ? next.delete(name) : next.add(name);
+      return next;
+    });
+
+  const toggleSeriesGroup = (names) =>
+    setHiddenSeries((prev) => {
+      const next = new Set(prev);
+      const allHidden = names.every((n) => next.has(n));
+      names.forEach((n) => (allHidden ? next.delete(n) : next.add(n)));
+      return next;
+    });
+
   // Build [{ user, target: [...], actual: [...] }] pairs into the flat
   // ApexCharts series list: target series first (hidden by default, same
   // color, dashed/faded), then the actual series, per user — mirrors the
   // original Target/Actual ordering.
-const chartSeries = useMemo(() => {
-  const metricKey = metric === "count" ? "counts" : "values";
-  const targetKey = metric === "count" ? "targetCounts" : "targetValues";
+  const chartSeries = useMemo(() => {
+    const metricKey = metric === "count" ? "counts" : "values";
+    const targetKey = metric === "count" ? "targetCounts" : "targetValues";
 
-  const zeros = () => new Array(categories.length).fill(0);
+    const zeros = () => new Array(categories.length).fill(0);
 
-  const out = [];
-  rawSeries.forEach((s, idx) => {
-    if (showTargets) {
+    const out = [];
+    rawSeries.forEach((s, idx) => {
+      if (showTargetSeries) {
+        out.push({
+          name: `${s.user} (Target)`,
+          data: Array.isArray(s[targetKey]) ? s[targetKey] : zeros(),
+          _color: getUserColor(idx),
+          _isTarget: true,
+        });
+      }
       out.push({
-        name: `${s.user} (Target)`,
-        data: Array.isArray(s[targetKey]) ? s[targetKey] : zeros(),
+        name: s.user,
+        data: Array.isArray(s[metricKey]) ? s[metricKey] : zeros(),
         _color: getUserColor(idx),
-        _isTarget: true,
+        _isTarget: false,
       });
-    }
-    out.push({
-      name: s.user,
-      data: Array.isArray(s[metricKey]) ? s[metricKey] : zeros(),
-      _color: getUserColor(idx),
-      _isTarget: false,
     });
-  });
-  return out;
-}, [rawSeries, metric, categories, showTargets]);
+    return out;
+  }, [rawSeries, metric, categories, showTargetSeries]);
 
   const options = useMemo(() => {
     const isBar = chartType === "bar";
@@ -361,7 +403,7 @@ const chartSeries = useMemo(() => {
         min: 0,
       },
       colors,
-      legend: { position: "top", showForSingleSeries: true },
+      legend: { show: false },
       dataLabels: {
         enabled: true,
         offsetY: isBar ? -20 : 0,
@@ -372,22 +414,23 @@ const chartSeries = useMemo(() => {
         },
         background: { enabled: !isBar },
         formatter: function (val, opts) {
-  const { seriesIndex, dataPointIndex, w } = opts;
-  const name = w.config.series[seriesIndex]?.name || "";
+          const { seriesIndex, dataPointIndex, w } = opts;
+          const name = w.config.series[seriesIndex]?.name || "";
 
-  if (name.endsWith(" (Target)")) return formatCompactNumber(val);
+          if (name.endsWith(" (Target)")) return formatCompactNumber(val);
 
-  const targetKey = metric === "count" ? "targetCounts" : "targetValues";
-  const targetVal = rawSeries.find((s) => s.user === name)?.[targetKey]?.[
-    dataPointIndex
-  ];
+          const targetKey =
+            metric === "count" ? "targetCounts" : "targetValues";
+          const targetVal = rawSeries.find((s) => s.user === name)?.[
+            targetKey
+          ]?.[dataPointIndex];
 
-  if (targetVal) {
-    const percent = ((val / targetVal) * 100).toFixed(0);
-    return `${formatCompactNumber(val)} (${percent}%)`;
-  }
-  return formatCompactNumber(val);
-},
+          if (targetVal) {
+            const percent = ((val / targetVal) * 100).toFixed(0);
+            return `${formatCompactNumber(val)} (${percent}%)`;
+          }
+          return formatCompactNumber(val);
+        },
       },
     };
   }, [chartType, categories, chartSeries, metric, rawSeries]);
@@ -397,6 +440,18 @@ const chartSeries = useMemo(() => {
   //     ? selectedUsers[0]
   //     : `${selectedUsers.length} users`;
 
+  // Apply hidden state to the actual chart
+  useEffect(() => {
+    const chart = chartRef.current?.chart;
+    if (!chart) return;
+    chartSeries.forEach((s) => {
+      const user = s._isTarget ? s.name.slice(0, -" (Target)".length) : s.name;
+      hiddenSeries.has(user)
+        ? chart.hideSeries(s.name)
+        : chart.showSeries(s.name);
+    });
+  }, [hiddenSeries, chartSeries, chartType, metric, hasLoadedOnce]);
+
   const headerLabel =
     selectedUsers.length === 0
       ? "All Users"
@@ -404,9 +459,8 @@ const chartSeries = useMemo(() => {
       ? selectedUsers[0]
       : `${selectedUsers.length} users`;
 
-
-      const isAllUsers =
-  selectedUsers.length === 0 || selectedUsers.includes("All");
+  const isAllUsers =
+    selectedUsers.length === 0 || selectedUsers.includes("All");
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -636,17 +690,15 @@ const chartSeries = useMemo(() => {
             </Box>
 
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-               <ToggleButtonGroup size="small" sx={toggleGroupSx}>
-  <ToggleButton
-    value="targets"
-    selected={showTargets}
-    onChange={() => setShowTargets((v) => !v)}
-  >
-    Targets
-  </ToggleButton>
-</ToggleButtonGroup>
-
-
+              <ToggleButtonGroup size="small" sx={toggleGroupSx}>
+                <ToggleButton
+                  value="targets"
+                  selected={showTargets}
+                  onChange={() => setShowTargets((v) => !v)}
+                >
+                  Targets
+                </ToggleButton>
+              </ToggleButtonGroup>
 
               <ToggleButtonGroup
                 size="small"
@@ -658,9 +710,6 @@ const chartSeries = useMemo(() => {
                 <ToggleButton value="value">Value</ToggleButton>
                 <ToggleButton value="count">Count</ToggleButton>
               </ToggleButtonGroup>
-
-             
-
 
               <ToggleButtonGroup
                 size="small"
@@ -688,28 +737,25 @@ const chartSeries = useMemo(() => {
           </Stack>
 
           {hasLoadedOnce ? (
-            <Box
-  sx={
-    showTargets
-      ? {
-          // targets are every odd legend item (1st, 3rd, ...) because
-          // each target is pushed right before its user's actual series
-          "& .apexcharts-legend-series:nth-child(odd)": { display: "none" },
-        }
-      : undefined
-  }
->
-  <Chart
-    key={`${chartType}-${metric}-${showTargets}-${rawSeries
-      .map((s) => s.user)
-      .join("|")}`}
-    ref={chartRef}
-    options={options}
-    series={chartSeries}
-    type={chartType}
-    height={500}
-  />
-</Box>
+            <Box>
+              <Chart
+                key={`${chartType}-${metric}-${showTargetSeries}-${rawSeries
+                  .map((s) => s.user)
+                  .join("|")}`}
+                ref={chartRef}
+                options={options}
+                series={chartSeries}
+                type={chartType}
+                height={500}
+              />
+              <UserLeadLegend
+                series={chartSeries}
+                hidden={hiddenSeries}
+                onToggleOne={toggleSeries}
+                onToggleGroup={toggleSeriesGroup}
+                userTeamMap={userTeamMap}
+              />
+            </Box>
           ) : (
             <Box
               sx={{

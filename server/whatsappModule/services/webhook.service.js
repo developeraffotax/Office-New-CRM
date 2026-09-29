@@ -304,6 +304,22 @@ export const processMessageEcho = async (echo, metadata) => {
     ? type
     : "text";
 
+
+
+
+
+     const existingConversation = await Conversation.findOne({ phone }).select("_id").lean();
+
+
+  // Only auto-assign when this is a brand new conversation
+let autoAssignedUserId;
+
+if (!existingConversation) {
+  const automaticAssignedUsers = await getAssignedUsers("whatsapp_lead");
+  autoAssignedUserId = automaticAssignedUsers?.[0]; // pick first (round_robin/random already return 1)
+}
+
+
   const conversation = await Conversation.findOneAndUpdate(
     { phone },
     {
@@ -317,6 +333,7 @@ export const processMessageEcho = async (echo, metadata) => {
         companyName:
           getCompanyByPhoneNumber(metadata?.phone_number_id) ?? "default",
         phone,
+        ...(autoAssignedUserId && { userId: autoAssignedUserId }),
       },
     },
     { upsert: true, new: true },

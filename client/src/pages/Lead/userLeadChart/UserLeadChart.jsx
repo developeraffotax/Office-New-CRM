@@ -9,7 +9,7 @@ import { isAdmin } from "../../../utlis/isAdmin";
 import WonLeadStats from "./WonLeadStats";
 import UserLeadLegend from "./UserLeadLegend";
 
-import { getDateRange } from "./utils";
+import { getDateRange, isDailyAllowed } from "./utils";
 import { buildChartOptions, buildChartSeries } from "./chartConfig";
 import useUsersAndTeams from "./hooks/useUsersAndTeams";
 import useWonLeadsData from "./hooks/useWonLeadsData";
@@ -51,6 +51,8 @@ export default function UserLeadChart() {
   const [showTargets, setShowTargets] = useState(true);
   const [metric, setMetric] = useState("value"); // "count" | "value"
   const [view, setView] = useState("monthly");
+  
+ 
 
   // Filters
   const defaultUsers = () =>
@@ -58,6 +60,13 @@ export default function UserLeadChart() {
   const [selectedUsers, setSelectedUsers] = useState(defaultUsers());
   const [dateFilter, setDateFilter] = useState("thisYear");
   const [dateRange, setDateRange] = useState(getDateRange("thisYear"));
+
+
+   const dailyAllowed = useMemo(
+  () => isDailyAllowed(dateRange),
+  [dateRange],
+);
+
 
   // Data
   const { users, teams, userTeamMap } = useUsersAndTeams();
@@ -98,6 +107,18 @@ export default function UserLeadChart() {
       hasLoadedOnce,
     },
   );
+
+
+
+// If range becomes too long while on Daily, fall back
+useEffect(() => {
+  if (view === "daily" && !dailyAllowed) {
+    setView("monthly");
+  }
+}, [view, dailyAllowed]);
+
+
+
 
   // Default the selection whenever auth changes
   useEffect(() => {
@@ -186,6 +207,7 @@ export default function UserLeadChart() {
             onChartTypeChange={setChartType}
             showTargets={showTargets}
             onToggleTargets={() => setShowTargets((v) => !v)}
+            dailyAllowed={dailyAllowed}   // ← add this
           />
 
           {hasLoadedOnce ? (

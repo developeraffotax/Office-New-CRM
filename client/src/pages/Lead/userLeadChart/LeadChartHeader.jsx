@@ -4,6 +4,7 @@ import {
   Stack,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { toggleGroupSx } from "./constants";
@@ -18,6 +19,7 @@ export default function LeadChartHeader({
   onChartTypeChange,
   showTargets,
   onToggleTargets,
+  dailyAllowed = true,
 }) {
   return (
     <Stack
@@ -95,7 +97,18 @@ export default function LeadChartHeader({
         >
           <ToggleButton value="monthly">Monthly</ToggleButton>
           <ToggleButton value="weekly">Weekly</ToggleButton>
-          <ToggleButton value="daily">Daily</ToggleButton>
+          <Tooltip
+            title={
+              !dailyAllowed ? "Daily view is not allowed for this range" : ""
+            }
+            arrow
+          >
+            <span>
+              <ToggleButton value="daily" disabled={!dailyAllowed}>
+                Daily
+              </ToggleButton>
+            </span>
+          </Tooltip>
         </ToggleButtonGroup>
 
         <ToggleButtonGroup

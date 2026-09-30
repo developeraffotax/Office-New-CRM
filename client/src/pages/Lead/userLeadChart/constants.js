@@ -62,4 +62,10 @@ export const toggleGroupSx = {
   "& .MuiToggleButton-root.Mui-selected:hover": {
     bgcolor: "#E0E7FF",
   },
+  "& .MuiToggleButton-root.Mui-disabled": {
+    color: "#cbd5e1",
+    bgcolor: "transparent",
+    opacity: 1, // keep full opacity so it still looks like part of the group
+    cursor: "not-allowed",
+  },
 };

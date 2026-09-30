@@ -48,3 +48,17 @@ export const getDateRange = (filter) => {
       return [null, null];
   }
 };
+
+
+
+
+
+
+
+ 
+export function isDailyAllowed(dateRange) {
+  const [start, end] = dateRange || [];
+  if (!start || !end) return false;
+  // inclusive span in days
+  return dayjs(end).diff(dayjs(start), "day") < 32;
+}

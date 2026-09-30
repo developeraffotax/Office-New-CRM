@@ -2073,11 +2073,28 @@ const getWeekRangeLabel = (year, week) => {
  * source of truth for aligning every user's series onto the same x-axis,
  * replacing the old string-based label matching (which was fragile).
  */
-function buildLabels(view, startDate, endDate) {
-  const labels = [];
-  const periodKeys = {}; // e.g. "2026-W32" or "2026-8" -> index in labels
 
-  if (view === "weekly") {
+
+function buildLabels(view, startDate, endDate, tz = "+05:00") {
+  const labels = [];
+  const periodKeys = {};
+  const dayMeta = []; // daily only: used to spread monthly goals across days
+
+  if (view === "daily") {
+    
+    const start = moment.utc(startDate).utcOffset(tz).startOf("day");
+    const end = moment.utc(endDate).utcOffset(tz).endOf("day");
+    const spansYears = start.year() !== end.year();
+    const current = start.clone();
+
+    while (current.isSameOrBefore(end)) {
+      const key = current.format("YYYY-MM-DD");
+      periodKeys[key] = labels.length;
+      labels.push(current.format(spansYears ? "D MMM YYYY" : "D MMM"));
+      dayMeta.push({ monthKey: current.format("YYYY-MM"), daysInMonth: current.daysInMonth() });
+      current.add(1, "day");
+    }
+  } else if (view === "weekly") {
     const start = startDate ? moment(startDate) : moment().startOf("month");
     const end = endDate ? moment(endDate) : moment().endOf("month");
     let current = start.clone().startOf("isoWeek");
@@ -2086,7 +2103,6 @@ function buildLabels(view, startDate, endDate) {
       const weekYear = current.isoWeekYear();
       const weekNum = current.isoWeek();
       const key = `${weekYear}-W${weekNum}`;
-
       if (!(key in periodKeys)) {
         periodKeys[key] = labels.length;
         labels.push(getWeekRangeLabel(weekYear, weekNum));
@@ -2094,15 +2110,12 @@ function buildLabels(view, startDate, endDate) {
       current.add(1, "week");
     }
   } else {
-    const start = startDate
-      ? moment(startDate).startOf("month")
-      : moment().startOf("year");
+    const start = startDate ? moment(startDate).startOf("month") : moment().startOf("year");
     const end = endDate ? moment(endDate).endOf("month") : moment().endOf("year");
     let current = start.clone();
 
     while (current.isSameOrBefore(end)) {
       const key = `${current.year()}-${current.month() + 1}`;
-
       if (!(key in periodKeys)) {
         periodKeys[key] = labels.length;
         labels.push(current.format("MMM YYYY"));
@@ -2111,32 +2124,51 @@ function buildLabels(view, startDate, endDate) {
     }
   }
 
-  return { labels, periodKeys };
+  return { labels, periodKeys, dayMeta };
 }
 
+const VALID_VIEWS = ["daily", "weekly", "monthly"];
+const MAX_DAILY_RANGE_DAYS = 366;
 
 export const getWonLeadData = async (req, res) => {
   try {
-    const { startDate, endDate, view = "monthly" } = req.query;
+    const { startDate, endDate, view = "monthly", tz = "+05:00" } = req.query;
+
+    if (!VALID_VIEWS.includes(view)) {
+      return res.status(400).json({ error: `view must be one of ${VALID_VIEWS.join(", ")}` });
+    }
+    // remove the moment.tz.zone(tz) check, or validate the format instead:
+if (!/^[+-]\d{2}:\d{2}$/.test(tz)) {
+  return res.status(400).json({ error: "tz must look like +05:00" });
+}
+    if (view === "daily") {
+      if (!startDate || !endDate) {
+        return res.status(400).json({ error: "startDate and endDate are required for daily view" });
+      }
+      const days = moment(endDate).diff(moment(startDate), "days") + 1;
+      if (days > MAX_DAILY_RANGE_DAYS) {
+        return res.status(400).json({
+          error: `Daily view supports at most ${MAX_DAILY_RANGE_DAYS} days`,
+        });
+      }
+    }
 
     const requestedUsers = parseRequestedUsers(req.query);
     const resolvedUsers = await resolveUsers(requestedUsers);
-
-    const { labels, periodKeys } = buildLabels(view, startDate, endDate);
+    const { labels, periodKeys, dayMeta } = buildLabels(view, startDate, endDate, tz);
 
     const groupId =
-      view === "weekly"
-        ? {
-            year: { $isoWeekYear: "$leadCreatedAt" },
-            week: { $isoWeek: "$leadCreatedAt" },
-          }
-        : {
-            year: { $year: "$leadCreatedAt" },
-            month: { $month: "$leadCreatedAt" },
-          };
+      view === "daily"
+        ? { day: { $dateToString: { format: "%Y-%m-%d", date: "$leadCreatedAt", timezone: tz } } }
+        : view === "weekly"
+          ? { year: { $isoWeekYear: "$leadCreatedAt" }, week: { $isoWeek: "$leadCreatedAt" } }
+          : { year: { $year: "$leadCreatedAt" }, month: { $month: "$leadCreatedAt" } };
 
-    // Only used for the monthly goals aggregate now — weekly goals are
-    // computed in JS via distributeMonthlyGoalAcrossWeeks() instead.
+    const leadPeriodKey = (id) =>
+      view === "daily" ? id.day
+      : view === "weekly" ? `${id.year}-W${id.week}`
+      : `${id.year}-${id.month}`;
+
     const goalGroupId = {
       year: { $year: "$startDate" },
       month: { $month: "$startDate" },
@@ -2150,11 +2182,16 @@ export const getWonLeadData = async (req, res) => {
           jobHolder: { $in: ru.jobHolderNames },
         };
         if (startDate && endDate) {
-          leadFilters.leadCreatedAt = {
-            $gte: new Date(startDate),
-            $lte: new Date(endDate),
-          };
+  const local = (d) => moment.utc(d).utcOffset(tz);
+
+  leadFilters.leadCreatedAt =
+    view === "weekly"
+      ? {
+          $gte: local(startDate).startOf("isoWeek").toDate(),
+          $lte: local(endDate).endOf("isoWeek").toDate(),
         }
+      : { $gte: new Date(startDate), $lte: new Date(endDate) };
+}
 
         const leadsAgg = await leadModel.aggregate([
           { $match: leadFilters },
@@ -2179,36 +2216,78 @@ export const getWonLeadData = async (req, res) => {
         const values = new Array(labels.length).fill(0);
 
         leadsAgg.forEach((item) => {
-          const key =
-            view === "weekly"
-              ? `${item._id.year}-W${item._id.week}`
-              : `${item._id.year}-${item._id.month}`;
-          const idx = periodKeys[key];
+          const idx = periodKeys[leadPeriodKey(item._id)];
           if (idx !== undefined) {
             counts[idx] = item.count;
             values[idx] = item.totalValue;
           }
         });
 
-        // Goals for this specific series
         const countType = `Target Lead Count${ru.goalTypeSuffix}`;
         const valueType = `Target Lead Value${ru.goalTypeSuffix}`;
 
-        const goalMatch = {
-          goalType: { $in: [countType, valueType] },
-          jobHolder: { $in: ru.goalJobHolderIds },
-        };
-        if (startDate && endDate) {
-          goalMatch.startDate = {
-            $gte: new Date(startDate),
-            $lte: new Date(endDate),
-          };
-        }
+const goalMatch = {
+  goalType: { $in: [countType, valueType] },
+  jobHolder: { $in: ru.goalJobHolderIds },
+};
+
+if (startDate && endDate) {
+  const local = (d) => moment.utc(d).utcOffset(tz);
+
+  if (view === "daily") {
+    // whole months, so a goal starting on the 1st isn't dropped
+    goalMatch.startDate = {
+      $gte: local(startDate).startOf("month").toDate(),
+      $lte: local(endDate).endOf("month").toDate(),
+    };
+  } else if (view === "weekly") {
+    // first/last label weeks can spill into the prev/next month,
+    // so load those months' goal docs too
+    goalMatch.startDate = {
+      $gte: local(startDate).startOf("isoWeek").startOf("month").toDate(),
+      $lte: local(endDate).endOf("isoWeek").endOf("month").toDate(),
+    };
+  } else {
+    // monthly: exact range, unchanged
+    goalMatch.startDate = {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate),
+    };
+  }
+}
 
         const targetCounts = new Array(labels.length).fill(0);
         const targetValues = new Array(labels.length).fill(0);
 
-        if (view === "weekly") {
+
+        const round2 = (n) => Math.round(n * 100) / 100;
+
+        if (view === "daily") {
+          const goalsAgg = await goalModel.aggregate([
+            { $match: goalMatch },
+            {
+              $group: {
+                _id: {
+                  month: { $dateToString: { format: "%Y-%m", date: "$startDate", timezone: tz } },
+                  type: "$goalType",
+                },
+                total: { $sum: { $ifNull: ["$achievement", 0] } },
+              },
+            },
+          ]);
+
+          const monthly = {}; // { "2026-03": { [countType]: n, [valueType]: n } }
+          goalsAgg.forEach((g) => {
+            (monthly[g._id.month] ||= {})[g._id.type] = g.total;
+          });
+
+          dayMeta.forEach(({ monthKey, daysInMonth }, idx) => {
+            const m = monthly[monthKey];
+            if (!m) return;
+            if (m[countType]) targetCounts[idx] = round2(m[countType] / daysInMonth);
+            if (m[valueType]) targetValues[idx] = round2(m[valueType] / daysInMonth);
+          });
+        } else if (view === "weekly") {
           const weeklyTotals = await getWeeklyGoalTotals(goalMatch);
           Object.entries(weeklyTotals).forEach(([periodKey, byType]) => {
             const idx = periodKeys[periodKey];
@@ -2219,17 +2298,10 @@ export const getWonLeadData = async (req, res) => {
         } else {
           const goalsAgg = await goalModel.aggregate([
             { $match: goalMatch },
-            {
-              $group: {
-                _id: goalGroupId,
-                total: { $sum: { $ifNull: ["$achievement", 0] } },
-              },
-            },
+            { $group: { _id: goalGroupId, total: { $sum: { $ifNull: ["$achievement", 0] } } } },
           ]);
-
           goalsAgg.forEach((g) => {
-            const key = `${g._id.year}-${g._id.month}`;
-            const idx = periodKeys[key];
+            const idx = periodKeys[`${g._id.year}-${g._id.month}`];
             if (idx === undefined) return;
             if (g._id.type === countType) targetCounts[idx] = g.total;
             if (g._id.type === valueType) targetValues[idx] = g.total;
@@ -2240,7 +2312,7 @@ export const getWonLeadData = async (req, res) => {
       }),
     );
 
-    return res.json({ labels, series });
+    return res.json({ view, labels, series });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server Error" });

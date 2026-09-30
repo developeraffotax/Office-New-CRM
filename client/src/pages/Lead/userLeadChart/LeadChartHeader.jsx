@@ -95,6 +95,7 @@ export default function LeadChartHeader({
         >
           <ToggleButton value="monthly">Monthly</ToggleButton>
           <ToggleButton value="weekly">Weekly</ToggleButton>
+          <ToggleButton value="daily">Daily</ToggleButton>
         </ToggleButtonGroup>
 
         <ToggleButtonGroup

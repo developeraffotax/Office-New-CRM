@@ -151,22 +151,81 @@ function distributeMonthlyGoalAcrossWeeks(goal) {
   const monthEnd = moment(goal.startDate).endOf("month");
   const totalDays = monthEnd.diff(monthStart, "days") + 1;
 
-  const dayCountByWeek = {}; // "isoYear-Wn" -> days of this month in that week
+  const dayCountByWeek = {};
   const cursor = monthStart.clone();
   for (let i = 0; i < totalDays; i++) {
     const key = `${cursor.isoWeekYear()}-W${cursor.isoWeek()}`;
     dayCountByWeek[key] = (dayCountByWeek[key] || 0) + 1;
-    cursor.add(1, "day"); // mutates cursor in place, no reassignment needed
+    cursor.add(1, "day");
   }
 
-  const achievement = goal.achievement || 0;
+  const achievement = Number(goal.achievement) || 0;
+  const isCount = /count/i.test(goal.goalType);
+  const entries = Object.entries(dayCountByWeek);
+  const raw = entries.map(([, days]) => (achievement * days) / totalDays);
 
-  return Object.entries(dayCountByWeek).map(([periodKey, days]) => ({
+  let amounts;
+  if (isCount) {
+    // whole leads per week, still summing exactly to the monthly target
+    amounts = raw.map(Math.floor);
+    let remaining = Math.round(achievement) - amounts.reduce((a, b) => a + b, 0);
+    raw
+      .map((r, i) => ({ i, frac: r - Math.floor(r) }))
+      .sort((a, b) => b.frac - a.frac)
+      .forEach(({ i }) => {
+        if (remaining-- > 0) amounts[i] += 1;
+      });
+  } else {
+    // values: just round to 2 decimals
+    amounts = raw.map((r) => Math.round(r * 100) / 100);
+  }
+
+  return entries.map(([periodKey], i) => ({
     periodKey,
     goalType: goal.goalType,
-    amount: achievement * (days / totalDays),
+    amount: amounts[i],
   }));
 }
+
+
+ 
+
+// mode: "daily" (recommended) | "thursday" (÷ weeks in month) | "fixed4" (plain ÷ 4)
+// export function distributeMonthlyGoalAcrossWeeks(goal, tz = "+05:00", mode = "daily") {
+//   const monthStart = moment.utc(goal.startDate).utcOffset(tz).startOf("month");
+//   const daysInMonth = monthStart.daysInMonth();
+//   const total = goal.achievement || 0;
+//   const byWeek = {};
+//   const keyOf = (d) => `${d.isoWeekYear()}-W${d.isoWeek()}`;
+
+//   if (mode === "daily") {
+//     const perDay = total / daysInMonth;
+//     for (let i = 0; i < daysInMonth; i++) {
+//       const key = keyOf(monthStart.clone().add(i, "day"));
+//       byWeek[key] = (byWeek[key] || 0) + perDay;
+//     }
+//   } else {
+//     // each ISO week has exactly one Thursday, so the week belongs to that day's month
+//     const weekKeys = [];
+//     for (let i = 0; i < daysInMonth; i++) {
+//       const d = monthStart.clone().add(i, "day");
+//       if (d.isoWeekday() === 4) weekKeys.push(keyOf(d));
+//     }
+//     const divisor = mode === "fixed4" ? 4 : weekKeys.length;
+//     weekKeys.forEach((key) => {
+//       byWeek[key] = total / divisor;
+//     });
+//   }
+
+//   return Object.entries(byWeek).map(([periodKey, amount]) => ({
+//     periodKey,
+//     goalType: goal.goalType,
+//     amount,
+//   }));
+// }
+
+
+
 
 // Raw monthly goal docs -> weekly totals: { "year-Wweek": { [goalType]: amount } }
 export async function getWeeklyGoalTotals(goalMatch) {
@@ -175,15 +234,22 @@ export async function getWeeklyGoalTotals(goalMatch) {
     .select("achievement startDate goalType")
     .lean();
 
-  const totals = {};
-  goals.forEach((goal) => {
-    distributeMonthlyGoalAcrossWeeks(goal).forEach(
-      ({ periodKey, goalType, amount }) => {
-        totals[periodKey] ??= {};
-        totals[periodKey][goalType] = (totals[periodKey][goalType] || 0) + amount;
-      },
-    );
-  });
 
+    
+    const totals = {};
+    goals.forEach((goal) => {
+      console.log(distributeMonthlyGoalAcrossWeeks(goal))
+      distributeMonthlyGoalAcrossWeeks(goal).forEach(
+        ({ periodKey, goalType, amount }) => {
+          totals[periodKey] ??= {};
+          totals[periodKey][goalType] = (totals[periodKey][goalType] || 0) + amount;
+        },
+      );
+    });
+    
+    console.log("totals >>>" , totals)
   return totals;
 }
+
+
+

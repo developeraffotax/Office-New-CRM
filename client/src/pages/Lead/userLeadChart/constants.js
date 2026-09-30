@@ -1,5 +1,21 @@
 export const TARGET_SUFFIX = " (Target)";
 
+
+export const CHART_HEIGHT = 500;
+
+export const VIEW = { DAILY: "daily", MONTHLY: "monthly" };
+export const DATE_FILTER = { THIS_YEAR: "thisYear", CUSTOM: "custom" };
+
+export const DEFAULTS = {
+  chartType: "bar",
+  metric: "value", // "count" | "value"
+  view: VIEW.MONTHLY,
+  dateFilter: DATE_FILTER.THIS_YEAR,
+  showStats: true,
+  showTargets: true,
+};
+
+
 // A distinct color per selected user. Cycles if more users are picked than
 // colors defined here — add more hex values if you expect >12 at once.
 export const PALETTE = [

@@ -7,7 +7,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { toggleGroupSx } from "./constants";
+import { toggleGroupSx } from "../constants";
 
 export default function LeadChartHeader({
   headerLabel,

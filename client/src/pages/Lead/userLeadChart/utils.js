@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import quarterOfYear from "dayjs/plugin/quarterOfYear";
+import { isAdmin } from "../../../utlis/isAdmin";
 
 dayjs.extend(quarterOfYear);
 
@@ -62,3 +63,17 @@ export function isDailyAllowed(dateRange) {
   // inclusive span in days
   return dayjs(end).diff(dayjs(start), "day") < 32;
 }
+
+
+ 
+export const getDefaultUsers = (auth) =>
+  isAdmin(auth) ? [] : [auth?.user?.name].filter(Boolean);
+
+export const getHeaderLabel = (selectedUsers) => {
+  if (selectedUsers.length === 0) return "All Users";
+  if (selectedUsers.length === 1) return selectedUsers[0];
+  return `${selectedUsers.length} users`;
+};
+
+export const getChartKey = ({ chartType, metric, showTargets, rawSeries }) =>
+  `${chartType}-${metric}-${showTargets}-${rawSeries.map((s) => s.user).join("|")}`;

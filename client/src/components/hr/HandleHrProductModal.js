@@ -11,9 +11,20 @@ export default function HandleHrProductModal({
   hrProduct,
   setHrProduct,
   getAllTasks,
+    deparmentsData = [],
+
 }) {
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState(() => hrProduct?.name || "");
+    const [departmentIds, setDepartmentIds] = useState(() =>
+    (hrProduct?.departments || []).map((d) => d?._id || d)
+  );
+
+
+    const toggleDepartment = (id) =>
+    setDepartmentIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
 
   // -----------Create / Update Product-------->
   const handleProduct = async (e) => {
@@ -24,7 +35,7 @@ export default function HandleHrProductModal({
         // Update
         const { data } = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/v1/hrProduct/update/${hrProduct?._id}`,
-          { name }
+          { name, departments: departmentIds }
         );
         if (data?.success) {
           getAllTasks && getAllTasks();
@@ -39,7 +50,7 @@ export default function HandleHrProductModal({
         // Create
         const { data } = await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/hrProduct/create`,
-          { name }
+          { name, departments: departmentIds }
         );
         if (data?.success) {
           setLoading(false);
@@ -86,6 +97,21 @@ export default function HandleHrProductModal({
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
+
+          <div className="border border-gray-300 rounded-md p-3 max-h-[12rem] overflow-y-auto flex flex-col gap-2">
+  <span className="text-sm font-medium text-gray-700">Departments</span>
+  {deparmentsData.map((dep) => (
+    <label key={dep._id} className="flex items-center gap-2 text-sm cursor-pointer">
+      <input
+        type="checkbox"
+        className="h-4 w-4 accent-orange-600"
+        checked={departmentIds.includes(dep._id)}
+        onChange={() => toggleDepartment(dep._id)}
+      />
+      {dep.departmentName}
+    </label>
+  ))}
+</div>
 
           <div className="flex items-center justify-end">
             <button

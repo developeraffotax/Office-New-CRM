@@ -1,12 +1,22 @@
-import hrProductModel from "../models/hrProductModel.js"; 
+import mongoose from "mongoose";
+import hrProductModel from "../models/hrProductModel.js";
+
+// Keep only valid, unique department ids
+const normalizeDepartments = (departments) => {
+  if (!Array.isArray(departments)) return [];
+  const ids = departments.map((d) => String(d?._id || d));
+  return [...new Set(ids)].filter((id) => mongoose.isValidObjectId(id));
+};
 
 // Create Product
 export const createHrProduct = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, departments } = req.body;
 
-    if (!name) {
-      return res.status(400).json({ message: "Product name is required" });
+    if (!name || !name.trim()) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Product name is required" });
     }
 
     // Optional: check if already exists (because of unique: true)
@@ -20,7 +30,10 @@ export const createHrProduct = async (req, res) => {
 
     const product = await hrProductModel.create({
       name: name.trim(),
+      departments: normalizeDepartments(departments),
     });
+
+    await product.populate("departments", "departmentName");
 
     res.status(200).send({
       success: true,
@@ -40,7 +53,7 @@ export const createHrProduct = async (req, res) => {
 export const updateHrProduct = async (req, res) => {
   try {
     const productId = req.params.id;
-    const { name } = req.body;
+    const { name, departments } = req.body;
 
     const product = await hrProductModel.findById(productId);
     if (!product) {
@@ -64,13 +77,16 @@ export const updateHrProduct = async (req, res) => {
       }
     }
 
-    const updatedProduct = await hrProductModel.findByIdAndUpdate(
-      productId,
-      {
-        name: name?.trim() || product.name,
-      },
-      { new: true }
-    );
+    const update = { name: name?.trim() || product.name };
+
+    // Only touch departments when the client actually sent them
+    if (departments !== undefined) {
+      update.departments = normalizeDepartments(departments);
+    }
+
+    const updatedProduct = await hrProductModel
+      .findByIdAndUpdate(productId, update, { new: true })
+      .populate("departments", "departmentName");
 
     res.status(200).send({
       success: true,
@@ -89,7 +105,11 @@ export const updateHrProduct = async (req, res) => {
 // Fetch All Products
 export const fetchHrProducts = async (req, res) => {
   try {
-    const products = await hrProductModel.find({}).sort({ name: 1 }).lean();
+    const products = await hrProductModel
+      .find({})
+      .populate("departments", "departmentName")
+      .sort({ name: 1 })
+      .lean();
 
     res.status(200).send({
       success: true,
@@ -105,7 +125,7 @@ export const fetchHrProducts = async (req, res) => {
   }
 };
 
-// Delete Product
+// Delete Product (unchanged)
 export const deleteHrProduct = async (req, res) => {
   try {
     const productId = req.params.id;

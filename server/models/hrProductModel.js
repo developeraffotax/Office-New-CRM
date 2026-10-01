@@ -8,7 +8,8 @@ const productSchema = new mongoose.Schema(
       trim: true,
       unique: true,
     },
-    // add more fields later if needed (description, isActive, etc.)
+     
+     departments: [{ type: mongoose.Schema.Types.ObjectId, ref: "departments" }],
   },
   { timestamps: true }
 );

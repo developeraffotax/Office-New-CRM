@@ -451,8 +451,9 @@ const fetchAllDepartments = async () => {
         `${process.env.REACT_APP_API_URL}/api/v1/department/delete/${id}`
       );
       if (data) {
-        fetchAllDepartments();
-      }
+  fetchAllDepartments();
+  fetchAllHrProducts();
+}
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message);
@@ -767,34 +768,54 @@ const fetchAllDepartments = async () => {
         maxSize: 200,
         size: 170,
         grow: false,
-        Header: ({ column }) => {
-          return (
-            <div className="flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => column.setFilterValue("")}
-              >
-                Department
-              </span>
-              <select
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select</option>
-                {deparmentsData?.map((department) => (
-                  <option
-                    key={department?._id}
-                    value={department?.departmentName || ""}
-                  >
-                    {department?.departmentName}
-                  </option>
-                ))}
-              </select>
-            </div>
+Header: ({ column, table }) => {
+  return (
+    <div className="flex flex-col gap-[2px]">
+      <span
+        className="ml-1 cursor-pointer"
+        title="Clear Filter"
+        onClick={() => {
+          column.setFilterValue("");
+          table.getColumn("product")?.setFilterValue("");
+        }}
+      >
+        Department
+      </span>
+      <select
+        value={column.getFilterValue() || ""}
+        onChange={(e) => {
+          const deptName = e.target.value;
+          column.setFilterValue(deptName);
+
+          const productCol = table.getColumn("product");
+
+          if (!deptName) {
+            productCol?.setFilterValue("");
+            return;
+          }
+
+          // first product (alphabetical, since the API sorts by name) in this department
+          const firstProduct = hrProductData.find((p) =>
+            p.departments?.some((d) => d.departmentName === deptName)
           );
-        },
+
+          productCol?.setFilterValue(firstProduct?.name || "");
+        }}
+        className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+      >
+        <option value="">Select</option>
+        {deparmentsData?.map((department) => (
+          <option
+            key={department?._id}
+            value={department?.departmentName || ""}
+          >
+            {department?.departmentName}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+},
         Cell: ({ cell, row }) => {
           const department = row.original?.department?.departmentName || "N/A"; // Handle undefined
           return (
@@ -825,9 +846,19 @@ const fetchAllDepartments = async () => {
         maxSize: 200,
         size: 170,
         grow: false,
-        Header: ({ column }) => {
+        Header: ({ column, table  }) => {
+           const selectedDept = table.getColumn("department")?.getFilterValue();
+
+           console.log("SELECTED DEPARTMENT", selectedDept)
+           console.log("hrProductData hrProductData", hrProductData)
+
+  const options = selectedDept
+    ? hrProductData.filter((p) =>
+        p.departments?.some((d) => d.departmentName === selectedDept)
+      )
+    : hrProductData;
           return (
-            <div className="flex flex-col gap-[2px]">
+            <div className="flex flex-col gap-[2px] w-[120px]">
               <span
                 className="ml-1 cursor-pointer"
                 title="Clear Filter"
@@ -838,10 +869,10 @@ const fetchAllDepartments = async () => {
               <select
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className=" w-full font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
                 <option value="">Select</option>
-                {hrProductData?.map((product) => (
+                {options?.map((product) => (
                   <option key={product?._id} value={product?.name || ""}>
                     {product?.name}
                   </option>
@@ -2110,6 +2141,7 @@ const getJobHolderCount = (name) => {
                   hrProduct={hrProduct}
                   setHrProduct={setHrProduct}
                   getAllTasks={getAllTasks}
+                  deparmentsData={deparmentsData}
                 />
               </div>
             </div>

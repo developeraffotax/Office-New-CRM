@@ -1,5 +1,6 @@
 import departmentModel from "../models/departmentModel.js";
 import hrModel from "../models/hrModel.js";
+import hrProductModel from "../models/hrProductModel.js";
 
 // Create Department
 export const createDepartment = async (req, res) => {
@@ -166,6 +167,7 @@ export const deleteDepartment = async (req, res) => {
     }
 
     await departmentModel.findByIdAndDelete(department._id);
+    await hrProductModel.updateMany({ departments: departmentId }, { $pull: { departments: departmentId } });
 
     res.status(200).send({
       success: true,

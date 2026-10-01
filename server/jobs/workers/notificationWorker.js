@@ -121,7 +121,7 @@ const processNotificationJob = async (job) => {
 
       const notification = await notificationModel.create({
         title: `New email received: ${thread?.subject}`,
-        redirectLink: `/mail?folder=inbox&companyName=${thread?.companyName}`,
+        redirectLink: `/mail?folder=inbox&companyName=${thread?.companyName}&mailThreadId=${threadId}`,
 
         description: `${thread?.snippet || "You have received a new email"}
           ✔ Subject: ${thread?.subject}
@@ -159,7 +159,7 @@ const processNotificationJob = async (job) => {
         recipientIds.map((userId) =>
           notificationModel.create({
             title: `New Quote Request!`,
-            redirectLink: `/mail?folder=inbox&companyName=${companyName}`,
+            redirectLink: `/mail?folder=inbox&companyName=${companyName}&mailThreadId=${threadId}`,
             description: `🔥 NEW QUOTE
               📩 Subject  : ${subject || "No Subject"}
               📅 Received : ${time} | ${date}`,

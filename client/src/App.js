@@ -70,6 +70,7 @@ import MailLayout from "./components/gmail/layout/MailLayout";
 import MailThreadPage from "./components/gmail/pages/MailThreadPage";
 import WhatsappLayout from "./components/whatsapp/layout/WhatsAppLayout";
 import UserLeadChart from "./pages/Lead/userLeadChart/UserLeadChart";
+import GoogleSheet from "./components/GoogleSheet/GoogleSheet";
 
 function App() {
   const navigate = useNavigate();
@@ -225,6 +226,7 @@ function App() {
             <Route path="/timesheet/attendance-chart" element={<EmployeeInOutChart  />} />
 
             <Route path="/leads-targets" element={<UserLeadChart />} />
+            <Route path="/google-sheet" element={<GoogleSheet />} />
             
             
             

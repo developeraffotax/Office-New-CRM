@@ -13,7 +13,7 @@ export const createNotification = async (req, updatedThread) => {
 
   const payload = {
     title: "New Thread Assigned",
-    redirectLink: `/mail?folder=inbox&companyName=${updatedThread?.companyName}`,
+    redirectLink: `/mail?folder=inbox&companyName=${updatedThread?.companyName}&mailThreadId=${updatedThread?.threadId}`,
     description: `${req.user.user.name} assigned you a new Thread | ${updatedThread?.companyName}
           ✔ Subject: ${updatedThread?.subject}
           ✔ From: ${getOtherParticipantEmail(updatedThread?.participants, updatedThread?.companyName === "affotax" ? "info@affotax.com" : "Admin@outsourceaccountings.co.uk")}

@@ -182,10 +182,10 @@ const handleNotificationClick = (e, item) => {
   if (item.entityType === "mailbox") {
     let url = `${item.redirectLink}`;
 
-    if(item.type === "thread_assigned") {
-      url = `${item.redirectLink}&mailThreadId=${item.taskId}`;
+    // if(item.type === "thread_assigned" || item.type === "email_received") {
+    //   url = `${item.redirectLink}&mailThreadId=${item.taskId}`;
 
-    }
+    // }
 
 
     if (isNewTab) {

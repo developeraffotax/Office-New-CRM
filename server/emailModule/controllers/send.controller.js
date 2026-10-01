@@ -3,6 +3,7 @@ import ticketActivityModel from "../../models/ticketActivityModel.js";
 import { saveEmailMessage } from "../utils/saveEmailMessage.js";
 import { updateTicketAfterEmail } from "../utils/buildGmailReply.js";
 import { buildGmailSend } from "../utils/buildGmailSend.js";
+import { saveEmailThread } from "../utils/saveEmailThread.js";
 
 export async function sendEmail(req, res) {
   try {
@@ -70,6 +71,15 @@ export async function sendEmail(req, res) {
       companyName,
       sentFrom: "CRM-Inbox",
       interactionType: "initial"
+
+    });
+
+
+        // Save message reference
+    await saveEmailThread({
+      threadId: response?.data?.threadId,
+      userId,
+      companyName,
 
     });
 

@@ -18,6 +18,8 @@ import {
   OutlinedInput,
   Checkbox,
   ListItemText,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -42,6 +44,8 @@ import { getVisibleTabGroups } from "./utils/tabGroups";
 import { TAB_GROUPS } from "./constants";
 import QuickRangeButtons from "./QuickRangeButtons";
 import { isAdmin } from "../../utlis/checkPermission";
+import { useSavedFilters } from "../SavedFilters/useSavedFilters";
+import KpiSavedViews from "./KpiSavedViews";
 
 // add near visibleTabGroups, module-level so the reference is stable across renders
 const EMPTY_SET = new Set();
@@ -81,6 +85,11 @@ export default function KpiDashboard() {
   const { auth } = useSelector((state) => state.auth);
   const currentUser = auth?.user;
   const visibleTabGroups = getVisibleTabGroups(currentUser, TAB_GROUPS);
+
+
+
+
+
 
   // UI State
   const [chartType, setChartType] = useState("bar");
@@ -124,6 +133,53 @@ export default function KpiDashboard() {
     () => selectedUsers.filter((n) => !hiddenLegendUsers.has(n)),
     [selectedUsers, hiddenLegendUsers],
   );
+
+
+
+
+
+    
+const savedFiltersHook = useSavedFilters("kpi_dashboard");
+
+const snapshot = useMemo(
+  () => ({
+    dateRange: {
+      label: activeLabel,
+      start: dateRange[0]?.toISOString(),
+      end: dateRange[1]?.toISOString(),
+    },
+    source: selectedSource,
+    users: selectedUsers,
+    chartType,
+    activeGroup,
+    activeTab, // new: the chartKey of the selected metric tab
+  }),
+  [activeLabel, dateRange, selectedSource, selectedUsers, chartType, activeGroup, activeTab],
+);
+
+const handleApplyView = (v) => {
+  if (v.dateRange?.start && v.dateRange?.end) {
+    setDateRange([dayjs(v.dateRange.start), dayjs(v.dateRange.end)]);
+    setActiveLabel(v.dateRange.label || "Custom");
+  }
+  setSelectedSource(v.source || "");
+  setSelectedUsers(v.users || []);
+  if (v.chartType) setChartType(v.chartType);
+
+  // Resolve group + tab against what THIS user can see (permissions can differ).
+  // Falls back to finding the group by tab if the saved group key is missing.
+  const group =
+    visibleTabGroups.find((g) => g.key === v.activeGroup) ||
+    visibleTabGroups.find((g) => g.tabs.some((t) => t.chartKey === v.activeTab));
+
+  if (group) {
+    const tab =
+      group.tabs.find((t) => t.chartKey === v.activeTab) || group.tabs[0];
+    setActiveGroup(group.key);
+    if (tab) setActiveTab(tab.chartKey);
+  }
+};
+
 
   // Fetch Users
   useEffect(() => {
@@ -249,26 +305,18 @@ export default function KpiDashboard() {
                 Clear Filters
               </Button>
             )}
-             { isAdmin(currentUser) &&  <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />}
-            {
-              isAdmin(currentUser) && (
-                  <Button
-              color="info"
-              //  size="medium"
-              variant="text"
-              startIcon={
-                showStats ? (
-                  <VisibilityOffIcon fontSize="" />
-                ) : (
-                  <VisibilityIcon fontSize="" />
-                )
-              }
-              onClick={() => setShowStats((prev) => !prev)}
-            >
-              {showStats ? "Hide Stats" : "Show Stats"}
-            </Button>
-              )
-            }
+             { isAdmin(currentUser) &&  <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />}
+            
+
+
+
+
+             <KpiSavedViews
+  snapshot={snapshot}
+  onApply={handleApplyView}
+  savedFiltersHook={savedFiltersHook}
+  tabGroups={visibleTabGroups}
+/>
             
           </Stack>
 
@@ -280,6 +328,32 @@ export default function KpiDashboard() {
             alignItems="center"
             useFlexGap
           >
+
+{
+              isAdmin(currentUser) && (
+                  <Tooltip title={showStats ? "Hide Stats" : "Show Stats"} arrow>
+  <IconButton
+    size="small"
+    aria-label={showStats ? "Hide stats" : "Show stats"}
+    onClick={() => setShowStats((prev) => !prev)}
+    sx={{
+      width: 40,
+      height: 40,
+      borderRadius: 6,
+      color: showStats ? "primary.main" : "text.secondary",
+      "&:hover": { backgroundColor: "action.hover" },
+    }}
+  >
+    {showStats ? (
+      <VisibilityOffIcon fontSize="medium" />
+    ) : (
+      <VisibilityIcon fontSize="medium" />
+    )}
+  </IconButton>
+</Tooltip>
+              )
+            }
+       
             {/* User Filter */}
             <FormControl size="small" sx={{ minWidth: 200 }}>
               <UserFilterSelect

@@ -34,6 +34,8 @@ import overviewRoutes from "./overviewRoutes.js";
 import subtaskListRoutes from "./subtaskListRoutes.js";
 import savedFilterRoutes from "./savedFilterRoutes.js";
 
+import googleSheetRoutes from "./googleSheetRoutes.js";
+
 import onedriveRoutes from "./onedriveRoutes.js";
 import agentRoutes from "./agentRoutes.js";
 
@@ -144,6 +146,16 @@ export const registerRoutes = (app) => {
 
   app.use("/api/v1/whatsapp/category", whatsappCategoryRoutes);
    app.use("/api/v1/whatsapp/comments",  whatsappCommentsRoutes);
+
+
+
+
+
+
+
+
+
+   app.use("/api/v1/google-sheets", googleSheetRoutes);
 
 
 

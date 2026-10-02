@@ -70,7 +70,12 @@ import MailLayout from "./components/gmail/layout/MailLayout";
 import MailThreadPage from "./components/gmail/pages/MailThreadPage";
 import WhatsappLayout from "./components/whatsapp/layout/WhatsAppLayout";
 import UserLeadChart from "./pages/Lead/userLeadChart/UserLeadChart";
-import GoogleSheet from "./components/GoogleSheet/GoogleSheet";
+import GooglesheetViewer from "./components/GoogleSheet/GoogleSheetViewer";
+import ManageGooglesheets from "./components/GoogleSheet/ManageGoogleSheets ";
+import { fetchMySheets } from "./redux/slices/googleSheetSlice";
+ 
+ 
+ 
 
 function App() {
   const navigate = useNavigate();
@@ -100,6 +105,7 @@ function App() {
 
    if (token) {
     dispatch(getUserDetail(user.id));
+    dispatch(fetchMySheets());
   }
 }, [token, dispatch]);
 
@@ -226,7 +232,8 @@ function App() {
             <Route path="/timesheet/attendance-chart" element={<EmployeeInOutChart  />} />
 
             <Route path="/leads-targets" element={<UserLeadChart />} />
-            <Route path="/google-sheet" element={<GoogleSheet />} />
+            <Route path="/google-sheets/manage" element={<ManageGooglesheets />} />
+            <Route path="/google-sheets/:sheetId" element={<GooglesheetViewer />} />
             
             
             

@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { IoIosArrowDown } from "react-icons/io";
 import { RiSettings4Fill } from "react-icons/ri";
+import { LuFileSpreadsheet } from "react-icons/lu";
 
 const itemBase =
   "relative h-[2.4rem] border rounded-lg cursor-pointer overflow-hidden transition-all duration-100";
@@ -18,6 +20,11 @@ export default function SidebarMenu({
   isSettingsOpen,
   setIsSettingsOpen,
 }) {
+  const { pathname } = useLocation();
+  const [isSheetsOpen, setIsSheetsOpen] = useState(
+    pathname.startsWith("/google-sheets"),
+  );
+
   return (
     <div className="relative w-full pb-[5rem] flex flex-col gap-1 px-2">
       {items.main.map((item) => (
@@ -30,7 +37,78 @@ export default function SidebarMenu({
         />
       ))}
 
-      {items.showSettingsDivider && <hr className="my-1" />}
+{items.showSettingsDivider && <hr className="my-1" />}
+
+      {/* Google Sheets group — admin: all sheets + manage, users: only theirs */}
+      {items.showSheets && (
+        <>
+          {compact ? (
+            <>
+              <button
+                type="button"
+                title="Google Sheets"
+                aria-label="Google Sheets"
+                className={`relative h-[2.4rem] w-full border rounded-lg cursor-pointer flex items-center justify-center transition-all duration-100 ${
+                  isSheetsOpen
+                    ? "bg-white border-black/20"
+                    : "hover:bg-white hover:border-black/20 border-transparent"
+                }`}
+                onClick={() => setIsSheetsOpen((prev) => !prev)}
+              >
+                <LuFileSpreadsheet className="h-5 w-5 text-gray-900" />
+              </button>
+
+              {isSheetsOpen &&
+                items.sheets.map((item) => (
+                  <SidebarItem
+                    key={item.id}
+                    item={item}
+                    active={active}
+                    onNavigate={onNavigate}
+                    compact
+                  />
+                ))}
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                className={`text-[14px] font-semibold px-4 py-2 flex items-center justify-between transition-all rounded-lg cursor-pointer ${
+                  isSheetsOpen
+                    ? "bg-white border-black/20"
+                    : "hover:bg-white hover:border-black/20 border-transparent"
+                }`}
+                onClick={() => setIsSheetsOpen((prev) => !prev)}
+              >
+                <span className="flex items-center gap-2">
+                  <LuFileSpreadsheet className="h-5 w-5 text-gray-900" />
+                  <span>Sheets</span>
+                </span>
+                <IoIosArrowDown
+                  className={`h-4 w-4 text-gray-700 transition-transform duration-300 ${
+                    isSheetsOpen ? "rotate-180" : "rotate-0"
+                  }`}
+                />
+              </button>
+
+              {isSheetsOpen && (
+                <div className="flex flex-col gap-1">
+                  {items.sheets.map((item) => (
+                    <SidebarItem
+                      key={item.id}
+                      item={item}
+                      active={active}
+                      onNavigate={onNavigate}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </>
+      )}
+
+      
 
       {items.showSettings && (
         <>
@@ -91,15 +169,26 @@ export default function SidebarMenu({
 }
 
 function SidebarItem({ item, active, onNavigate, compact = false }) {
+  const { pathname } = useLocation();
   const Icon = item.icon;
-  const isActive = active === item.activeKey;
+
+  // Items with a matchPath (individual sheets) highlight on their exact route,
+  // because `active` only holds the first path segment ("google-sheets").
+  const currentActive = item.matchPath
+    ? pathname === item.matchPath
+      ? item.activeKey
+      : null
+    : active;
+  const isActive = currentActive === item.activeKey;
 
   return (
     <button
       type="button"
       title={compact ? item.label : undefined}
       aria-label={compact ? item.label : undefined}
-      className={`${itemBase} ${itemState(active, item.activeKey)} w-full text-left `}
+      className={`${itemBase} ${itemState(currentActive, item.activeKey)} w-full text-left ${
+        item.dimmed ? "opacity-60" : ""
+      }`}
       onClick={() => onNavigate(item)}
     >
       <div

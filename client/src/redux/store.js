@@ -9,6 +9,9 @@ import globalTimerReducer from "./slices/globalTimerSlice";
 
 import globalModalReducer from "./slices/globalModalSlice";
 import inboxUnreadReducer from "./slices/inboxUnreadSlice";
+
+import googleSheetsReducer from "./slices/googleSheetSlice";
+
 import { api } from "./api/api";
 
 
@@ -23,6 +26,8 @@ export const store = configureStore({
 
     globalModal: globalModalReducer,
     inboxUnread: inboxUnreadReducer,
+
+    googleSheets: googleSheetsReducer,
 
     [api.reducerPath]: api.reducer,
   },

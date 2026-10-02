@@ -24,10 +24,12 @@ import {
   VscSettings,
   IoMailUnreadOutline,
   FaWhatsapp,
-  PiTarget
+  PiTarget,
+  LuFileSpreadsheet
 } from "./sidebarIcons"; 
+ 
 import { setActive } from "../../../redux/slices/authSlice";
-import { hasPermission } from "../../../utlis/checkPermission";
+import { hasPermission, isAdmin } from "../../../utlis/checkPermission";
 import ProfileModal from "../../Modals/ProfileModal";
 import SidebarDesktop from "./SidebarDesktop";
 import SidebarMobile from "./SidebarMobile";
@@ -46,6 +48,9 @@ export default function Sidebar({
 
   const auth = useSelector((state) => state.auth.auth);
   const active = useSelector((state) => state.auth.active);
+
+  const mySheets = useSelector((state) => state.googleSheets.items);
+
   const { settings } = useSelector((state) => state.settings);
   const notifications = useSelector(
     (state) => state.notifications.notificationData || [],
@@ -122,6 +127,8 @@ const whatsappUnreadMessages = unread.messages;
     icon,
     ...extra,
   });
+
+  console.log(`IS THIS UYSER ADMIN `,isAdmin(user))
 
   const items = useMemo(() => {
     const main = [
@@ -334,15 +341,30 @@ const whatsappUnreadMessages = unread.messages;
         ),
     ].filter(Boolean);
 
+
+    const sheets = [
+  ...mySheets.map((s) => {
+    const path = `/google-sheets/${s._id}`;
+    return common("Sheets", `sheet-${s._id}`, s.name, path, LuFileSpreadsheet, {
+      activeKey: "google-sheets",
+      matchPath: path,
+      dimmed: s.isActive === false,
+    });
+  }),
+  isAdmin(user) &&
+    common("Sheets", "manage-sheets", "Manage Sheets", "/google-sheets/manage", VscSettings, {
+      activeKey: "google-sheets",
+      matchPath: "/google-sheets/manage",
+    }),
+].filter(Boolean);
+
     return {
       main,
       settings,
+        sheets,
+         showSheets: sheets.length > 0,
       showSettings: settings.length > 0,
-      showSettingsDivider:
-        hasAccess("Workflow") ||
-        hasAccess("Roles") ||
-        hasAccess("Activity") ||
-        hasAccess("Users"),
+      showSettingsDivider: (sheets.length > 0) || (settings.length > 0),
     };
   }, [
     user,
@@ -355,6 +377,8 @@ const whatsappUnreadMessages = unread.messages;
     whatsappUnreadConversations,
     showCrmNotifications,
     showEmailNotifications,
+    mySheets,
+     
 
   ]);
 

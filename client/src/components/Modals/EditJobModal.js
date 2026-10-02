@@ -1129,7 +1129,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
               </select>
 
               <JobDriveLinkButton
-                jobName={clientBookKeepingFormData.jobName}
+                 
                 enabled={jobs.some(
                   (job) => job.jobName === clientBookKeepingFormData.jobName,
                 )}
@@ -1330,7 +1330,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
               </select>
 
               <JobDriveLinkButton
-                jobName={clientPayRollFormData.jobName}
+                
                 enabled={jobs.some(
                   (job) => job.jobName === clientPayRollFormData.jobName,
                 )}
@@ -1531,7 +1531,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
               </select>
 
               <JobDriveLinkButton
-                jobName={clientVatReturnFormData.jobName}
+                 
                 enabled={jobs.some(
                   (job) => job.jobName === clientVatReturnFormData.jobName,
                 )}
@@ -1731,7 +1731,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
               </select>
 
               <JobDriveLinkButton
-                jobName={clientPersonalTaxFormData.jobName}
+                
                 enabled={jobs.some(
                   (job) => job.jobName === clientPersonalTaxFormData.jobName,
                 )}
@@ -1931,7 +1931,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
               </select>
 
               <JobDriveLinkButton
-                jobName={clientAccountsFormData.jobName}
+                 
                 enabled={jobs.some(
                   (job) => job.jobName === clientAccountsFormData.jobName,
                 )}
@@ -2131,7 +2131,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
               </select>
 
               <JobDriveLinkButton
-                jobName={clientCompanySecFormData.jobName}
+                 
                 enabled={jobs.some(
                   (job) => job.jobName === clientCompanySecFormData.jobName,
                 )}
@@ -2331,7 +2331,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
               </select>
 
               <JobDriveLinkButton
-                jobName={clientAddressFormData.jobName}
+                 
                 enabled={jobs.some(
                   (job) => job.jobName === clientAddressFormData.jobName,
                 )}

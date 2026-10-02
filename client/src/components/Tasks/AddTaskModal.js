@@ -5,6 +5,7 @@ import { IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import { TbLoader2 } from "react-icons/tb";
 import format from "date-fns/format";
+import JobDriveLinkButton from "../Modals/JobDriveLinkButton";
  
 
 export default function AddTaskModal({
@@ -29,7 +30,10 @@ export default function AddTaskModal({
   const [projectName, setProjectName] = useState("");
   const [recurring, setRecurring] = useState("");
   const [nextRecurringDate, setNextRecurringDate] = useState("");
+
   const [deleteCompletedRecurringSubtasks, setDeleteCompletedRecurringSubtasks] = useState(false);
+
+  const [docLink, setDocLink] = useState("");
 
   useEffect(() => {
     if (taskDetal) {
@@ -46,7 +50,9 @@ export default function AddTaskModal({
       setNextRecurringDate(
         format(new Date(taskDetal.nextRecurringDate), "yyyy-MM-dd")
       );
-      setDeleteCompletedRecurringSubtasks(taskDetal?.deleteCompletedRecurringSubtasks )
+      setDeleteCompletedRecurringSubtasks(taskDetal?.deleteCompletedRecurringSubtasks );
+
+      setDocLink(taskDetal?.docLink || "");
     }
   }, [taskId, taskDetal]);
 
@@ -70,7 +76,8 @@ export default function AddTaskModal({
             label,
             recurring,
             nextRecurringDate,
-            deleteCompletedRecurringSubtasks
+            deleteCompletedRecurringSubtasks,
+            docLink
           }
         );
         if (data) {
@@ -98,7 +105,9 @@ export default function AddTaskModal({
             label,
             recurring,
             nextRecurringDate,
-            deleteCompletedRecurringSubtasks
+            deleteCompletedRecurringSubtasks,
+            docLink
+            
           }
         );
         if (data) {
@@ -123,7 +132,7 @@ export default function AddTaskModal({
     }
   };
   return (
-    <div className="w-[21rem] sm:w-[34rem] rounded-md shadow border flex flex-col gap-4 bg-white">
+    <div className="w-[22rem] sm:w-[36rem] rounded-md shadow border flex flex-col gap-4 bg-white p-2">
       <div className="flex items-center justify-between px-4 pt-2">
         <h1 className="text-[20px] font-semibold text-black">
           {taskId ? "Update Task" : "Add Task"}
@@ -260,10 +269,14 @@ export default function AddTaskModal({
 
 
           
+          <div className="flex items-center justify-between">
+              <JobDriveLinkButton
+ 
+    enabled={true}
+    link={docLink}
+    onSave={setDocLink}
+  />
 
-
-
-          <div className="flex items-center justify-end">
             <button
               className={`${style.button1} text-[15px] `}
               type="submit"

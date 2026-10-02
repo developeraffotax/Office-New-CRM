@@ -96,6 +96,7 @@ export const createTask = async (req, res) => {
       recurring,
       nextRecurringDate,
       deleteCompletedRecurringSubtasks,
+      docLink
     } = req.body;
 
     if (!projectId) {
@@ -134,6 +135,7 @@ export const createTask = async (req, res) => {
       recurring: recurring ? recurring : null,
       nextRecurringDate: updatedNextRecurringDate.toISOString(),
       deleteCompletedRecurringSubtasks,
+      docLink
     });
 
     // Push activity to activities array
@@ -742,6 +744,7 @@ export const updateTask = async (req, res) => {
       recurring,
       nextRecurringDate,
       deleteCompletedRecurringSubtasks,
+      docLink
     } = req.body;
 
     if (!projectId) {
@@ -796,6 +799,7 @@ export const updateTask = async (req, res) => {
         recurring: recurring ? recurring : null,
         nextRecurringDate: updatedNextRecurringDate.toISOString(),
         deleteCompletedRecurringSubtasks,
+        docLink
       },
       { new: true }
     );
@@ -2439,6 +2443,7 @@ export const getTasks = async (req, res) => {
           labal: 1,
           recurring: 1,
           taskRef: 1,
+          docLink: 1
         },
       },
 
@@ -3198,6 +3203,7 @@ export const getCompletedTasks = async (req, res) => {
           labal: 1,
           recurring: 1,
           taskRef: 1,
+          docLink: 1
         },
       },
 

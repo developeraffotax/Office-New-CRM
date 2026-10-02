@@ -136,6 +136,13 @@ const taskSchema = new mongoose.Schema(
     taskRef: { type: Number, unique: true },
 
 
+    docLink: {
+  type: String,
+  default: "",
+  trim: true,
+},
+
+
 
   },
 

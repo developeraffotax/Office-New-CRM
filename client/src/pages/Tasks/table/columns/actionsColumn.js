@@ -3,13 +3,15 @@ import { AiTwotoneDelete } from "react-icons/ai";
 import { GrCopy } from "react-icons/gr";
 import { MdCheckCircle, MdErrorOutline, MdInsertComment } from "react-icons/md";
 import { hasSubrole } from "../../../../utlis/checkPermission";
+import { FaGoogleDrive } from "react-icons/fa";
 
 export const actionsColumn = (ctx) => {
   return {
     accessorKey: "actions",
     header: "Actions",
     Cell: ({ cell, row }) => {
-       
+
+      const docLink = row?.original?.docLink || "";
 
       const hasAddComplainPermission = hasSubrole(
         ctx.auth.user,
@@ -91,9 +93,34 @@ export const actionsColumn = (ctx) => {
               <MdErrorOutline className="h-5 w-5 text-red-500 hover:text-red-600" />{" "}
             </button>
           )}
+
+          
+           <div>
+            {docLink ? (
+              <a
+                href={docLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Open Google Drive link"
+                className="text-orange-600 hover:text-orange-700"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <FaGoogleDrive className="h-5 w-5" />
+              </a>
+            ) : (
+              <span
+                title="No Google Drive link added"
+                className="text-gray-400 cursor-not-allowed"
+              >
+                <FaGoogleDrive className="h-5 w-5" />
+              </span>
+            )}
+          </div>
+
+
         </div>
       );
     },
-    size: 160,
+    size: 180,
   };
 };

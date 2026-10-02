@@ -169,27 +169,7 @@ export const actionsColumn = ({
             </div>
           )}
 
-          <div>
-            {docLink ? (
-              <a
-                href={docLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Open Google Drive link"
-                className="text-orange-600 hover:text-orange-700"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <FaGoogleDrive className="h-5 w-5" />
-              </a>
-            ) : (
-              <span
-                title="No Google Drive link added"
-                className="text-gray-400 cursor-not-allowed"
-              >
-                <FaGoogleDrive className="h-5 w-5" />
-              </span>
-            )}
-          </div>
+         
 
           <div
             title="Comments"
@@ -270,6 +250,30 @@ export const actionsColumn = ({
               <MdErrorOutline className="h-5 w-5 text-red-500 hover:text-red-600" />{" "}
             </button>
           )}
+
+           <div>
+            {docLink ? (
+              <a
+                href={docLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Open Google Drive link"
+                className="text-orange-600 hover:text-orange-700"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <FaGoogleDrive className="h-5 w-5" />
+              </a>
+            ) : (
+              <span
+                title="No Google Drive link added"
+                className="text-gray-400 cursor-not-allowed"
+              >
+                <FaGoogleDrive className="h-5 w-5" />
+              </span>
+            )}
+          </div>
+
+          
         </div>
       );
     },

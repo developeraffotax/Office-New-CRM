@@ -6,7 +6,7 @@ import { FiExternalLink } from "react-icons/fi";
 const isGoogleLink = (url) =>
   /^https:\/\/(docs|drive|sheets|slides)\.google\.com\/.+/i.test(url);
 
-function DriveLinkModal({ jobName, initialValue, onSave, onClose }) {
+function DriveLinkModal({   initialValue, onSave, onClose }) {
   const [value, setValue] = useState(initialValue || "");
   const [error, setError] = useState("");
 
@@ -29,7 +29,7 @@ function DriveLinkModal({ jobName, initialValue, onSave, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="mb-3 text-lg font-medium text-[#254e7f]">
-          {jobName} – Google Drive Link
+            Google Drive/Docs Link
         </h3>
 
         <input
@@ -73,7 +73,7 @@ function DriveLinkModal({ jobName, initialValue, onSave, onClose }) {
   );
 }
 
-export default function JobDriveLinkButton({ jobName, enabled, link, onSave }) {
+export default function JobDriveLinkButton({   enabled, link, onSave }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -98,7 +98,7 @@ export default function JobDriveLinkButton({ jobName, enabled, link, onSave }) {
 
       {open && (
         <DriveLinkModal
-          jobName={jobName}
+           
           initialValue={link}
           onSave={onSave}
           onClose={() => setOpen(false)}

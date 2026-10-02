@@ -1,4 +1,7 @@
-export const leadUserColumn = ({ users, handleUpdateLeadUser }) => {
+import { isAdmin } from "../../../../utlis/checkPermission";
+
+export const leadUserColumn = ({ users, handleUpdateLeadUser, auth }) => {
+  const is_admin = isAdmin(auth?.user);
   return {
     id: "Lead",
 
@@ -36,18 +39,24 @@ export const leadUserColumn = ({ users, handleUpdateLeadUser }) => {
 
       return (
         <div className="w-full">
-          <select
-            value={leadValue || ""}
-            onChange={(e) => handleUpdateLeadUser(row.original._id, e.target.value)}
-            className="w-full h-[2rem] rounded-md border-none bg-transparent outline-none"
-          >
-            <option value="empty"></option>
-            {users.map((username, i) => (
-              <option value={username} key={i}>
-                {username}
-              </option>
-            ))}
-          </select>
+          {is_admin ? (
+            <select
+              value={leadValue || ""}
+              onChange={(e) =>
+                handleUpdateLeadUser(row.original._id, e.target.value)
+              }
+              className="w-full h-[2rem] rounded-md border-none bg-transparent outline-none"
+            >
+              <option value="empty"></option>
+              {users.map((username, i) => (
+                <option value={username} key={i}>
+                  {username}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span className="w-full  ">{leadValue || ""}</span>
+          )}
         </div>
       );
     },

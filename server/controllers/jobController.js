@@ -19,7 +19,7 @@ const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
 
 const PROGRESS_SELECT_STRING =
-  "clientName companyName regNumber email phone fee currentDate totalHours totalTime jobRef job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.leadUser job.jobHolder comments._id comments.status label source data activeClient clientType partner clientPaidFee";
+  "clientName companyName regNumber email phone fee currentDate totalHours totalTime jobRef job.docLink job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.leadUser job.jobHolder comments._id comments.status label source data activeClient clientType partner clientPaidFee";
 
 const COMPLETED_SELECT_STRING = `prepared review filed ${PROGRESS_SELECT_STRING}`;
 // Create Job

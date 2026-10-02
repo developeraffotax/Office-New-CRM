@@ -12,6 +12,7 @@ import { PiSpinnerGap } from "react-icons/pi";
 import { hasSubrole } from "../../../../utlis/checkPermission";
 import { getClientIdFromCompanyName } from "../../../../utlis/apiGetters/apiGetters";
 import { TbLoader2 } from "react-icons/tb";
+import { FaGoogleDrive } from "react-icons/fa";
 
 export const actionsColumn = ({
   setJobId,
@@ -35,10 +36,15 @@ export const actionsColumn = ({
     header: "Actions",
 
     Cell: ({ cell, row }) => {
+      const docLink = row.original?.job?.docLink;
 
-        const [creatingTicket, setCreatingTicket] = useState(false);
+      const [creatingTicket, setCreatingTicket] = useState(false);
 
-      const hasAddComplainPermission = hasSubrole( auth.user, "Jobs", "Complain", );
+      const hasAddComplainPermission = hasSubrole(
+        auth.user,
+        "Jobs",
+        "Complain",
+      );
       const [isLoading, setIsLoading] = useState(false);
       const [anchorEl, setAnchorEl] = useState(null);
 
@@ -76,102 +82,114 @@ export const actionsColumn = ({
         }
       };
 
-
-
-
-
-
-
-
-      
-          const handleCreateTicket = async () => {
+      const handleCreateTicket = async () => {
         try {
           setCreatingTicket(true);
-      
-       
-      
-           const clientId = await getClientIdFromCompanyName( row?.original?.companyName );
-      
-            if (clientId) {
-              setClientCompanyId(clientId);
-              setShowNewTicketModal(true);
-            }
-       
+
+          const clientId = await getClientIdFromCompanyName(
+            row?.original?.companyName,
+          );
+
+          if (clientId) {
+            setClientCompanyId(clientId);
+            setShowNewTicketModal(true);
+          }
         } catch (error) {
           console.log(error);
-          
         } finally {
           setCreatingTicket(false);
         }
       };
 
-
-
-
-
       return (
         <div className="flex items-center justify-center gap-2 w-full h-full ">
-          {isProgress && (<div>
-            <span
-              title="Create New Ticket"
-              // onClick={() => {
-                    // setClientCompanyName(row?.original?.companyName);
-              //   setClientCompanyId(row?.original?._id);
-              //   setShowNewTicketModal(true);
-              // }}
-              onClick = {handleCreateTicket}
-              className="text-xl text-orange-500 cursor-pointer"
-            >
-               {creatingTicket ? (
-                 <TbLoader2 className="animate-spin" />
-               ) : (
-                 <FiPlusSquare />
-               )}
-            </span>
-          </div>)}
+          {isProgress && (
+            <div>
+              <span
+                title="Create New Ticket"
+                // onClick={() => {
+                // setClientCompanyName(row?.original?.companyName);
+                //   setClientCompanyId(row?.original?._id);
+                //   setShowNewTicketModal(true);
+                // }}
+                onClick={handleCreateTicket}
+                className="text-xl text-orange-500 cursor-pointer"
+              >
+                {creatingTicket ? (
+                  <TbLoader2 className="animate-spin" />
+                ) : (
+                  <FiPlusSquare />
+                )}
+              </span>
+            </div>
+          )}
 
-          {isProgress && (<div>
-            <span
-              title="Ticket"
-              onClick={handleClick}
-              id={id}
-              className="text-2xl text-orange-500 cursor-pointer"
-            >
-              <IoTicketOutline />
-            </span>
+          {isProgress && (
+            <div>
+              <span
+                title="Ticket"
+                onClick={handleClick}
+                id={id}
+                className="text-2xl text-orange-500 cursor-pointer"
+              >
+                <IoTicketOutline />
+              </span>
 
-            <Popover
-              id={id}
-              open={open}
-              anchorEl={anchorEl}
-              onClose={handleClose}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
-              }}
-            >
-              <Typography
-                sx={{
-                  p: 2,
-                  background: "#5F9EA0",
-                  width: "100%",
-                  textAlign: "center",
-                  fontFamily: "sans-serif",
-                  fontSize: "1.2rem",
-                  color: "whitesmoke",
+              <Popover
+                id={id}
+                open={open}
+                anchorEl={anchorEl}
+                onClose={handleClose}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "left",
                 }}
               >
-                Tickets for this Job
-              </Typography>
+                <Typography
+                  sx={{
+                    p: 2,
+                    background: "#5F9EA0",
+                    width: "100%",
+                    textAlign: "center",
+                    fontFamily: "sans-serif",
+                    fontSize: "1.2rem",
+                    color: "whitesmoke",
+                  }}
+                >
+                  Tickets for this Job
+                </Typography>
 
-              <div>
-                <TicketsPopUp
-                  clientName={row?.original?.clientName}
-                  handleClose={handleClose}
-                />
-              </div>
-            </Popover>
-          </div>)}
+                <div>
+                  <TicketsPopUp
+                    clientName={row?.original?.clientName}
+                    handleClose={handleClose}
+                  />
+                </div>
+              </Popover>
+            </div>
+          )}
+
+          <div>
+            {docLink ? (
+              <a
+                href={docLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Open Google Drive link"
+                className="text-orange-600 hover:text-orange-700"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <FaGoogleDrive className="h-5 w-5" />
+              </a>
+            ) : (
+              <span
+                title="No Google Drive link added"
+                className="text-gray-400 cursor-not-allowed"
+              >
+                <FaGoogleDrive className="h-5 w-5" />
+              </span>
+            )}
+          </div>
 
           <div
             title="Comments"
@@ -205,30 +223,32 @@ export const actionsColumn = ({
             </span>
           </div>)} */}
 
-          {isProgress && (<div
-            className="relative"
-            title="Move to Lead"
-            onClick={() => {
-              moveJobToLead(row.original);
-            }}
-          >
-            <span className="text-[1rem] cursor-pointer relative">
-              <MdDriveFileMoveOutline className="h-6 w-6 text-orange-600 " />
-            </span>
-          </div>)}
+          {isProgress && (
+            <div
+              className="relative"
+              title="Move to Lead"
+              onClick={() => {
+                moveJobToLead(row.original);
+              }}
+            >
+              <span className="text-[1rem] cursor-pointer relative">
+                <MdDriveFileMoveOutline className="h-6 w-6 text-orange-600 " />
+              </span>
+            </div>
+          )}
 
-            {isCompleted && (
-               <div
-                className="flex items-center justify-center gap-1 w-full h-full"
-                onClick={() => {
-                  handleUpdateClientStatus(row.original._id);
-                }}
-              >
-                <span className="text-[1rem] cursor-pointer">
-                  <IoRemoveCircle className="h-5 w-5 text-red-500 hover:text-red-600" />
-                </span>
-              </div>
-            )}
+          {isCompleted && (
+            <div
+              className="flex items-center justify-center gap-1 w-full h-full"
+              onClick={() => {
+                handleUpdateClientStatus(row.original._id);
+              }}
+            >
+              <span className="text-[1rem] cursor-pointer">
+                <IoRemoveCircle className="h-5 w-5 text-red-500 hover:text-red-600" />
+              </span>
+            </div>
+          )}
 
           {hasAddComplainPermission && (
             <button
@@ -253,6 +273,6 @@ export const actionsColumn = ({
         </div>
       );
     },
-    size: isProgress ? 170 :100,
+    size: isProgress ? 190 : 120,
   };
 };

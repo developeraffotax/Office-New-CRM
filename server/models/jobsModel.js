@@ -47,6 +47,8 @@ const jobSchema = new mongoose.Schema(
     jobHolder: {
       type: String,
     },
+
+    docLink: { type: String, default: "", trim: true },
   },
   { timestamps: true }
 );

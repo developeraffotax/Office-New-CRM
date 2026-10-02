@@ -6,23 +6,28 @@ import axios from "axios";
 import StatusPills from "../../utlis/StatusPills";
 import { trimPayload } from "../../pages/Jobs/utils/utils";
 import { LEADS_SOURCES } from "../../constants/constants";
+import JobDriveLinkButton from "./JobDriveLinkButton";
 
-
-const jobStatuses = [ "Quote", "Data", "Progress",  "Revision", "Approval", "Submission", "Billing", "Feedback", "Missing Info", "Inactive"]
-
+const jobStatuses = [
+  "Quote",
+  "Data",
+  "Progress",
+  "Revision",
+  "Approval",
+  "Submission",
+  "Billing",
+  "Feedback",
+  "Missing Info",
+  "Inactive",
+];
 
 export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
-
-
-
-
   const [loading, setLoading] = useState(false);
   const [clientName, setClientName] = useState("");
   const [regNumber, setRegNumber] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
-    const [phone, setPhone] = useState("");
-
+  const [phone, setPhone] = useState("");
 
   const [totalHours, setTotalHours] = useState("");
   const [currentDate, setCurrentDate] = useState("");
@@ -45,7 +50,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
 
   const [clientPaidFee, setClientPaidFee] = useState("");
 
-    const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const [clientBookKeepingFormData, setClientBookKeepingFormData] = useState({
     clientId: "",
@@ -57,8 +62,9 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
-        leadUser: "",
+    leadUser: "",
     jobStatus: "",
+    docLink: "",
   });
   const [clientPayRollFormData, setClientPayRollFormData] = useState({
     clientId: "",
@@ -70,8 +76,9 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
-        leadUser: "",
+    leadUser: "",
     jobStatus: "",
+    docLink: "",
   });
   const [clientVatReturnFormData, setClientVatReturnFormData] = useState({
     clientId: "",
@@ -83,8 +90,9 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
-        leadUser: "",
+    leadUser: "",
     jobStatus: "",
+    docLink: "",
   });
   const [clientPersonalTaxFormData, setClientPersonalTaxFormData] = useState({
     clientId: "",
@@ -96,8 +104,9 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
-        leadUser: "",
+    leadUser: "",
     jobStatus: "",
+    docLink: "",
   });
   const [clientAccountsFormData, setClientAccountsFormData] = useState({
     clientId: "",
@@ -109,8 +118,9 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
-        leadUser: "",
+    leadUser: "",
     jobStatus: "",
+    docLink: "",
   });
 
   const [clientCompanySecFormData, setClientCompanySecFormData] = useState({
@@ -123,8 +133,9 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
-        leadUser: "",
+    leadUser: "",
     jobStatus: "",
+    docLink: "",
   });
 
   const [clientAddressFormData, setClientAddressFormData] = useState({
@@ -137,28 +148,15 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
-        leadUser: "",
+    leadUser: "",
     jobStatus: "",
+    docLink: "",
   });
 
   const [jobs, setJobs] = useState([]);
   const [users, setUsers] = useState([]);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
   const [clientStatus, setClientStatus] = useState("");
-
 
   // useEffect(() => {
 
@@ -170,10 +168,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
   //     setJobs((prev) => prev.map((job) => ({ ...job, jobStatus: "Progress" })));
   //   }
 
-
-
   //   jobs.forEach((job) => {
-       
 
   //     switch (job.jobName) {
   //       case "Bookkeeping": return setClientBookKeepingFormData((prevFormData) => ({ ...prevFormData, jobStatus: job.jobStatus, }));
@@ -187,58 +182,45 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
   //     }
   //   })
 
-
   // } , [clientStatus, jobs]);
 
-
-
-
-
   useEffect(() => {
-  if (!clientStatus) return;
+    if (!clientStatus) return;
 
-  // Set all job statuses in one go if status is Inactive or Progress
-  if (clientStatus === "Inactive" || clientStatus === "Progress") {
-    const updatedJobs = jobs.map((job) => ({
-      ...job,
-      jobStatus: clientStatus,
-    }));
-    setJobs(updatedJobs);
+    // Set all job statuses in one go if status is Inactive or Progress
+    if (clientStatus === "Inactive" || clientStatus === "Progress") {
+      const updatedJobs = jobs.map((job) => ({
+        ...job,
+        jobStatus: clientStatus,
+      }));
+      setJobs(updatedJobs);
 
-    // Map job name to updater function
-    const formUpdaters = {
-      Bookkeeping: setClientBookKeepingFormData,
-      Payroll: setClientPayRollFormData,
-      "Vat Return": setClientVatReturnFormData,
-      "Personal Tax": setClientPersonalTaxFormData,
-      Accounts: setClientAccountsFormData,
-      "Company Sec": setClientCompanySecFormData,
-      Address: setClientAddressFormData,
-    };
+      // Map job name to updater function
+      const formUpdaters = {
+        Bookkeeping: setClientBookKeepingFormData,
+        Payroll: setClientPayRollFormData,
+        "Vat Return": setClientVatReturnFormData,
+        "Personal Tax": setClientPersonalTaxFormData,
+        Accounts: setClientAccountsFormData,
+        "Company Sec": setClientCompanySecFormData,
+        Address: setClientAddressFormData,
+      };
 
-    // Loop once, call the updater functions
-    updatedJobs.forEach(({ jobName, jobStatus }) => {
-      const updater = formUpdaters[jobName];
-      if (updater) {
-        updater((prev) => ({ ...prev, jobStatus }));
-      }
-    });
-  }
-}, [clientStatus]);
-
-
-  
-
- 
+      // Loop once, call the updater functions
+      updatedJobs.forEach(({ jobName, jobStatus }) => {
+        const updater = formUpdaters[jobName];
+        if (updater) {
+          updater((prev) => ({ ...prev, jobStatus }));
+        }
+      });
+    }
+  }, [clientStatus]);
 
   // const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
 
-  
-     const sources = useMemo(() => {
-          return [...LEADS_SOURCES]
-    
-      }, [])
-
+  const sources = useMemo(() => {
+    return [...LEADS_SOURCES];
+  }, []);
 
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
   const partners = ["Affotax", "Outsource", "OTL"];
@@ -257,13 +239,13 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
   const getClient = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/single/client/${jobId}`
+        `${process.env.REACT_APP_API_URL}/api/v1/client/single/client/${jobId}`,
       );
 
       const clientDetail = data.clientJob;
- 
+
       const formattedDate = new Date(
-        clientDetail.currentDate
+        clientDetail.currentDate,
       ).toLocaleDateString("en-CA");
 
       setClientName(clientDetail.clientName);
@@ -311,7 +293,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     try {
       const encodedCompanyName = encodeURIComponent(companyName);
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/jobs?companyName=${encodedCompanyName}`
+        `${process.env.REACT_APP_API_URL}/api/v1/client/jobs?companyName=${encodedCompanyName}`,
       );
 
       const clientJobs = data.clientJobs;
@@ -338,6 +320,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
                 leadUser: job.leadUser || prevFormData.leadUser,
                 jobStatus: job.jobStatus || prevFormData.jobStatus,
+                docLink: job.docLink || prevFormData.docLink,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -363,6 +346,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
                 leadUser: job.leadUser || prevFormData.leadUser,
                 jobStatus: job.jobStatus || prevFormData.jobStatus,
+                docLink: job.docLink || prevFormData.docLink,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -388,6 +372,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
                 leadUser: job.leadUser || prevFormData.leadUser,
                 jobStatus: job.jobStatus || prevFormData.jobStatus,
+                docLink: job.docLink || prevFormData.docLink,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -413,6 +398,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
                 leadUser: job.leadUser || prevFormData.leadUser,
                 jobStatus: job.jobStatus || prevFormData.jobStatus,
+                docLink: job.docLink || prevFormData.docLink,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -438,6 +424,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
                 leadUser: job.leadUser || prevFormData.leadUser,
                 jobStatus: job.jobStatus || prevFormData.jobStatus,
+                docLink: job.docLink || prevFormData.docLink,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -463,6 +450,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
                 leadUser: job.leadUser || prevFormData.leadUser,
                 jobStatus: job.jobStatus || prevFormData.jobStatus,
+                docLink: job.docLink || prevFormData.docLink,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -488,6 +476,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
                 leadUser: job.leadUser || prevFormData.leadUser,
                 jobStatus: job.jobStatus || prevFormData.jobStatus,
+                docLink: job.docLink || prevFormData.docLink,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -503,7 +492,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     } catch (error) {
       console.log(error);
       toast.error(
-        error?.response?.data?.message || "Error in fetching client jobs"
+        error?.response?.data?.message || "Error in fetching client jobs",
       );
     } finally {
       setLoading(false);
@@ -517,7 +506,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
       setJobs((prevJobs) => [...prevJobs, formData]);
     } else {
       setJobs((prevJobs) =>
-        prevJobs.filter((job) => job.jobName !== formData.jobName)
+        prevJobs.filter((job) => job.jobName !== formData.jobName),
       );
     }
   };
@@ -529,7 +518,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
 
       setJobs((prevJobs) => {
         const jobIndex = prevJobs.findIndex(
-          (job) => job.jobName === updatedData.jobName
+          (job) => job.jobName === updatedData.jobName,
         );
         if (jobIndex !== -1) {
           const updatedJobs = [...prevJobs];
@@ -548,14 +537,15 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
       );
       setUsers(
         data?.users?.filter((user) =>
-          user?.role?.access?.some((item) => item?.permission?.includes("Jobs"))
-        )
+          user?.role?.access?.some((item) =>
+            item?.permission?.includes("Jobs"),
+          ),
+        ),
       );
- 
     } catch (error) {
       console.log(error);
     }
@@ -571,42 +561,47 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
   const handleUpdateJob = async (e) => {
     e.preventDefault();
 
-        setSubmitted(true);
-    
-        const payload = {
-              clientName,
-              regNumber,
-              companyName,
-              email,
-              phone,
-              totalHours,
-              currentDate,
-              source,
-              clientType,
-              partner,
-              country,
-              fee,
-              ctLogin,
-              ctPassword,
-              pyeLogin,
-              pyePassword,
-              trLogin,
-              trPassword,
-              vatLogin,
-              vatPassword,
-              authCode,
-              utr,
-              personalCode,
-              clientPaidFee,
-              jobs,
-            }
-    
-        const trimmedPayload = trimPayload(payload);
-    
-        if (!trimmedPayload.clientName.trim() || !trimmedPayload.companyName.trim() || !trimmedPayload.source.trim() || !trimmedPayload.partner.trim() || !trimmedPayload.clientPaidFee.trim() ) {
-          return toast.error("Fill the required fields!");
-        }
+    setSubmitted(true);
 
+    const payload = {
+      clientName,
+      regNumber,
+      companyName,
+      email,
+      phone,
+      totalHours,
+      currentDate,
+      source,
+      clientType,
+      partner,
+      country,
+      fee,
+      ctLogin,
+      ctPassword,
+      pyeLogin,
+      pyePassword,
+      trLogin,
+      trPassword,
+      vatLogin,
+      vatPassword,
+      authCode,
+      utr,
+      personalCode,
+      clientPaidFee,
+      jobs,
+    };
+
+    const trimmedPayload = trimPayload(payload);
+
+    if (
+      !trimmedPayload.clientName.trim() ||
+      !trimmedPayload.companyName.trim() ||
+      !trimmedPayload.source.trim() ||
+      !trimmedPayload.partner.trim() ||
+      !trimmedPayload.clientPaidFee.trim()
+    ) {
+      return toast.error("Fill the required fields!");
+    }
 
     if (jobs.length === 0) {
       return toast.error("At least one job is required!");
@@ -615,15 +610,13 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/job`,
-        trimmedPayload
+        trimmedPayload,
       );
       if (data) {
         allClientJobData();
         toast.success("Job updated successfully!");
         setIsOpen(false);
       }
-
-      
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
@@ -649,24 +642,17 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     setCurrentDate(date);
   }, []);
 
-
-
-
-
-
   const handlePillChange = (value) => {
     setJobs((prevJobs) =>
       prevJobs.map((job) =>
         job.jobName === value.jobName
           ? { ...job, jobStatus: value.status }
-          : job
-      )
+          : job,
+      ),
     );
-  }
+  };
 
-  
   const isInvalid = (value) => submitted && !value?.trim();
-
 
   return (
     <div className="relative w-full sm:w-full lg:w-[95%] xl:w-[85%] 2xl:w-[80%] 3xl:w-[70%]    z-[50]  px-12 py-5 shadow-md shadow-black/25 rounded-xl bg-gray-200 hidden1  ">
@@ -674,8 +660,8 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
         <img src="/logo.png" alt="Logo" className="h-[3rem] w-[8rem]" />
       </div> */}
 
-       <button
-       onClick={() => setIsOpen(false)}
+      <button
+        onClick={() => setIsOpen(false)}
         className="absolute top-0 translate-x-[50%] -translate-y-[50%] z-[9999] right-0 p-2 rounded-full bg-gray-500 shadow-md hover:shadow-lg transition-all duration-200 text-white  hover:bg-orange-500 outline-none"
         aria-label="Close Modal"
       >
@@ -687,7 +673,11 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
           stroke="currentColor"
           strokeWidth={2}
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 18L18 6M6 6l12 12"
+          />
         </svg>
       </button>
 
@@ -710,9 +700,10 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
               <input
                 type="text"
                 placeholder="Client Name"
-                className={`${style.input} ${ isInvalid(clientName) ? "border-red-500" : "" }`}
+                className={`${style.input} ${
+                  isInvalid(clientName) ? "border-red-500" : ""
+                }`}
                 value={clientName}
-                 
                 onChange={(e) => setClientName(e.target.value)}
               />
               <input
@@ -725,8 +716,9 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
               <input
                 type="text"
                 placeholder="Company Name"
-        
-                className={`${style.input} ${ isInvalid(companyName) ? "border-red-500" : "" }`}
+                className={`${style.input} ${
+                  isInvalid(companyName) ? "border-red-500" : ""
+                }`}
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
               />
@@ -738,15 +730,13 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 onChange={(e) => setEmail(e.target.value)}
               />
 
-               <input
-                  type="tel"
-                  placeholder="Phone Number"
-                  className={`${style.input}`}
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-              
-
+              <input
+                type="tel"
+                placeholder="Phone Number"
+                className={`${style.input}`}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
 
               {/* <label className="flex items-center space-x-2 w-full bg-gray-200">
               <span className="font-medium w-[16rem]  rounded-md py-[5px] px-[.6rem]">
@@ -767,9 +757,6 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
 
                 
               </label> */}
-
-
-
             </div>
             {/* 2 */}
             <div className="flex flex-col gap-3">
@@ -784,7 +771,9 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 className={`${style.input}`}
               />
               <select
-                className={`${style.input} h-[2.5rem] ${ isInvalid(source) ? "border-red-500" : "" }`}
+                className={`${style.input} h-[2.5rem] ${
+                  isInvalid(source) ? "border-red-500" : ""
+                }`}
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
               >
@@ -810,7 +799,9 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
               </select>
 
               <select
-                className={`${style.input} h-[2.5rem] ${ isInvalid(partner) ? "border-red-500" : "" }`}
+                className={`${style.input} h-[2.5rem] ${
+                  isInvalid(partner) ? "border-red-500" : ""
+                }`}
                 value={partner}
                 onChange={(e) => setPartner(e.target.value)}
               >
@@ -822,30 +813,25 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-              
+              <div className="w-full flex items-center justify-between gap-2">
+                <input
+                  type="text"
+                  placeholder="Paid Fee"
+                  className={`${style.input} w-[50%] ${
+                    isInvalid(clientPaidFee) ? "border-red-500" : ""
+                  }`}
+                  value={clientPaidFee}
+                  onChange={(e) => setClientPaidFee(e.target.value)}
+                />
 
-              <div className="w-full flex items-center justify-between gap-2">  
-
-
-             <input
-                type="text"
-                placeholder="Paid Fee"
-                className={`${style.input} w-[50%] ${ isInvalid(clientPaidFee) ? "border-red-500" : "" }`}
-                value={clientPaidFee}
-                onChange={(e) => setClientPaidFee(e.target.value)}
-              />
-
-              <input
-                type="text"
-                placeholder="Hours"
-                className={`${style.input} w-[50%]`}
-                value={totalHours}
-                onChange={(e) => setTotalHours(e.target.value)}
-              />
-
+                <input
+                  type="text"
+                  placeholder="Hours"
+                  className={`${style.input} w-[50%]`}
+                  value={totalHours}
+                  onChange={(e) => setTotalHours(e.target.value)}
+                />
               </div>
-
-
             </div>
             {/* 3 */}
             <div className="flex flex-col gap-3">
@@ -966,11 +952,11 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                   onChange={(e) =>
                     handleCheckboxChange(
                       clientBookKeepingFormData,
-                      e.target.checked
+                      e.target.checked,
                     )
                   }
                   checked={jobs.some(
-                    (job) => job.jobName === clientBookKeepingFormData.jobName
+                    (job) => job.jobName === clientBookKeepingFormData.jobName,
                   )}
                   style={{ width: "18px", height: "18px" }}
                 />
@@ -988,7 +974,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientBookKeepingFormData,
                       setClientBookKeepingFormData,
                       "yearEnd",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1005,7 +991,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientBookKeepingFormData,
                       setClientBookKeepingFormData,
                       "jobDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1022,7 +1008,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientBookKeepingFormData,
                       setClientBookKeepingFormData,
                       "workDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1039,7 +1025,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientBookKeepingFormData,
                       setClientBookKeepingFormData,
                       "hours",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1055,14 +1041,12 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientBookKeepingFormData,
                       setClientBookKeepingFormData,
                       "fee",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
                 />
               </div>
-
-
 
               <select
                 value={clientBookKeepingFormData.jobHolder}
@@ -1071,7 +1055,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientBookKeepingFormData,
                     setClientBookKeepingFormData,
                     "jobHolder",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1084,8 +1068,6 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-
-
               <select
                 value={clientBookKeepingFormData.lead}
                 onChange={(e) =>
@@ -1093,7 +1075,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientBookKeepingFormData,
                     setClientBookKeepingFormData,
                     "lead",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1106,17 +1088,14 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-
-
-
-                            <select
+              <select
                 value={clientBookKeepingFormData.leadUser}
                 onChange={(e) =>
                   handleFormDataChange(
                     clientBookKeepingFormData,
                     setClientBookKeepingFormData,
                     "leadUser",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1129,33 +1108,41 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-
-
-
-
-
-
               <select
-                              value={clientBookKeepingFormData.jobStatus}
-                              onChange={(e) =>
-                                handleFormDataChange(
-                                  clientBookKeepingFormData,
-                                  setClientBookKeepingFormData,
-                                  "jobStatus",
-                                  e.target.value
-                                )
-                              }
-                              className={`${style.input} w-full `}
-                            >
-                              <option value="">Job Status</option>
-                              {jobStatuses.map((el) => (
-                                <option key={el} value={el}>
-                                  {el}
-                                </option>
-                              ))}
-                            </select>
+                value={clientBookKeepingFormData.jobStatus}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientBookKeepingFormData,
+                    setClientBookKeepingFormData,
+                    "jobStatus",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">Job Status</option>
+                {jobStatuses.map((el) => (
+                  <option key={el} value={el}>
+                    {el}
+                  </option>
+                ))}
+              </select>
 
-
+              <JobDriveLinkButton
+                jobName={clientBookKeepingFormData.jobName}
+                enabled={jobs.some(
+                  (job) => job.jobName === clientBookKeepingFormData.jobName,
+                )}
+                link={clientBookKeepingFormData.docLink}
+                onSave={(link) =>
+                  handleFormDataChange(
+                    clientBookKeepingFormData,
+                    setClientBookKeepingFormData,
+                    "docLink",
+                    link,
+                  )
+                }
+              />
             </div>
 
             {/* Payroll */}
@@ -1166,11 +1153,11 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                   onChange={(e) =>
                     handleCheckboxChange(
                       clientPayRollFormData,
-                      e.target.checked
+                      e.target.checked,
                     )
                   }
                   checked={jobs.some(
-                    (job) => job.jobName === clientPayRollFormData.jobName
+                    (job) => job.jobName === clientPayRollFormData.jobName,
                   )}
                   style={{ width: "18px", height: "18px" }}
                 />
@@ -1188,7 +1175,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientPayRollFormData,
                       setClientPayRollFormData,
                       "yearEnd",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1205,7 +1192,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientPayRollFormData,
                       setClientPayRollFormData,
                       "jobDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1222,7 +1209,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientPayRollFormData,
                       setClientPayRollFormData,
                       "workDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1239,7 +1226,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientPayRollFormData,
                       setClientPayRollFormData,
                       "hours",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1255,13 +1242,12 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientPayRollFormData,
                       setClientPayRollFormData,
                       "fee",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
                 />
               </div>
-
 
               <select
                 value={clientPayRollFormData.jobHolder}
@@ -1270,7 +1256,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientPayRollFormData,
                     setClientPayRollFormData,
                     "jobHolder",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1283,7 +1269,6 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-
               <select
                 value={clientPayRollFormData.lead}
                 onChange={(e) =>
@@ -1291,7 +1276,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientPayRollFormData,
                     setClientPayRollFormData,
                     "lead",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1304,16 +1289,14 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-
-
-                            <select
+              <select
                 value={clientPayRollFormData.leadUser}
                 onChange={(e) =>
                   handleFormDataChange(
                     clientPayRollFormData,
                     setClientPayRollFormData,
                     "leadUser",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1326,30 +1309,41 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
+              <select
+                value={clientPayRollFormData.jobStatus}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientPayRollFormData,
+                    setClientPayRollFormData,
+                    "jobStatus",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">Job Status</option>
+                {jobStatuses.map((el) => (
+                  <option key={el} value={el}>
+                    {el}
+                  </option>
+                ))}
+              </select>
 
-
-               <select
-                              value={clientPayRollFormData.jobStatus}
-                              onChange={(e) =>
-                                handleFormDataChange(
-                                  clientPayRollFormData,
-                                  setClientPayRollFormData,
-                                  "jobStatus",
-                                  e.target.value
-                                )
-                              }
-                              className={`${style.input} w-full `}
-                            >
-                              <option value="">Job Status</option>
-                              {jobStatuses.map((el) => (
-                                <option key={el} value={el}>
-                                  {el}
-                                </option>
-                              ))}
-                            </select>
-
-
-
+              <JobDriveLinkButton
+                jobName={clientPayRollFormData.jobName}
+                enabled={jobs.some(
+                  (job) => job.jobName === clientPayRollFormData.jobName,
+                )}
+                link={clientPayRollFormData.docLink}
+                onSave={(link) =>
+                  handleFormDataChange(
+                    clientPayRollFormData,
+                    setClientPayRollFormData,
+                    "docLink",
+                    link,
+                  )
+                }
+              />
             </div>
 
             {/* VAT Return */}
@@ -1360,11 +1354,11 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                   onChange={(e) =>
                     handleCheckboxChange(
                       clientVatReturnFormData,
-                      e.target.checked
+                      e.target.checked,
                     )
                   }
                   checked={jobs.some(
-                    (job) => job.jobName === clientVatReturnFormData.jobName
+                    (job) => job.jobName === clientVatReturnFormData.jobName,
                   )}
                   style={{ width: "18px", height: "18px" }}
                 />
@@ -1382,7 +1376,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientVatReturnFormData,
                       setClientVatReturnFormData,
                       "yearEnd",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1399,7 +1393,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientVatReturnFormData,
                       setClientVatReturnFormData,
                       "jobDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1416,7 +1410,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientVatReturnFormData,
                       setClientVatReturnFormData,
                       "workDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1433,7 +1427,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientVatReturnFormData,
                       setClientVatReturnFormData,
                       "hours",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1449,17 +1443,12 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientVatReturnFormData,
                       setClientVatReturnFormData,
                       "fee",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
                 />
               </div>
-
-
-
-
-
 
               <select
                 value={clientVatReturnFormData.jobHolder}
@@ -1468,7 +1457,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientVatReturnFormData,
                     setClientVatReturnFormData,
                     "jobHolder",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1488,7 +1477,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientVatReturnFormData,
                     setClientVatReturnFormData,
                     "lead",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1501,15 +1490,14 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-
-                            <select
+              <select
                 value={clientVatReturnFormData.leadUser}
                 onChange={(e) =>
                   handleFormDataChange(
                     clientVatReturnFormData,
                     setClientVatReturnFormData,
                     "leadUser",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1522,29 +1510,41 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-
-
               <select
-                              value={clientVatReturnFormData.jobStatus}
-                              onChange={(e) =>
-                                handleFormDataChange(
-                                  clientVatReturnFormData,
-                                  setClientVatReturnFormData,
-                                  "jobStatus",
-                                  e.target.value
-                                )
-                              }
-                              className={`${style.input} w-full `}
-                            >
-                              <option value="">Job Status</option>
-                              {jobStatuses.map((el) => (
-                                <option key={el} value={el}>
-                                  {el}
-                                </option>
-                              ))}
-                            </select>
+                value={clientVatReturnFormData.jobStatus}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientVatReturnFormData,
+                    setClientVatReturnFormData,
+                    "jobStatus",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">Job Status</option>
+                {jobStatuses.map((el) => (
+                  <option key={el} value={el}>
+                    {el}
+                  </option>
+                ))}
+              </select>
 
-
+              <JobDriveLinkButton
+                jobName={clientVatReturnFormData.jobName}
+                enabled={jobs.some(
+                  (job) => job.jobName === clientVatReturnFormData.jobName,
+                )}
+                link={clientVatReturnFormData.docLink}
+                onSave={(link) =>
+                  handleFormDataChange(
+                    clientVatReturnFormData,
+                    setClientVatReturnFormData,
+                    "docLink",
+                    link,
+                  )
+                }
+              />
             </div>
             {/* 4 */}
             <div className="flex items-center gap-4">
@@ -1554,11 +1554,11 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                   onChange={(e) =>
                     handleCheckboxChange(
                       clientPersonalTaxFormData,
-                      e.target.checked
+                      e.target.checked,
                     )
                   }
                   checked={jobs.some(
-                    (job) => job.jobName === clientPersonalTaxFormData.jobName
+                    (job) => job.jobName === clientPersonalTaxFormData.jobName,
                   )}
                   style={{ width: "18px", height: "18px" }}
                 />
@@ -1576,7 +1576,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientPersonalTaxFormData,
                       setClientPersonalTaxFormData,
                       "yearEnd",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1593,7 +1593,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientPersonalTaxFormData,
                       setClientPersonalTaxFormData,
                       "jobDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1610,7 +1610,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientPersonalTaxFormData,
                       setClientPersonalTaxFormData,
                       "workDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1627,7 +1627,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientPersonalTaxFormData,
                       setClientPersonalTaxFormData,
                       "hours",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1643,16 +1643,12 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientPersonalTaxFormData,
                       setClientPersonalTaxFormData,
                       "fee",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
                 />
               </div>
-
-
-
-
 
               <select
                 value={clientPersonalTaxFormData.jobHolder}
@@ -1661,7 +1657,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientPersonalTaxFormData,
                     setClientPersonalTaxFormData,
                     "jobHolder",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1674,9 +1670,6 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-
-
-
               <select
                 value={clientPersonalTaxFormData.lead}
                 onChange={(e) =>
@@ -1684,7 +1677,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientPersonalTaxFormData,
                     setClientPersonalTaxFormData,
                     "lead",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1697,8 +1690,6 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-
-              
               <select
                 value={clientPersonalTaxFormData.leadUser}
                 onChange={(e) =>
@@ -1706,7 +1697,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientPersonalTaxFormData,
                     setClientPersonalTaxFormData,
                     "leadUser",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1719,32 +1710,41 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
+              <select
+                value={clientPersonalTaxFormData.jobStatus}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientPersonalTaxFormData,
+                    setClientPersonalTaxFormData,
+                    "jobStatus",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">Job Status</option>
+                {jobStatuses.map((el) => (
+                  <option key={el} value={el}>
+                    {el}
+                  </option>
+                ))}
+              </select>
 
-
-
-
-
-               <select
-                              value={clientPersonalTaxFormData.jobStatus}
-                              onChange={(e) =>
-                                handleFormDataChange(
-                                  clientPersonalTaxFormData,
-                                  setClientPersonalTaxFormData,
-                                  "jobStatus",
-                                  e.target.value
-                                )
-                              }
-                              className={`${style.input} w-full `}
-                            >
-                              <option value="">Job Status</option>
-                              {jobStatuses.map((el) => (
-                                <option key={el} value={el}>
-                                  {el}
-                                </option>
-                              ))}
-                            </select>
-
-
+              <JobDriveLinkButton
+                jobName={clientPersonalTaxFormData.jobName}
+                enabled={jobs.some(
+                  (job) => job.jobName === clientPersonalTaxFormData.jobName,
+                )}
+                link={clientPersonalTaxFormData.docLink}
+                onSave={(link) =>
+                  handleFormDataChange(
+                    clientPersonalTaxFormData,
+                    setClientPersonalTaxFormData,
+                    "docLink",
+                    link,
+                  )
+                }
+              />
             </div>
             {/* 5 */}
             <div className="flex items-center gap-4">
@@ -1754,11 +1754,11 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                   onChange={(e) =>
                     handleCheckboxChange(
                       clientAccountsFormData,
-                      e.target.checked
+                      e.target.checked,
                     )
                   }
                   checked={jobs.some(
-                    (job) => job.jobName === clientAccountsFormData.jobName
+                    (job) => job.jobName === clientAccountsFormData.jobName,
                   )}
                   style={{ width: "18px", height: "18px" }}
                 />
@@ -1776,7 +1776,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientAccountsFormData,
                       setClientAccountsFormData,
                       "yearEnd",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1793,7 +1793,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientAccountsFormData,
                       setClientAccountsFormData,
                       "jobDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1810,7 +1810,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientAccountsFormData,
                       setClientAccountsFormData,
                       "workDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1827,7 +1827,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientAccountsFormData,
                       setClientAccountsFormData,
                       "hours",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1843,22 +1843,12 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientAccountsFormData,
                       setClientAccountsFormData,
                       "fee",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
                 />
               </div>
-
-
-
-
-
-
-
-
-
-
 
               <select
                 value={clientAccountsFormData.jobHolder}
@@ -1867,7 +1857,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientAccountsFormData,
                     setClientAccountsFormData,
                     "jobHolder",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1880,7 +1870,6 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-
               <select
                 value={clientAccountsFormData.lead}
                 onChange={(e) =>
@@ -1888,7 +1877,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientAccountsFormData,
                     setClientAccountsFormData,
                     "lead",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1901,10 +1890,6 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-
-
-
-              
               <select
                 value={clientAccountsFormData.leadUser}
                 onChange={(e) =>
@@ -1912,7 +1897,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientAccountsFormData,
                     setClientAccountsFormData,
                     "leadUser",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1925,37 +1910,41 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
+              <select
+                value={clientAccountsFormData.jobStatus}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientAccountsFormData,
+                    setClientAccountsFormData,
+                    "jobStatus",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">Job Status</option>
+                {jobStatuses.map((el) => (
+                  <option key={el} value={el}>
+                    {el}
+                  </option>
+                ))}
+              </select>
 
-
-
-
-
-
-
-
-
-
-               <select
-                              value={clientAccountsFormData.jobStatus}
-                              onChange={(e) =>
-                                handleFormDataChange(
-                                  clientAccountsFormData,
-                                  setClientAccountsFormData,
-                                  "jobStatus",
-                                  e.target.value
-                                )
-                              }
-                              className={`${style.input} w-full `}
-                            >
-                              <option value="">Job Status</option>
-                              {jobStatuses.map((el) => (
-                                <option key={el} value={el}>
-                                  {el}
-                                </option>
-                              ))}
-                            </select>
-
-
+              <JobDriveLinkButton
+                jobName={clientAccountsFormData.jobName}
+                enabled={jobs.some(
+                  (job) => job.jobName === clientAccountsFormData.jobName,
+                )}
+                link={clientAccountsFormData.docLink}
+                onSave={(link) =>
+                  handleFormDataChange(
+                    clientAccountsFormData,
+                    setClientAccountsFormData,
+                    "docLink",
+                    link,
+                  )
+                }
+              />
             </div>
             {/* 6 */}
             <div className="flex items-center gap-4">
@@ -1965,11 +1954,11 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                   onChange={(e) =>
                     handleCheckboxChange(
                       clientCompanySecFormData,
-                      e.target.checked
+                      e.target.checked,
                     )
                   }
                   checked={jobs.some(
-                    (job) => job.jobName === clientCompanySecFormData.jobName
+                    (job) => job.jobName === clientCompanySecFormData.jobName,
                   )}
                   style={{ width: "18px", height: "18px" }}
                 />
@@ -1987,7 +1976,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientCompanySecFormData,
                       setClientCompanySecFormData,
                       "yearEnd",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -2004,7 +1993,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientCompanySecFormData,
                       setClientCompanySecFormData,
                       "jobDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -2021,7 +2010,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientCompanySecFormData,
                       setClientCompanySecFormData,
                       "workDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -2038,7 +2027,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientCompanySecFormData,
                       setClientCompanySecFormData,
                       "hours",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -2054,17 +2043,12 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientCompanySecFormData,
                       setClientCompanySecFormData,
                       "fee",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
                 />
               </div>
-
-
-
-
-
 
               <select
                 value={clientCompanySecFormData.jobHolder}
@@ -2073,7 +2057,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientCompanySecFormData,
                     setClientCompanySecFormData,
                     "jobHolder",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -2086,8 +2070,6 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-
-
               <select
                 value={clientCompanySecFormData.lead}
                 onChange={(e) =>
@@ -2095,7 +2077,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientCompanySecFormData,
                     setClientCompanySecFormData,
                     "lead",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -2108,16 +2090,14 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-
-
-                            <select
+              <select
                 value={clientCompanySecFormData.leadUser}
                 onChange={(e) =>
                   handleFormDataChange(
                     clientCompanySecFormData,
                     setClientCompanySecFormData,
                     "leadUser",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -2130,33 +2110,41 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
+              <select
+                value={clientCompanySecFormData.jobStatus}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientAccountsFormData,
+                    setClientCompanySecFormData,
+                    "jobStatus",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">Job Status</option>
+                {jobStatuses.map((el) => (
+                  <option key={el} value={el}>
+                    {el}
+                  </option>
+                ))}
+              </select>
 
-
-
-
-
-               <select
-                              value={clientCompanySecFormData.jobStatus}
-                              onChange={(e) =>
-                                handleFormDataChange(
-                                  clientAccountsFormData,
-                                  setClientCompanySecFormData,
-                                  "jobStatus",
-                                  e.target.value
-                                )
-                              }
-                              className={`${style.input} w-full `}
-                            >
-                              <option value="">Job Status</option>
-                              {jobStatuses.map((el) => (
-                                <option key={el} value={el}>
-                                  {el}
-                                </option>
-                              ))}
-                            </select>
-              
-
-
+              <JobDriveLinkButton
+                jobName={clientCompanySecFormData.jobName}
+                enabled={jobs.some(
+                  (job) => job.jobName === clientCompanySecFormData.jobName,
+                )}
+                link={clientCompanySecFormData.docLink}
+                onSave={(link) =>
+                  handleFormDataChange(
+                    clientCompanySecFormData,
+                    setClientCompanySecFormData,
+                    "docLink",
+                    link,
+                  )
+                }
+              />
             </div>
             {/* 7 */}
             <div className="flex items-center gap-4">
@@ -2166,11 +2154,11 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                   onChange={(e) =>
                     handleCheckboxChange(
                       clientAddressFormData,
-                      e.target.checked
+                      e.target.checked,
                     )
                   }
                   checked={jobs.some(
-                    (job) => job.jobName === clientAddressFormData.jobName
+                    (job) => job.jobName === clientAddressFormData.jobName,
                   )}
                   style={{ width: "18px", height: "18px" }}
                 />
@@ -2188,7 +2176,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientAddressFormData,
                       setClientAddressFormData,
                       "yearEnd",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -2205,7 +2193,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientAddressFormData,
                       setClientAddressFormData,
                       "jobDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -2222,7 +2210,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientAddressFormData,
                       setClientAddressFormData,
                       "workDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -2239,7 +2227,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientAddressFormData,
                       setClientAddressFormData,
                       "hours",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -2255,18 +2243,12 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                       clientAddressFormData,
                       setClientAddressFormData,
                       "fee",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
                 />
               </div>
-
-
-
-
-
-
 
               <select
                 value={clientAddressFormData.jobHolder}
@@ -2275,7 +2257,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientAddressFormData,
                     setClientAddressFormData,
                     "jobHolder",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -2288,9 +2270,6 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-
-
-
               <select
                 value={clientAddressFormData.lead}
                 onChange={(e) =>
@@ -2298,7 +2277,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientAddressFormData,
                     setClientAddressFormData,
                     "lead",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -2311,7 +2290,6 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-              
               <select
                 value={clientAddressFormData.leadUser}
                 onChange={(e) =>
@@ -2319,7 +2297,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                     clientAddressFormData,
                     setClientAddressFormData,
                     "leadUser",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -2332,52 +2310,51 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
+              <select
+                value={clientAddressFormData.jobStatus}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientAddressFormData,
+                    setClientAddressFormData,
+                    "jobStatus",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">Job Status</option>
+                {jobStatuses.map((el) => (
+                  <option key={el} value={el}>
+                    {el}
+                  </option>
+                ))}
+              </select>
 
-
-
-
-
-
-
-
-
-
-
-
-               <select
-                              value={clientAddressFormData.jobStatus}
-                              onChange={(e) =>
-                                handleFormDataChange(
-                                  clientAddressFormData,
-                                  setClientAddressFormData,
-                                  "jobStatus",
-                                  e.target.value
-                                )
-                              }
-                              className={`${style.input} w-full `}
-                            >
-                              <option value="">Job Status</option>
-                              {jobStatuses.map((el) => (
-                                <option key={el} value={el}>
-                                  {el}
-                                </option>
-                              ))}
-                            </select>
+              <JobDriveLinkButton
+                jobName={clientAddressFormData.jobName}
+                enabled={jobs.some(
+                  (job) => job.jobName === clientAddressFormData.jobName,
+                )}
+                link={clientAddressFormData.docLink}
+                onSave={(link) =>
+                  handleFormDataChange(
+                    clientAddressFormData,
+                    setClientAddressFormData,
+                    "docLink",
+                    link,
+                  )
+                }
+              />
             </div>
           </div>
           {/*  */}
           <div className="w-full flex items-center justify-between gap-4  pb-6">
-             
-                      
-              
-           
-<div className=" ">
-  <StatusPills selected={clientStatus} onChange={(status) => setClientStatus(status) }/>
-</div>
-                 
-                         
-
-
+            <div className=" ">
+              <StatusPills
+                selected={clientStatus}
+                onChange={(status) => setClientStatus(status)}
+              />
+            </div>
 
             <button
               disabled={loading}

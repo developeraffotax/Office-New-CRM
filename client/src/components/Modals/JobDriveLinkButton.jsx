@@ -22,7 +22,7 @@ function DriveLinkModal({ jobName, initialValue, onSave, onClose }) {
   return createPortal(
     <div
       className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50"
-      onClick={onClose}
+      // onClick={onClose}
     >
       <div
         className="w-[90%] max-w-[480px] rounded-xl bg-white p-5 shadow-xl"

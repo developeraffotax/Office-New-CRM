@@ -32,6 +32,7 @@ import ProfileModal from "../../Modals/ProfileModal";
 import SidebarDesktop from "./SidebarDesktop";
 import SidebarMobile from "./SidebarMobile";
 import { isNotificationAllowed } from "../header/getNotificationCategory";
+import { useWhatsappUnread } from "../../../context/WhatsappUnreadContext";
 
 export default function Sidebar({
   hide = false,
@@ -75,6 +76,25 @@ export default function Sidebar({
 
   const threadAssignedCount = getUnreadCount("thread_assigned");
   const threadReceivedCount = getUnreadCount("email_received");
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const { unread } = useWhatsappUnread();
+const whatsappUnreadConversations = unread.conversations;
+const whatsappUnreadMessages = unread.messages;
+
+
+ 
 
   useEffect(() => {
     const firstPathSegment = location.pathname.split("/")[1];
@@ -194,6 +214,30 @@ export default function Sidebar({
           "WhatsApp",
           "/whatsapp?companyName=affotax",
           FaWhatsapp,
+
+                    {
+            badges: [
+            whatsappUnreadConversations && {
+              key: "new_whatsapp_conversations",
+              title: "New Whatsapp Conversations",
+              count: whatsappUnreadConversations,
+              className: "bg-blue-50 text-blue-700 border border-blue-200",
+              
+            },
+            // threadAssignedCount && {
+            //   key: "assigned_threads",
+            //   title: "New Assigned Threads",
+            //   count: threadAssignedCount,
+            //   className: "bg-amber-50 text-amber-800 border border-amber-200",
+   
+
+
+            // },
+          ].filter(Boolean),
+          },
+
+
+
         ),
 
       hasAccess("Templates") &&
@@ -308,6 +352,7 @@ export default function Sidebar({
     ticketReceivedCount,
     threadAssignedCount,
     threadReceivedCount,
+    whatsappUnreadConversations,
     showCrmNotifications,
     showEmailNotifications,
 

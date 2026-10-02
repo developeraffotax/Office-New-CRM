@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { buildConversationQuery } from "../utils/buildConversationQuery";
 import { useSocket } from "../../../context/socketProvider";
+import { useWhatsappUnread } from "../../../context/WhatsappUnreadContext";
 
 export function useWhatsAppConversations({ endpoint }) {
     const socket = useSocket();
@@ -17,6 +18,7 @@ export function useWhatsAppConversations({ endpoint }) {
   const [conversations, setConversations] = useState([]);
   const [pagination, setPagination] = useState({});
 
+    const { unread, refreshUnread } = useWhatsappUnread();
 
 // 1. Extract the primitives from searchParams first
 const companyNameParam = searchParams.get("companyName") || "";
@@ -209,6 +211,9 @@ const updateConversation = async (_id, updateData) => {
       if(filters.unreadOnly !== "true") {
         fetchConversations({ withLoading: false });
       }
+
+
+      refreshUnread()
       toast.success("Conversation marked as read");
     } catch (err) {
       console.error("Failed to mark read", err);

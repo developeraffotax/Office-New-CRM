@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { listConversations, listMessages, markRead, sendMessage,  updateConversationMetadata, deleteConversation, getWhatsappUserCounts, addReactionToMessage,  } from "../controllers/whatsapp.controller.js";
+import { listConversations, listMessages, markRead, sendMessage,  updateConversationMetadata, deleteConversation, getWhatsappUserCounts, addReactionToMessage, getUnreadTotal,  } from "../controllers/whatsapp.controller.js";
 import multer from "multer";
 import { requiredSignIn } from "../../middlewares/authMiddleware.js";
 import { getAllTemplates } from "../controllers/templates.controller.js";
@@ -54,6 +54,6 @@ router.get("/templates",   getAllTemplates);
  
 
 
-
+router.get("/conversations/unread-total",   getUnreadTotal);
 
 export default router;

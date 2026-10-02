@@ -419,3 +419,95 @@ export const getWhatsappUserCounts = async (req, res, next) => {
       next(error)
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+export const getUnreadTotal = async (req, res) => {
+  try {
+    const { companyName } = req.query;
+    const userId = new mongoose.Types.ObjectId(req.user.user._id);  
+
+    const [result] = await WhatsappConversation.aggregate([
+      {
+        $match: {
+          // companyName,
+          userId,
+          // Mirror whatever visibility rule listConversations uses, e.g.
+          // non-admins only see their assigned chats:
+          // ...(isAdmin ? {} : { userId }),
+        },
+      },
+      {
+        $addFields: {
+          myReadCount: {
+            $ifNull: [
+              {
+                $first: {
+                  $map: {
+                    input: {
+                      $filter: {
+                        input: "$readBy",
+                        cond: { $eq: ["$$this.userId", userId] },
+                      },
+                    },
+                    in: "$$this.readInboundCount",
+                  },
+                },
+              },
+              0,
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          unread: {
+            $max: [0, { $subtract: ["$totalInboundMessages", "$myReadCount"] }],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          messages: { $sum: "$unread" },
+          conversations: { $sum: { $cond: [{ $gt: ["$unread", 0] }, 1, 0] } },
+        },
+      },
+    ]);
+
+
+    console.log('>>>>>>>>>>>>>>>>>>>>',{
+      success: true,
+      messages: result?.messages || 0,
+      conversations: result?.conversations || 0,
+    })
+
+    res.json({
+      success: true,
+      messages: result?.messages || 0,
+      conversations: result?.conversations || 0,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Failed to get unread total" });
+  }
+};

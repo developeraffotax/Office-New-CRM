@@ -62,6 +62,7 @@ export default function ChatRow({
         setActiveChatId(chat?._id);
         if (unreadCount > 0) {
           markAsRead(chat?._id);
+          
         }
       }}
     >

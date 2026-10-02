@@ -20,6 +20,8 @@ import {
 } from "../../redux/slices/globalTimerSlice";
 import { QuickList } from "./QuickList";
 import { isNotificationAllowed } from "./header/getNotificationCategory";
+import { WhatsappUnreadProvider } from "../../context/WhatsappUnreadContext";
+import { hasPermission } from "../../utlis/checkPermission";
 
 /* ---------------- helpers ---------------- */
 
@@ -133,45 +135,47 @@ export default function Layout() {
     <>
       <ReminderModal />
       <OverdueModal />
-
-      <div className="relative w-full h-[100dvh] flex flex-col overflow-hidden">
-        <Header
-          setShowQuickList={setShowQuickList}
-          showQuickList={showQuickList}
-          getQuickList={getQuickList}
-        />
-
-        <div className=" w-full flex flex-1 overflow-hidden">
-          {!showSidebar && (
-            <div className="fixed  md:hidden top-4 left-4 z-20">
-              <IoMenu size={25} onClick={() => setShowSidebar(true)} />
-            </div>
-          )}
-
-          {/* Sidebar — desktop rail + mobile overlay, both handled inside Sidebar */}
-          <Sidebar
-            hide={hideSidebar}
-            setHide={setHideSidebar}
-            mobileOpen={showSidebar}
-            onMobileClose={() => setShowSidebar(false)}
-          />
-
-          {/* Content */}
-          <main className="flex-1 overflow-y-auto pt-0  zoom-out">
-            <Outlet />
-          </main>
-        </div>
-
-        {/* Quick List */}
-        {showQuickList && (
-          <QuickList
-            quickListData={quickListData}
-            setQuickListData={setQuickListData}
+      <WhatsappUnreadProvider enabled={hasPermission(auth?.user, "Whatsapp")}>
+        <div className="relative w-full h-[100dvh] flex flex-col overflow-hidden">
+          <Header
             setShowQuickList={setShowQuickList}
-            updateQuickList={updateQuickList}
+            showQuickList={showQuickList}
+            getQuickList={getQuickList}
           />
-        )}
-      </div>
+
+          <div className=" w-full flex flex-1 overflow-hidden">
+            {!showSidebar && (
+              <div className="fixed  md:hidden top-4 left-4 z-20">
+                <IoMenu size={25} onClick={() => setShowSidebar(true)} />
+              </div>
+            )}
+
+            {/* Sidebar — desktop rail + mobile overlay, both handled inside Sidebar */}
+
+            <Sidebar
+              hide={hideSidebar}
+              setHide={setHideSidebar}
+              mobileOpen={showSidebar}
+              onMobileClose={() => setShowSidebar(false)}
+            />
+
+            {/* Content */}
+            <main className="flex-1 overflow-y-auto pt-0  zoom-out">
+              <Outlet />
+            </main>
+          </div>
+
+          {/* Quick List */}
+          {showQuickList && (
+            <QuickList
+              quickListData={quickListData}
+              setQuickListData={setQuickListData}
+              setShowQuickList={setShowQuickList}
+              updateQuickList={updateQuickList}
+            />
+          )}
+        </div>
+      </WhatsappUnreadProvider>
     </>
   );
 }

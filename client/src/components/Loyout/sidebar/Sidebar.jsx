@@ -25,7 +25,8 @@ import {
   IoMailUnreadOutline,
   FaWhatsapp,
   PiTarget,
-  LuFileSpreadsheet
+  LuFileSpreadsheet,
+  FiEdit
 } from "./sidebarIcons"; 
  
 import { setActive } from "../../../redux/slices/authSlice";
@@ -339,6 +340,13 @@ const whatsappUnreadMessages = unread.messages;
           "/settings",
           VscSettings,
         ),
+
+
+    isAdmin(user) &&
+    common("Sheets", "manage-sheets", "Manage Sheets", "/google-sheets/manage", FiEdit, {
+      activeKey: "google-sheets",
+      matchPath: "/google-sheets/manage",
+    }),
     ].filter(Boolean);
 
 
@@ -351,11 +359,7 @@ const whatsappUnreadMessages = unread.messages;
       dimmed: s.isActive === false,
     });
   }),
-  isAdmin(user) &&
-    common("Sheets", "manage-sheets", "Manage Sheets", "/google-sheets/manage", VscSettings, {
-      activeKey: "google-sheets",
-      matchPath: "/google-sheets/manage",
-    }),
+ 
 ].filter(Boolean);
 
     return {
@@ -364,7 +368,7 @@ const whatsappUnreadMessages = unread.messages;
         sheets,
          showSheets: sheets.length > 0,
       showSettings: settings.length > 0,
-      showSettingsDivider: (sheets.length > 0) || (settings.length > 0),
+      showSettingsDivider: (sheets.length > 0) ,
     };
   }, [
     user,

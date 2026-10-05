@@ -5,7 +5,7 @@ import { RiSettings4Fill } from "react-icons/ri";
 import { LuFileSpreadsheet } from "react-icons/lu";
 
 const itemBase =
-  "relative h-[2.4rem] border rounded-lg cursor-pointer overflow-hidden transition-all duration-100";
+  "relative h-[2.2rem] border rounded-lg cursor-pointer overflow-hidden transition-all duration-100";
 
 const itemState = (active, key) =>
   active === key
@@ -37,9 +37,9 @@ export default function SidebarMenu({
         />
       ))}
 
-{items.showSettingsDivider && <hr className="my-1" />}
 
-      
+
+
       
 
       {items.showSettings && (
@@ -69,7 +69,7 @@ export default function SidebarMenu({
                 }`}
                 onClick={() => setIsSettingsOpen((prev) => !prev)}
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-1">
                   <RiSettings4Fill className="h-5 w-5 text-gray-900" />
                   <span>Settings</span>
                 </span>
@@ -99,10 +99,12 @@ export default function SidebarMenu({
 
 
 
+{items.showSettingsDivider && <hr className="my-1" />}
 
 
 
 
+      
       {/* Google Sheets group — admin: all sheets + manage, users: only theirs */}
       {items.showSheets && (
         <>
@@ -144,7 +146,7 @@ export default function SidebarMenu({
                 }`}
                 onClick={() => setIsSheetsOpen((prev) => !prev)}
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-1">
                   <LuFileSpreadsheet className="h-5 w-5 text-gray-900" />
                   <span>Sheets</span>
                 </span>
@@ -172,22 +174,11 @@ export default function SidebarMenu({
         </>
       )}
 
+
+
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function SidebarItem({ item, active, onNavigate, compact = false }) {
   const { pathname } = useLocation();

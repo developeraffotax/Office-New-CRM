@@ -16,3 +16,4 @@ export { IoMailUnreadOutline } from "react-icons/io5";
 export { IoIosArrowDown } from "react-icons/io";
 export { PiTarget } from "react-icons/pi";
 export { LuFileSpreadsheet } from "react-icons/lu";
+export { FiEdit } from "react-icons/fi";

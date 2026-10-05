@@ -103,7 +103,7 @@ export default function GoogleSheetViewer() {
 
   return (
     <div className="w-full h-full min-h-0 flex flex-col bg-gray-50">
-      <div className="shrink-0 bg-white border-b border-gray-200">
+      {/* <div className="shrink-0 bg-white border-b border-gray-200">
         <div className="px-4 sm:px-5 py-3">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center min-w-0 gap-3">
@@ -129,10 +129,10 @@ export default function GoogleSheetViewer() {
            
           </div>
         </div>
-      </div>
+      </div> */}
 
-      <div className="flex-1 min-h-0 p-2 sm:p-3">
-        <div className="relative w-full h-full overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm">
+      <div className="flex-1 min-h-0 ">
+        <div className="relative w-full h-full overflow-hidden  bg-white border border-gray-200 shadow-sm">
           <div className="absolute top-0 left-0 right-0 h-px bg-gray-100 z-10 pointer-events-none" />
 
           <iframe

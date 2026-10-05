@@ -39,6 +39,70 @@ export default function SidebarMenu({
 
 {items.showSettingsDivider && <hr className="my-1" />}
 
+      
+      
+
+      {items.showSettings && (
+        <>
+          {compact ? (
+            <button
+              type="button"
+              title="Settings"
+              aria-label="Settings"
+              className={`relative h-[2.4rem] w-full border rounded-lg cursor-pointer flex items-center justify-center transition-all duration-100 ${
+                isSettingsOpen
+                  ? "bg-white border-black/20"
+                  : "hover:bg-white hover:border-black/20 border-transparent"
+              }`}
+              onClick={() => setIsSettingsOpen((prev) => !prev)}
+            >
+              <RiSettings4Fill className="h-5 w-5 text-gray-900" />
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                className={`text-[14px] font-semibold px-4 py-2 flex items-center justify-between transition-all rounded-lg cursor-pointer ${
+                  isSettingsOpen
+                    ? "bg-white border-black/20"
+                  : "hover:bg-white hover:border-black/20 border-transparent"
+                }`}
+                onClick={() => setIsSettingsOpen((prev) => !prev)}
+              >
+                <span className="flex items-center gap-2">
+                  <RiSettings4Fill className="h-5 w-5 text-gray-900" />
+                  <span>Settings</span>
+                </span>
+                <IoIosArrowDown
+                  className={`h-4 w-4 text-gray-700 transition-transform duration-300 ${
+                    isSettingsOpen ? "rotate-180" : "rotate-0"
+                  }`}
+                />
+              </button>
+
+              {isSettingsOpen && (
+                <div className="flex flex-col gap-1">
+                  {items.settings.map((item) => (
+                    <SidebarItem
+                      key={item.id}
+                      item={item}
+                      active={active}
+                      onNavigate={onNavigate}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </>
+      )}
+
+
+
+
+
+
+
       {/* Google Sheets group — admin: all sheets + manage, users: only theirs */}
       {items.showSheets && (
         <>
@@ -108,65 +172,22 @@ export default function SidebarMenu({
         </>
       )}
 
-      
-
-      {items.showSettings && (
-        <>
-          {compact ? (
-            <button
-              type="button"
-              title="Settings"
-              aria-label="Settings"
-              className={`relative h-[2.4rem] w-full border rounded-lg cursor-pointer flex items-center justify-center transition-all duration-100 ${
-                isSettingsOpen
-                  ? "bg-white border-black/20"
-                  : "hover:bg-white hover:border-black/20 border-transparent"
-              }`}
-              onClick={() => setIsSettingsOpen((prev) => !prev)}
-            >
-              <RiSettings4Fill className="h-5 w-5 text-gray-900" />
-            </button>
-          ) : (
-            <>
-              <button
-                type="button"
-                className={`text-[14px] font-semibold px-4 py-2 flex items-center justify-between transition-all rounded-lg cursor-pointer ${
-                  isSettingsOpen
-                    ? "bg-white border-black/20"
-                  : "hover:bg-white hover:border-black/20 border-transparent"
-                }`}
-                onClick={() => setIsSettingsOpen((prev) => !prev)}
-              >
-                <span className="flex items-center gap-2">
-                  <RiSettings4Fill className="h-5 w-5 text-gray-900" />
-                  <span>Settings</span>
-                </span>
-                <IoIosArrowDown
-                  className={`h-4 w-4 text-gray-700 transition-transform duration-300 ${
-                    isSettingsOpen ? "rotate-180" : "rotate-0"
-                  }`}
-                />
-              </button>
-
-              {isSettingsOpen && (
-                <div className="flex flex-col gap-1">
-                  {items.settings.map((item) => (
-                    <SidebarItem
-                      key={item.id}
-                      item={item}
-                      active={active}
-                      onNavigate={onNavigate}
-                    />
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </>
-      )}
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function SidebarItem({ item, active, onNavigate, compact = false }) {
   const { pathname } = useLocation();

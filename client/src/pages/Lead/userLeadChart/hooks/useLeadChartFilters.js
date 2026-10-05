@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { DATE_FILTER, DEFAULTS } from "../constants";
 import { getDateRange, getDefaultUsers } from "../utils";
+import dayjs from "dayjs";
 
 export default function useLeadChartFilters(auth) {
   const [selectedUsers, setSelectedUsers] = useState(() => getDefaultUsers(auth));
@@ -22,6 +23,18 @@ export default function useLeadChartFilters(auth) {
     setDateRange(value !== DATE_FILTER.CUSTOM ? getDateRange(value) : [null, null]);
   }, []);
 
+
+
+    const applyFilters = useCallback(({ dateFilter: df, dateRange: dr, users }) => {
+    if (df) setDateFilter(df);
+    setDateRange(
+      df && df !== DATE_FILTER.CUSTOM
+        ? getDateRange(df)
+        : [dr?.start ? dayjs(dr.start) : null, dr?.end ? dayjs(dr.end) : null],
+    );
+    if (users?.length) setSelectedUsers(users);
+  }, []);
+
   const reset = useCallback(() => {
     setDateFilter(DEFAULTS.dateFilter);
     setDateRange(getDateRange(DEFAULTS.dateFilter));
@@ -36,6 +49,7 @@ export default function useLeadChartFilters(auth) {
     setDateRange,
     selectQuickRange,
     changeDateFilter,
+     applyFilters,
     reset,
   };
 }

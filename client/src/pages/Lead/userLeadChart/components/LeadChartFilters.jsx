@@ -63,6 +63,8 @@ export default function LeadChartFilters({
   selectedUsers,
   onUsersChange,
   onReset,
+
+  savedViews
 }) {
   return (
     <Stack
@@ -73,6 +75,8 @@ export default function LeadChartFilters({
       justifyContent="flex-end"
       alignItems="center"
     >
+
+      {savedViews}
       <ToggleStatsButton showStats={showStats} onToggle={onToggleStats} />
 
       {dateFilter === "custom" && (

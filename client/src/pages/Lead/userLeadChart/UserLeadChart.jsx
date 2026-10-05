@@ -15,6 +15,8 @@ import useUsersAndTeams from "./hooks/useUsersAndTeams";
 import useWonLeadsData from "./hooks/useWonLeadsData";
 import { getHeaderLabel, isDailyAllowed } from "./utils";
 import { cardSx, chartCardSx, dividerSx } from "./styles";
+import { useSavedFilters } from "../../../components/SavedFilters/useSavedFilters";
+import SavedViews from "./components/SavedViews";
 
 const selectAuth = (state) => state.auth.auth;
 
@@ -37,6 +39,55 @@ export default function UserLeadChart() {
     view: viewState.view,
   });
 
+
+
+
+  const savedFiltersHook = useSavedFilters("targets_dashboard");
+
+const snapshot = useMemo(
+  () => ({
+    dateFilter: filters.dateFilter,
+    dateRange: {
+      start: filters.dateRange[0]?.toISOString?.() ?? null,
+      end: filters.dateRange[1]?.toISOString?.() ?? null,
+    },
+    users: filters.selectedUsers,
+    view: viewState.view,
+    metric: viewState.metric,
+    chartType: viewState.chartType,
+    showTargets: viewState.showTargets,
+    showStats: viewState.showStats,
+  }),
+  [
+    filters.dateFilter, filters.dateRange, filters.selectedUsers,
+    viewState.view, viewState.metric, viewState.chartType,
+    viewState.showTargets, viewState.showStats,
+  ],
+);
+
+const { applyFilters } = filters;
+const handleApplyView = useCallback(
+  (v) => {
+    applyFilters(v);
+    if (v.view) viewState.setView(v.view);
+    if (v.metric) viewState.setMetric(v.metric);
+    if (v.chartType) viewState.setChartType(v.chartType);
+    if (!!v.showTargets !== viewState.showTargets) viewState.toggleTargets();
+    if (!!v.showStats !== viewState.showStats) viewState.toggleStats();
+  },
+  [applyFilters, viewState],
+);
+
+const savedViews = (
+  <SavedViews
+    snapshot={snapshot}
+    onApply={handleApplyView}
+    savedFiltersHook={savedFiltersHook}
+  />
+);
+
+
+
   const { reset: resetFilters } = filters;
   const { resetView } = viewState;
   const handleReset = useCallback(() => {
@@ -55,6 +106,8 @@ export default function UserLeadChart() {
           users={users}
           teams={teams}
           onReset={handleReset}
+
+          savedViews={savedViews}
         />
 
         <Divider sx={dividerSx} />

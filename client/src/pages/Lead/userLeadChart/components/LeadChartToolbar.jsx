@@ -12,6 +12,7 @@ export default function LeadChartToolbar({
   users,
   teams,
   onReset,
+  savedViews
 }) {
   return (
     <Stack
@@ -44,6 +45,8 @@ export default function LeadChartToolbar({
         selectedUsers={filters.selectedUsers}
         onUsersChange={filters.setSelectedUsers}
         onReset={onReset}
+
+        savedViews={savedViews}
       />
     </Stack>
   );

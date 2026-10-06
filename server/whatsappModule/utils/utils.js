@@ -142,7 +142,11 @@ const applyUserAssignmentFilter = (filters, { isAdmin, isTeamLead, user, hasUnas
 
 export const buildWhatsappFilterQuery = (req) => {
   const user = req?.user?.user;
+  const filters    = req.query;
+ 
   // console.log("USER ACCESS", user.role.access);
+
+  const isEntityLookup = Boolean(filters.ticketId || filters.leadId);
 
   const whatsappPermission = user.role?.access?.find(
     (a) => a.permission === "Whatsapp",
@@ -151,12 +155,11 @@ export const buildWhatsappFilterQuery = (req) => {
   const isAdmin    = user?.role?.name === "Admin";
   const isTeamLead = user?.isTeamLead;
   const juniors    = user?.juniors || [];
-
-  const filters    = req.query;
+  
 
   const andFilters = [
     ...applyScalarFilters(filters),
-    applyUserAssignmentFilter(filters, { isAdmin, isTeamLead, user, hasUnassignedPermission, juniors }),
+    isEntityLookup ? null : applyUserAssignmentFilter(filters, { isAdmin, isTeamLead, user, hasUnassignedPermission, juniors }),
     applyCategoryFilter(filters),
     filters.unreadOnly === "true" ? applyUnreadFilter(user._id) : null,
     applyDateFilter(filters),

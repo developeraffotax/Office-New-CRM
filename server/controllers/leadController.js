@@ -2159,10 +2159,10 @@ if (!/^[+-]\d{2}:\d{2}$/.test(tz)) {
 
     const groupId =
       view === "daily"
-        ? { day: { $dateToString: { format: "%Y-%m-%d", date: "$leadCreatedAt", timezone: tz } } }
+        ? { day: { $dateToString: { format: "%Y-%m-%d", date: "$wonAt", timezone: tz } } }
         : view === "weekly"
-          ? { year: { $isoWeekYear: "$leadCreatedAt" }, week: { $isoWeek: "$leadCreatedAt" } }
-          : { year: { $year: "$leadCreatedAt" }, month: { $month: "$leadCreatedAt" } };
+          ? { year: { $isoWeekYear: "$wonAt" }, week: { $isoWeek: "$wonAt" } }
+          : { year: { $year: "$wonAt" }, month: { $month: "$wonAt" } };
 
     const leadPeriodKey = (id) =>
       view === "daily" ? id.day

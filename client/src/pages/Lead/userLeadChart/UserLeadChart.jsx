@@ -25,6 +25,10 @@ export default function UserLeadChart() {
   const admin = isAdmin(auth);
 
   const filters = useLeadChartFilters(auth);
+
+
+  const {dateBasis, setDateBasis, } = filters;
+
   const dailyAllowed = useMemo(
     () => isDailyAllowed(filters.dateRange),
     [filters.dateRange],
@@ -37,6 +41,7 @@ export default function UserLeadChart() {
     selectedUsers: filters.selectedUsers,
     dateRange: filters.dateRange,
     view: viewState.view,
+    dateBasis
   });
 
 
@@ -57,11 +62,12 @@ const snapshot = useMemo(
     chartType: viewState.chartType,
     showTargets: viewState.showTargets,
     showStats: viewState.showStats,
+    dateBasis
   }),
   [
     filters.dateFilter, filters.dateRange, filters.selectedUsers,
     viewState.view, viewState.metric, viewState.chartType,
-    viewState.showTargets, viewState.showStats,
+    viewState.showTargets, viewState.showStats, dateBasis
   ],
 );
 
@@ -74,6 +80,7 @@ const handleApplyView = useCallback(
     if (v.chartType) viewState.setChartType(v.chartType);
     if (!!v.showTargets !== viewState.showTargets) viewState.toggleTargets();
     if (!!v.showStats !== viewState.showStats) viewState.toggleStats();
+ 
   },
   [applyFilters, viewState],
 );
@@ -124,6 +131,8 @@ const savedViews = (
             showTargets={viewState.showTargets}
             onToggleTargets={viewState.toggleTargets}
             dailyAllowed={dailyAllowed}
+            dateBasis={dateBasis}
+            onDateBasisChange={setDateBasis}
           />
 
           <LeadChartCanvas

@@ -13,6 +13,7 @@ export const DEFAULTS = {
   dateFilter: DATE_FILTER.THIS_YEAR,
   showStats: true,
   showTargets: true,
+  dateBasis: "won"
 };
 
 

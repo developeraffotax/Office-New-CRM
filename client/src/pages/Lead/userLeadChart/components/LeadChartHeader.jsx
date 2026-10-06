@@ -9,6 +9,9 @@ import {
 } from "@mui/material";
 import { toggleGroupSx } from "../constants";
 
+const VIEW_LABELS = { monthly: "Monthly", weekly: "Weekly", daily: "Daily" };
+const DATE_BASIS_LABELS = { created: "Created Date", won: "Won Date" };
+
 export default function LeadChartHeader({
   headerLabel,
   view,
@@ -19,6 +22,8 @@ export default function LeadChartHeader({
   onChartTypeChange,
   showTargets,
   onToggleTargets,
+  dateBasis = "created",
+  onDateBasisChange,
   dailyAllowed = true,
 }) {
   return (
@@ -51,8 +56,8 @@ export default function LeadChartHeader({
             variant="caption"
             sx={{ color: "#94a3b8", fontWeight: 600, fontSize: 11 }}
           >
-            {view === "monthly" ? "Monthly" : "Weekly"} ·{" "}
-            {metric === "value" ? "Value" : "Count"}
+            {VIEW_LABELS[view]} · {metric === "value" ? "Value" : "Count"} · by{" "}
+            {DATE_BASIS_LABELS[dateBasis]}
           </Typography>
         </Stack>
         <Typography
@@ -66,7 +71,13 @@ export default function LeadChartHeader({
         </Typography>
       </Box>
 
-      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+      <Stack
+        direction="row"
+        spacing={1}
+        alignItems="center"
+        flexWrap="wrap"
+        useFlexGap
+      >
         <ToggleButtonGroup size="small" sx={toggleGroupSx}>
           <ToggleButton
             value="targets"
@@ -76,6 +87,8 @@ export default function LeadChartHeader({
             Targets
           </ToggleButton>
         </ToggleButtonGroup>
+
+        
 
         <ToggleButtonGroup
           size="small"
@@ -122,6 +135,39 @@ export default function LeadChartHeader({
           <ToggleButton value="line">Line</ToggleButton>
           <ToggleButton value="area">Area</ToggleButton>
         </ToggleButtonGroup>
+
+
+        {/* Date basis */}
+        <Tooltip
+          arrow
+          title={
+            dateBasis === "created"
+              ? "Won leads are grouped by the date the lead was created"
+              : "Won leads are grouped by the date the lead was marked as won"
+          }
+        >
+          <Stack direction="row" spacing={0.75} alignItems="center">
+            <Typography
+              variant="caption"
+              sx={{ color: "#94a3b8", fontWeight: 600, fontSize: 11 }}
+            >
+              Date:
+            </Typography>
+            <ToggleButtonGroup
+              size="small"
+              exclusive
+              value={dateBasis}
+              onChange={(e, val) => val && onDateBasisChange(val)}
+              sx={toggleGroupSx}
+            >
+              <ToggleButton value="created">Created Date</ToggleButton>
+              <ToggleButton value="won">Won Date</ToggleButton>
+            </ToggleButtonGroup>
+          </Stack>
+        </Tooltip>
+
+
+        
       </Stack>
     </Stack>
   );

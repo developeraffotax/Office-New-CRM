@@ -2129,10 +2129,21 @@ function buildLabels(view, startDate, endDate, tz = "+05:00") {
 
 const VALID_VIEWS = ["daily", "weekly", "monthly"];
 const MAX_DAILY_RANGE_DAYS = 366;
+const DATE_FIELDS = { created: "leadCreatedAt", won: "wonAt" };
+
 
 export const getWonLeadData = async (req, res) => {
   try {
-    const { startDate, endDate, view = "monthly", tz = "+05:00" } = req.query;
+    const { startDate, endDate, view = "monthly", tz = "+05:00",  dateBasis = "created"  } = req.query;
+
+
+   
+ if (!Object.hasOwn(DATE_FIELDS, dateBasis)) {
+  return res.status(400).json({ error: `dateBasis must be one of ${Object.keys(DATE_FIELDS).join(", ")}` });
+}
+const dateField = DATE_FIELDS[dateBasis];
+const dateRef = `$${dateField}`;
+
 
     if (!VALID_VIEWS.includes(view)) {
       return res.status(400).json({ error: `view must be one of ${VALID_VIEWS.join(", ")}` });
@@ -2141,6 +2152,13 @@ export const getWonLeadData = async (req, res) => {
 if (!/^[+-]\d{2}:\d{2}$/.test(tz)) {
   return res.status(400).json({ error: "tz must look like +05:00" });
 }
+
+
+
+
+
+
+
     if (view === "daily") {
       if (!startDate || !endDate) {
         return res.status(400).json({ error: "startDate and endDate are required for daily view" });
@@ -2159,10 +2177,10 @@ if (!/^[+-]\d{2}:\d{2}$/.test(tz)) {
 
     const groupId =
       view === "daily"
-        ? { day: { $dateToString: { format: "%Y-%m-%d", date: "$wonAt", timezone: tz } } }
+        ? { day: { $dateToString: { format: "%Y-%m-%d", date: dateRef, timezone: tz } } }
         : view === "weekly"
-          ? { year: { $isoWeekYear: "$wonAt" }, week: { $isoWeek: "$wonAt" } }
-          : { year: { $year: "$wonAt" }, month: { $month: "$wonAt" } };
+          ? { year: { $isoWeekYear: dateRef }, week: { $isoWeek: dateRef } }
+          : { year: { $year: dateRef }, month: { $month: dateRef } };
 
     const leadPeriodKey = (id) =>
       view === "daily" ? id.day
@@ -2184,7 +2202,7 @@ if (!/^[+-]\d{2}:\d{2}$/.test(tz)) {
         if (startDate && endDate) {
   const local = (d) => moment.utc(d).utcOffset(tz);
 
-  leadFilters.leadCreatedAt =
+  leadFilters[dateField] =
     view === "weekly"
       ? {
           $gte: local(startDate).startOf("isoWeek").toDate(),

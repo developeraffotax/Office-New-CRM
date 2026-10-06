@@ -8,6 +8,9 @@ export default function useLeadChartFilters(auth) {
   const [dateFilter, setDateFilter] = useState(DEFAULTS.dateFilter);
   const [dateRange, setDateRange] = useState(() => getDateRange(DEFAULTS.dateFilter));
 
+ 
+const [dateBasis, setDateBasis] = useState(DEFAULTS.dateBasis);
+
   // Re-seed the user selection whenever auth changes
   useEffect(() => {
     setSelectedUsers(getDefaultUsers(auth));
@@ -25,8 +28,9 @@ export default function useLeadChartFilters(auth) {
 
 
 
-    const applyFilters = useCallback(({ dateFilter: df, dateRange: dr, users }) => {
+    const applyFilters = useCallback(({ dateFilter: df, dateRange: dr, users, dateBasis: db }) => {
     if (df) setDateFilter(df);
+    if (db) setDateFilter(db);
     setDateRange(
       df && df !== DATE_FILTER.CUSTOM
         ? getDateRange(df)
@@ -36,6 +40,7 @@ export default function useLeadChartFilters(auth) {
   }, []);
 
   const reset = useCallback(() => {
+    setDateBasis(DEFAULTS.dateBasis);
     setDateFilter(DEFAULTS.dateFilter);
     setDateRange(getDateRange(DEFAULTS.dateFilter));
     setSelectedUsers(getDefaultUsers(auth));
@@ -47,6 +52,8 @@ export default function useLeadChartFilters(auth) {
     dateFilter,
     dateRange,
     setDateRange,
+    dateBasis,
+    setDateBasis,
     selectQuickRange,
     changeDateFilter,
      applyFilters,

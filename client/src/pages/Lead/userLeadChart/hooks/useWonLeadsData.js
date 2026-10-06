@@ -8,6 +8,7 @@ export default function useWonLeadsData({
   selectedUsers,
   dateRange,
   view,
+  dateBasis
 }) {
   const [categories, setCategories] = useState([]);
   // [{ user, counts, values, targetCounts, targetValues }]
@@ -26,6 +27,7 @@ export default function useWonLeadsData({
             startDate: start ? start.toISOString() : null,
             endDate: end ? end.toISOString() : null,
             view,
+            dateBasis
           },
         },
       );
@@ -37,7 +39,7 @@ export default function useWonLeadsData({
       console.error(err);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedUsers, dateRange, view]);
+  }, [selectedUsers, dateRange, view, dateBasis]);
 
   useEffect(() => {
     fetchData();

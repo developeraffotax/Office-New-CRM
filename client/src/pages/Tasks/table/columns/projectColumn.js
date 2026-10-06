@@ -4,6 +4,7 @@ export const projectColumn = (ctx) => {
   return {
     accessorFn: (row) => row.project?.projectName || "",
     id: "departmentName",
+    header: "Department",
     minSize: 150,
     maxSize: 200,
     size: 160,

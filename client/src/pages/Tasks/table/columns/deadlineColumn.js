@@ -19,6 +19,7 @@ const START_DATE_FILTERS = [
 
 export const deadlineColumn = (ctx) => ({
   accessorKey: "deadline",
+  header: "Deadline",
 
   Header: ({ column }) => <StartDateHeader column={column} />,
 

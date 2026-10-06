@@ -27,6 +27,7 @@ const getStatus = (startDateOfTask, deadlineOfTask) => {
 
     return     {
       accessorKey: "datestatus",
+      header: "Status",
       Header: ({ column }) => {
         const dateStatus = [
                     { label: "Due", value: "due" },

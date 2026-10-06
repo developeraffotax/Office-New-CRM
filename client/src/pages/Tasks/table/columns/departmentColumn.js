@@ -3,6 +3,7 @@ import React from "react";
 export const departmentColumn = (ctx) => ({
   accessorFn: (row) => row.project?.departments?.map((d) => d.departmentName) || [],
   id: "departmentName",
+  header: "Department",
   minSize: 150,
   maxSize: 200,
   size: 160,

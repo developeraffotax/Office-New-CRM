@@ -5,6 +5,7 @@ export const labelColumn = (ctx) => {
 
     return     {
       accessorKey: "labal",
+      header: "Labels",
 
       Header: ({ column }) => {
         return (

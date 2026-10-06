@@ -16,6 +16,7 @@ const START_DATE_FILTERS = [
 
 export const startDateColumn = (ctx) => ({
   accessorKey: "startDate",
+  header: "Start Date",
 
   Header: ({ column }) => <StartDateHeader column={column} />,
 

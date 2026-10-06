@@ -6,6 +6,7 @@ import TimeEditor from "../../../../utlis/TimeSelector";
 export const hoursColumn = (ctx) => {
   return {
     accessorKey: "hours",
+    header: "Hrs",
 
     Header: ({ column }) => {
       return (

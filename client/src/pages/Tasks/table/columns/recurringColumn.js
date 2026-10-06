@@ -3,6 +3,7 @@ export const recurringColumn = (ctx) => {
 
     return     {
       accessorKey: "recurring",
+      header: "Recurring",
       Header: ({ column }) => {
         const recurringData = ["daily", "weekly", "monthly", "quarterly"];
         return (

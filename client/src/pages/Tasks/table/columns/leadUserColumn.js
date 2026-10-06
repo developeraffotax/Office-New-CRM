@@ -1,7 +1,7 @@
 export const leadUserColumn = (ctx) => {
   return {
     accessorKey: "leadUser",
- 
+    header: "Lead",
 
     Header: ({ column }) => {
       return (

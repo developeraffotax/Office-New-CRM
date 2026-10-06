@@ -48,6 +48,20 @@ import { isTeamLead } from "../../utlis/checkPermission";
 import { usePersistedUsersNew } from "../../hooks/usePersistedUsersNew";
 import SelectedUsersNew from "../../components/SelectedUsersNew";
 import AnchoredPopover from "../../components/AnchoredPopover";
+import { MdDragIndicator } from "react-icons/md"; // six-dot grip
+
+
+
+const COLUMN_ORDER_KEY = "tasksColumnOrder";
+
+
+
+const tableIcons = {
+  DragHandleIcon: (props) => <MdDragIndicator {...props} />,
+};
+
+
+
 
 const AllTasks = ({ justShowTable = false }) => {
   const dispatch = useDispatch();
@@ -235,6 +249,15 @@ const closeComment = () => {
    
   
 
+
+const getSavedColumnOrder = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(COLUMN_ORDER_KEY));
+    return Array.isArray(saved) && saved.length ? saved : undefined;
+  } catch {
+    return undefined;
+  }
+};
 
 
 
@@ -642,6 +665,8 @@ const closeComment = () => {
     manualPagination: true,
     manualFiltering: true,
     // manualSorting: true,
+    enableColumnOrdering: true, 
+    enableGrouping: false,   // 👈 stops MRT_ToolbarDropZone from rendering
 
     rowCount: rowCount,
     enablePagination: true,
@@ -673,6 +698,7 @@ const closeComment = () => {
       columnVisibility: {
         _id: false,
       },
+       columnOrder: getSavedColumnOrder(),   // 👈 restore saved order
     },
 
     state: {
@@ -698,6 +724,10 @@ const closeComment = () => {
         color: "#000",
         padding: ".7rem 0.3rem",
       },
+       sx: {
+      "&:hover .mrt-drag-handle": { opacity: 1 },
+
+    },
     },
 
     muiTableBodyCellProps: {
@@ -718,6 +748,26 @@ const closeComment = () => {
         },
       },
     },
+
+
+    icons: tableIcons,
+
+    muiColumnDragHandleProps: {
+    className: "mrt-drag-handle",
+    sx: {
+      position: "absolute",
+      top: 2,
+      right: 6,            // leaves room for the resize handle on the edge
+      p: 0,
+      opacity: 0,          // shown on header hover
+      color: "#9ca3af",
+      transition: "opacity .15s",
+      "&:hover": { color: "#374151", background: "transparent" },
+      "& svg": { fontSize: 14 },
+    },
+  },
+
+
   });
 
   // ==========================================
@@ -767,6 +817,20 @@ const closeComment = () => {
       refetchTasks();
     });
   }, [socket]);
+
+
+
+  const columnOrder = table.getState().columnOrder;
+
+useEffect(() => {
+  if (columnOrder?.length) {
+    localStorage.setItem(COLUMN_ORDER_KEY, JSON.stringify(columnOrder));
+  }
+}, [columnOrder]);
+
+
+
+
 
   const renderColumnControls = () => (
     <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">

@@ -8,6 +8,8 @@ export const refColumn = () => {
 
     size: 70,
 
+    header: "Ref",
+
     Header: ({ column }) => {
       return (
         <div className="flex flex-col gap-1">

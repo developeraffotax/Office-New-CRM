@@ -5,6 +5,7 @@ export const statusColumn = (ctx) => {
   return {
     
       id: "taskStatus",
+      header: "Task Status",
  
     accessorFn: (row) => row?.status || "",
 

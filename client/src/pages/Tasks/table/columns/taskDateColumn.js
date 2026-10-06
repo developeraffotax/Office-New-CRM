@@ -17,6 +17,7 @@ const START_DATE_FILTERS = [
 
 export const taskDateColumn = (ctx) => ({
   accessorKey: "taskDate",
+  header: "Task Date",
 
   Header: ({ column }) => (
     <StartDateHeader column={column} ctx={ctx} />

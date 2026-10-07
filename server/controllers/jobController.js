@@ -16,7 +16,7 @@ import { trackUserUsageByName } from "../services/user.service.js";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
-
+const MAX_EXPORT_ROWS = 50000; // safety cap
 
 const PROGRESS_SELECT_STRING =
   "clientName companyName regNumber email phone fee currentDate totalHours totalTime jobRef job.docLink job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.leadUser job.jobHolder comments._id comments.status label source data activeClient clientType partner clientPaidFee";
@@ -3262,6 +3262,52 @@ export const getAllClientJobs = async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+// Only the fields flattenData() needs. Add more here if you add CSV columns.
+const EXPORT_SELECT_STRING =
+  "clientName companyName job totalHours currentDate label partner data";
+
+export const exportClientJobs = async (req, res) => {
+  try {
+    // Same filters as the table (status, search, column filters), but no pagination
+    const query = buildJobsQuery(req.query);
+
+    const jobs = await jobsModel
+      .find(query)
+      .select(EXPORT_SELECT_STRING)
+      .populate("data", "name")
+      .sort({ _id: 1 }) // same order as the table
+      .limit(MAX_EXPORT_ROWS + 1) // +1 so we can detect truncation
+      .lean();
+
+    const truncated = jobs.length > MAX_EXPORT_ROWS;
+    const clients = truncated ? jobs.slice(0, MAX_EXPORT_ROWS) : jobs;
+
+    res.status(200).send({
+      success: true,
+      message: "Jobs exported",
+      clients,
+      total: clients.length,
+      truncated,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while exporting jobs!",
+    });
+  }
+};
+
+
+
+
 export const getAllClientJobsW = async (req, res) => {
 
   try {
@@ -3797,7 +3843,78 @@ export const getUniqueClientJobs = async (req, res) => {
 
 
 
+ 
 
+export const exportUniqueClientJobs = async (req, res) => {
+  try {
+    // Same filters as the table
+    const query = buildJobsQuery(req.query);
+
+    const pipeline = [
+      // 1. Apply filters
+      { $match: query },
+
+      // 2. Keep only the fields the CSV needs BEFORE grouping,
+      //    so $$ROOT doesn't carry full documents through the group stage
+      {
+        $project: {
+          clientName: 1,
+          companyName: 1,
+          job: 1,
+          totalHours: 1,
+          currentDate: 1,
+          label: 1,
+          partner: 1,
+          data: 1,
+        },
+      },
+
+      // 3. Same sort as the list, so the SAME job is kept per company
+      { $sort: { _id: 1 } },
+
+      // 4. One row per company, keep the first
+      {
+        $group: {
+          _id: "$companyName",
+          doc: { $first: "$$ROOT" },
+        },
+      },
+
+      // 5. Restore document shape
+      { $replaceRoot: { newRoot: "$doc" } },
+
+      // 6. $group doesn't guarantee output order, so sort again for a stable CSV
+      { $sort: { _id: 1 } },
+
+      // 7. Cap (+1 to detect truncation)
+      { $limit: MAX_EXPORT_ROWS + 1 },
+    ];
+
+    const jobs = await jobsModel
+      .aggregate(pipeline)
+      .allowDiskUse(true); // grouping a large collection can exceed the 100MB stage limit
+
+    const truncated = jobs.length > MAX_EXPORT_ROWS;
+    const clients = truncated ? jobs.slice(0, MAX_EXPORT_ROWS) : jobs;
+
+    // Populate after aggregation, same as your list controller
+    await jobsModel.populate(clients, { path: "data", select: "name" });
+
+    res.status(200).send({
+      success: true,
+      message: "Unique clients exported",
+      clients,
+      total: clients.length,
+      truncated,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while exporting unique clients!",
+    });
+  }
+};
 
 
 

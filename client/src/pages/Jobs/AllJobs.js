@@ -1217,31 +1217,111 @@ export default function AllJobs() {
     }
   };
 
-  const flattenData = (data) => {
-    return data.map((row) => ({
-      clientName: row.clientName || " ",
-      companyName: row.companyName || "",
-      jobHolder: row.job?.jobHolder || "",
-      jobName: row.job?.jobName || "",
-      totalHours: row.totalHours || "",
-      currentDate: format(new Date(row.currentDate), "dd-MMM-yyyy") || "",
-      yearEnd: format(new Date(row.job?.yearEnd), "dd-MMM-yyyy") || "",
-      jobDeadline: format(new Date(row.job?.jobDeadline), "dd-MMM-yyyy") || "",
-      workDeadline:
-        format(new Date(row.job?.workDeadline), "dd-MMM-yyyy") || "",
-      jobStatus: row.job?.jobStatus || "",
-      lead: row.job?.lead || "",
-      label: row.label?.name || "",
-      partner: row?.partner || "",
-      data: row.data?.name || "",
-    }));
-  };
+  // const flattenData = (data) => {
+  //   return data.map((row) => ({
+  //     clientName: row.clientName || " ",
+  //     companyName: row.companyName || "",
+  //     jobHolder: row.job?.jobHolder || "",
+  //     jobName: row.job?.jobName || "",
+  //     totalHours: row.totalHours || "",
+  //     currentDate: format(new Date(row.currentDate), "dd-MMM-yyyy") || "",
+  //     yearEnd: format(new Date(row.job?.yearEnd), "dd-MMM-yyyy") || "",
+  //     jobDeadline: format(new Date(row.job?.jobDeadline), "dd-MMM-yyyy") || "",
+  //     workDeadline:
+  //       format(new Date(row.job?.workDeadline), "dd-MMM-yyyy") || "",
+  //     jobStatus: row.job?.jobStatus || "",
+  //     lead: row.job?.lead || "",
+  //     label: row.label?.name || "",
+  //     partner: row?.partner || "",
+  //     data: row.data?.name || "",
+  //   }));
+  // };
 
-  const handleExportData = () => {
-    const csvData = flattenData(filterData ? filterData : tableData);
-    const csv = generateCsv(csvConfig)(csvData);
+
+
+
+
+
+
+
+
+
+
+
+
+
+const [isExporting, setIsExporting] = useState(false);
+
+const safeDate = (value) => {
+  if (!value) return "";
+  const d = new Date(value);
+  return isNaN(d) ? "" : format(d, "dd-MMM-yyyy");
+};
+
+const flattenData = (data) =>
+  data.map((row) => ({
+    clientName: row.clientName || "",
+    companyName: row.companyName || "",
+    jobHolder: row.job?.jobHolder || "",
+    jobName: row.job?.jobName || "",
+    totalHours: row.totalHours || "",
+    currentDate: safeDate(row.currentDate),
+    yearEnd: safeDate(row.job?.yearEnd),
+    jobDeadline: safeDate(row.job?.jobDeadline),
+    workDeadline: safeDate(row.job?.workDeadline),
+    jobStatus: row.job?.jobStatus || "",
+    lead: row.job?.lead || "",
+    label: row.label?.name || "",
+    partner: row?.partner || "",
+    data: row.data?.name || "",
+  }));
+
+const handleExportData = async () => {
+  if (isExporting) return;
+
+  try {
+    setIsExporting(true);
+
+    // Same filters as the table, but no pagination
+    const filters = buildFilters(columnFilters);
+    const params = {
+      status,
+      search: searchValue || "",
+      ...filters,
+    };
+
+    const URL = showUniqueClients
+      ? `${process.env.REACT_APP_API_URL}/api/v1/client/all/unique_client/jobs/export`
+      : `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/jobs/export`;
+
+    const { data } = await axios.get(URL, { params });
+
+    if (!data?.success || !data.clients?.length) {
+      toast.error("No jobs to export");
+      return;
+    }
+
+    if (data?.truncated) {
+      toast("Export limited to the first 50,000 rows. Narrow your filters for the rest.", { icon: "⚠️" });
+    }
+
+    const csv = generateCsv(csvConfig)(flattenData(data.clients));
     download(csvConfig)(csv);
-  };
+    toast.success(`Exported ${data.clients.length} jobs`);
+  } catch (error) {
+    console.log(error);
+    toast.error(error?.response?.data?.message || "Export failed");
+  } finally {
+    setIsExporting(false);
+  }
+};
+
+
+
+
+
+
+
 
   // Add label in Jobs
   const addJoblabel = async (id, name, color) => {

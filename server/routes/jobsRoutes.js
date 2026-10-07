@@ -12,6 +12,8 @@ import {
   deleteClientJob,
   deleteQuality,
   deleteSubTask,
+  exportClientJobs,
+  exportUniqueClientJobs,
   getAllClientJobs,
   getAllClients,
   getClientId,
@@ -65,9 +67,12 @@ router.get("/all/client/job", requiredSignIn, getAllClients);
 
  router.get("/all/unique_client/jobs", requiredSignIn, getUniqueClientJobs);
  router.get("/all/unique_client/jobs/stats", requiredSignIn, getUniqueClientJobsStats);
+ router.get("/all/unique_client/jobs/export", requiredSignIn, exportUniqueClientJobs);
 
 router.get("/all/client/jobs", requiredSignIn, getAllClientJobs);
 router.get("/all/client/jobs/stats", requiredSignIn, getJobsStats);
+router.get("/all/client/jobs/export", requiredSignIn, exportClientJobs);
+
 
 // Update Fee
 router.patch("/update/fee/:id", requiredSignIn, updateFee);

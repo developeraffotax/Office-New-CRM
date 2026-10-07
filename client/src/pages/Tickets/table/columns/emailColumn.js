@@ -7,7 +7,7 @@ export const emailColumn = (ctx) => {
   return {
     id: "displayEmail",
     accessorKey: "displayEmail",
-
+    header: "Email",
     Header: ({ column }) => {
       const filterValue = column.getFilterValue() ?? "";
 

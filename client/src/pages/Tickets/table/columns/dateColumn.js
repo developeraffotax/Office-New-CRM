@@ -11,6 +11,7 @@ export const dateColumn = (ctx) => {
 
     return             {
             accessorKey: "createdAt",
+            header: "Date",
             Header: ({ column }) => {
               const [filterValue, setFilterValue] = useState("");
               const [customDate, setCustomDate] = useState(getCurrentMonthYear());

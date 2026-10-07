@@ -11,6 +11,7 @@ export const companyNameColumn = (ctx) => {
             maxSize: 300,
             size: 240,
             grow: false,
+                    header: "Company Name",
             Header: ({ column }) => {
               return (
                 <div className=" flex flex-col gap-[2px]">

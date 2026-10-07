@@ -7,6 +7,7 @@ export const lastRepliedColumn = (ctx) => {
 
     return                {
             accessorKey: "lastMessageSentTime",
+             header: "Last Replied",
             Header: ({ column }) => {
               const [filterValue, setFilterValue] = useState("");
               const [customDate, setCustomDate] = useState(getCurrentMonthYear());

@@ -7,6 +7,7 @@ export const receivedColumn = (ctx) => {
 
     return  {
       accessorKey: "received",
+      header: "Recv.",
       Header: ({column}) => (
         <div className="flex flex-col items-center justify-between">
           <span title="Click to remove filter" onClick={() => column.setFilterValue("")} className="cursor-pointer ">Recv.</span>

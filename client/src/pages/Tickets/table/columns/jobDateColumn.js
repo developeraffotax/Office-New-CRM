@@ -8,6 +8,7 @@ export const jobDateColumn = (ctx) => {
 
     return            {
             accessorKey: "jobDate",
+            header: "Job Date",
             Header: ({ column }) => {
               const [filterValue, setFilterValue] = useState("");
               const [customDate, setCustomDate] = useState(getCurrentMonthYear());

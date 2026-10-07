@@ -5,6 +5,7 @@ export const leadUserColumn = (ctx) => {
     accessorKey: "leadUser",
     // id: "Lead",
 
+    header: "Lead",
     Header: ({ column }) => {
       const user = ctx.auth?.user?.name;
 

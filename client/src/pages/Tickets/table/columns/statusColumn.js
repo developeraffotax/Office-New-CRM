@@ -6,6 +6,7 @@ export const statusColumn = (ctx) => {
     return            {
         accessorKey: "status",
         header: "Status",
+        
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col items-center justify-center gap-[2px]">

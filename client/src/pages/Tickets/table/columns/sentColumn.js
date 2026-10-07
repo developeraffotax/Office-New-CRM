@@ -7,7 +7,7 @@ export const sentColumn = (ctx) => {
 
     return          {
             accessorKey: "sent",
-            
+             header: "Sent",
              Header: ({column}) => (
         <div className="flex flex-col items-center justify-between">
            <span title="Click to remove filter" onClick={() => column.setFilterValue("")} className="cursor-pointer ">Sent</span>

@@ -9,6 +9,7 @@ export const companyColumn = (ctx) => {
         maxSize: 200,
         size: 100,
         grow: false,
+        header: "Company",
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">

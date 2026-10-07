@@ -42,6 +42,8 @@ import RelatedConversationsSidebar from "../../components/shared/RelatedConversa
 import SelectedUsersNew from "../../components/SelectedUsersNew";
 import { usePersistedUsersNew } from "../../hooks/usePersistedUsersNew";
 import AnchoredPopover from "../../components/AnchoredPopover";
+import { getSavedColumnOrder, usePersistedColumnOrder } from "../../hooks/usePersistedColumnOrder";
+import { columnOrderingOptions, headCellHoverSx } from "../../utlis/columnOrdering";
 
 const updates_object_init = {
   jobHolder: "",
@@ -84,6 +86,8 @@ const colVisibility = {
   actions: true,
   displayEmail: true,
 };
+
+const COLUMN_ORDER_KEY = "tickets:column_order";
 
 export default function Tickets() {
   const auth = useSelector((state) => state.auth.auth);
@@ -797,7 +801,10 @@ export default function Tickets() {
         _id: false,
       },
       columnFilters: [{ id: "jobHolder", value: auth.user?.name }],
+      columnOrder: getSavedColumnOrder(COLUMN_ORDER_KEY),   // 👈 restore saved order
     },
+
+     ...columnOrderingOptions,
 
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
@@ -825,6 +832,7 @@ export default function Tickets() {
         color: "#000",
         padding: ".7rem 0.3rem",
       },
+      sx: headCellHoverSx,
     },
     muiTableBodyCellProps: {
       sx: {
@@ -845,6 +853,10 @@ export default function Tickets() {
       },
     },
   });
+
+
+
+    const { resetColumnOrder } = usePersistedColumnOrder(table, COLUMN_ORDER_KEY);
 
   useEffect(() => {
     getAllUsers();

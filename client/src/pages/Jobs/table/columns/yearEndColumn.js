@@ -9,7 +9,7 @@ export const yearEndColumn = ({ handleUpdateDates }) => ({
   id: "Year_End",
   accessorFn: (row) => row.job?.yearEnd || "",
   // accessorKey: "job.yearEnd",
-  // header: "Year End",
+  header: "Year End",
 
   Header: ({ column }) => (
     <DateHeader column={column} />

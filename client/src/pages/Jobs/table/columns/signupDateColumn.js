@@ -17,7 +17,8 @@ export const signupDateColumn = ({ handleUpdateDates }) => ({
   id: "SignUp_Date",
  
   accessorFn: (row) => row?.currentDate || "",
- 
+  
+           header: "Signup Date",
 
   Header: ({ column }) => (
     <DateHeader column={column} />

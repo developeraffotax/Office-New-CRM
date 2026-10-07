@@ -9,7 +9,7 @@ export const refColumn = ({ columnFilters, searchValue }) => {
     accessorFn: (row) => row.jobRef || "", // safely handle missing jobRef
     // header: "Ref",
     size: 70,
-
+         header: "Ref",
     Header: ({ column }) => {
       return (
         <div className="flex flex-col gap-1">

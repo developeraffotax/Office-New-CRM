@@ -4,6 +4,7 @@ export const acColumn = ({ updateActiveClient }) => {
   return {
     id: "AC",
     accessorKey: "activeClient",
+    header: "AC",
     Header: ({ column }) => {
       return (
         <div className="flex flex-col gap-[2px]">

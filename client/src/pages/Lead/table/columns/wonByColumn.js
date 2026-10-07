@@ -6,6 +6,7 @@ export const createWonByColumn = ({ users }) => {
 
   return {
     accessorKey: "wonBy",
+    header: "Won By",
     Header: ({ column }) => {
       return (
         <div className="flex flex-col gap-[2px]">

@@ -10,7 +10,7 @@ export const phoneColumn = (ctx) => {
   return {
     id: "phone",
     accessorFn: (row) => row.phone || "",
-
+     header: "Phone",
     Header: ({ column }) => {
       const [value, setValue] = useState(column.getFilterValue() ?? "");
       const debounceRef = useRef(null);

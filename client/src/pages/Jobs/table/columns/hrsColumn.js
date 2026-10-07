@@ -4,6 +4,7 @@ export const hrsColumn = ({totalHours}) => {
     return         {
           id: "Hrs",
           accessorKey: "totalHours",
+           header: "Hrs", 
           Header: ({ column }) => {
             return (
               <div className=" flex flex-col gap-[2px] w-full items-center justify-center pr-2 ">

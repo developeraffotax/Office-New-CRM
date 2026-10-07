@@ -5,7 +5,10 @@ export const leadUserColumn = ({ users, handleUpdateLeadUser, auth }) => {
   return {
     id: "Lead",
 
+
     accessorFn: (row) => row.job?.leadUser || "",
+
+            header: "Job.Owner", 
     Header: ({ column }) => {
       return (
         <div className=" flex flex-col gap-[2px]">

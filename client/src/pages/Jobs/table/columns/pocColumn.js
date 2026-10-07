@@ -4,7 +4,7 @@ export const pocColumn = ({ dataLable, addDatalabel1 }) => {
   return {
     id: "POC",
     accessorKey: "data",
-
+     header: "POC",
     Header: ({ column }) => {
       return (
         <div className="flex flex-col gap-[2px]">

@@ -103,6 +103,7 @@ export const labelsColumn = ({ labelData, addJoblabel }) => {
     id: "Labels",
     accessorKey: "label",
 
+        header: "Labels", 
     Header: ({ column }) => {
       const { show, position, open, close } = useLabelDropdown();
       const btnRef = useRef(null);

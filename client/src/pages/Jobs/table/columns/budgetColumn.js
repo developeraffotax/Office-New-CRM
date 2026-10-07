@@ -3,6 +3,7 @@ export const budgetColumn = ({ auth }) => {
   return {
     id: "Budget",
     accessorKey: "totalTime",
+     header: "Budget",
     Header: ({ column }) => {
       return (
         <div className=" flex flex-col gap-[2px]  ml w-[5rem]">

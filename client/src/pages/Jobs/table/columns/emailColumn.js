@@ -7,6 +7,7 @@ import { HiCheck, HiOutlineClipboardCopy } from "react-icons/hi";
 export const emailColumn = ({ columnFilters, searchValue }) => {
   return {
     id: "email",
+      header: "Email", 
     accessorFn: (row) => row.email || "",
     Header: ({ column }) => {
       const [value, setValue] = useState(column.getFilterValue() ?? "");

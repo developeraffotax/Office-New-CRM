@@ -5,6 +5,7 @@ export const completedJobReviewColumn = ({handleUpdateUser, users}) => {
 
     return         {
         accessorKey: "review",
+        header: "Job Review",
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">

@@ -39,18 +39,17 @@ export const getLeadColumns = (ctx) => {
 
     setEmailPopup,
     ticketMap,
-    openEmailSidebar
+    openEmailSidebar,
   } = ctx;
 
+  console.log("SELECTEDS TAB IS ", selectedTab);
 
-  console.log("SELECTEDS TAB IS ", selectedTab)
-
-  const baseColumns =  [
+  const baseColumns = [
     {
       id: "leadRef",
       accessorKey: "leadRef",
       accessorFn: (row) => row.leadRef || "", // safely handle missing jobRef
-      // header: "Ref",
+      header: "Ref",
       size: 70,
 
       Header: ({ column }) => {
@@ -102,6 +101,7 @@ export const getLeadColumns = (ctx) => {
       maxSize: 200,
       size: 170,
       grow: false,
+      header: "Company Name",
       Header: ({ column }) => {
         return (
           <div className=" flex flex-col gap-[2px]">
@@ -205,6 +205,7 @@ export const getLeadColumns = (ctx) => {
       maxSize: 200,
       size: 160,
       grow: false,
+      header: "Client Name",
       Header: ({ column }) => {
         return (
           <div className=" flex flex-col gap-[2px]">
@@ -438,7 +439,7 @@ export const getLeadColumns = (ctx) => {
 
     {
       accessorKey: "leadUser",
-
+      header: "Lead",
       Header: ({ column }) => {
         return (
           <div className=" flex flex-col gap-[2px]">
@@ -542,6 +543,7 @@ export const getLeadColumns = (ctx) => {
       maxSize: 200,
       size: 120,
       grow: false,
+      header: "Department",
       Header: ({ column }) => {
         return (
           <div className=" flex flex-col gap-[2px]">
@@ -638,6 +640,7 @@ export const getLeadColumns = (ctx) => {
       maxSize: 200,
       size: 100,
       grow: false,
+      header: "Source",
       Header: ({ column }) => {
         return (
           <div className=" flex flex-col gap-[2px]">
@@ -729,6 +732,7 @@ export const getLeadColumns = (ctx) => {
       maxSize: 150,
       size: 90,
       grow: false,
+      header: "Brand",
       Header: ({ column }) => {
         return (
           <div className=" flex flex-col gap-[2px]">
@@ -817,6 +821,7 @@ export const getLeadColumns = (ctx) => {
 
     {
       accessorKey: "received",
+      header: "Received",
       Header: ({ column }) => (
         <div className="flex flex-col items-center justify-between">
           <span
@@ -848,6 +853,7 @@ export const getLeadColumns = (ctx) => {
 
     {
       accessorKey: "sent",
+      header: "Sent",
       Header: ({ column }) => (
         <div className="flex flex-col items-center justify-between">
           <span
@@ -883,6 +889,7 @@ export const getLeadColumns = (ctx) => {
       maxSize: 100,
       size: 60,
       grow: false,
+      header: "Value",
       Header: ({ column }) => {
         return (
           <div className=" flex flex-col gap-[2px]">
@@ -958,6 +965,7 @@ export const getLeadColumns = (ctx) => {
       maxSize: 100,
       size: 70,
       grow: false,
+      header: "Number",
       Header: ({ column }) => {
         return (
           <div className=" flex flex-col gap-[2px]">
@@ -1037,6 +1045,7 @@ export const getLeadColumns = (ctx) => {
       maxSize: 150,
       size: 110,
       grow: false,
+      header: "Lead Source",
       Header: ({ column }) => {
         return (
           <div className=" flex flex-col gap-[2px]">
@@ -1127,6 +1136,7 @@ export const getLeadColumns = (ctx) => {
 
     {
       accessorKey: "leadCreatedAt",
+      header: "Created Date",
       Header: ({ column }) => {
         const [filterValue, setFilterValue] = useState("");
         const [dateRange, setDateRange] = useState({ from: "", to: "" });
@@ -1271,6 +1281,7 @@ export const getLeadColumns = (ctx) => {
 
     {
       accessorKey: "followUpDate",
+      header: "Follow-up Date",
       Header: ({ column }) => {
         const filterVal = column.getFilterValue();
 
@@ -1486,6 +1497,7 @@ export const getLeadColumns = (ctx) => {
 
     {
       accessorKey: "Days",
+      header: "Days",
       Header: ({ column }) => {
         return (
           <div className="w-full flex flex-col gap-[2px]">
@@ -1555,6 +1567,7 @@ export const getLeadColumns = (ctx) => {
       maxSize: 150,
       size: 90,
       grow: false,
+      header: "Stages",
       Header: ({ column }) => {
         return (
           <div className=" flex flex-col gap-[2px]">
@@ -1641,6 +1654,7 @@ export const getLeadColumns = (ctx) => {
 
     {
       accessorKey: "yearEnd",
+      header: "Year End",
       Header: ({ column }) => {
         const [filterValue, setFilterValue] = useState("");
         const [dateRange, setDateRange] = useState({ from: "", to: "" });
@@ -2051,6 +2065,7 @@ export const getLeadColumns = (ctx) => {
       maxSize: 500,
       size: 250,
       grow: false,
+      header: "Email",
       Header: ({ column }) => {
         return (
           <div className="flex flex-col gap-[2px]">
@@ -2165,6 +2180,7 @@ export const getLeadColumns = (ctx) => {
       maxSize: 500,
       size: 350,
       grow: false,
+      header: "Note",
       Header: ({ column }) => {
         return (
           <div className=" flex flex-col gap-[2px]">
@@ -2248,69 +2264,17 @@ export const getLeadColumns = (ctx) => {
     },
   ];
 
+  const wonColumns =
+    selectedTab === "won"
+      ? [createWonAtColumn(), createWonByColumn({ users })]
+      : [];
 
-
-  const wonColumns = selectedTab === "won"
-      ? [
-
- 
-
-      createWonAtColumn(),
-      createWonByColumn({ users }),
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ] : []
-
-
-
-        const lostColumns = selectedTab === "lost"
-      ? [
-
- 
-
-      createLostAtColumn(),
-      createLostByColumn({ users }),
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ] : []
-
-
-
-
-
-
-
-
-
-
-
-
+  const lostColumns =
+    selectedTab === "lost"
+      ? [createLostAtColumn(), createLostByColumn({ users })]
+      : [];
 
   return [...baseColumns, ...wonColumns, ...lostColumns];
-
-
 };
 
 export default getLeadColumns;

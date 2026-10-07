@@ -6,6 +6,7 @@ export const createLostByColumn = ({ users }) => {
 
   return {
     accessorKey: "lostBy",
+    header: "Lost By",
     Header: ({ column }) => {
       return (
         <div className="flex flex-col gap-[2px]">

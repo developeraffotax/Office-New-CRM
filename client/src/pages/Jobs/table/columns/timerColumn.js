@@ -14,6 +14,7 @@ export const timerColumn = ({
   return {
     id: "Timer",
     // accessorKey: "timertracker",
+                     header: "Timer",
     Header: ({ column }) => {
       const { timer } = useSelector((state) => state.globalTimer);
 

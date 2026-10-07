@@ -47,6 +47,8 @@ import { LEADS_SOURCES } from "../../constants/constants";
 import RelatedConversationsSidebar from "../../components/shared/RelatedConversationsSidebar/RelatedConversationsSidebar";
 import SelectedUsersNew from "../../components/SelectedUsersNew";
 import { usePersistedUsersNew } from "../../hooks/usePersistedUsersNew";
+import { getSavedColumnOrder, usePersistedColumnOrder } from "../../hooks/usePersistedColumnOrder";
+import { columnOrderingOptions, headCellHoverSx } from "../../utlis/columnOrdering";
 
 const updates_object_init = {
   companyName: "",
@@ -65,6 +67,8 @@ const updates_object_init = {
   number: "",
   leadUser: "",
 };
+
+const COLUMN_ORDER_KEY = "leads:column_order";
 
 export default function Lead() {
   const navigate = useNavigate();
@@ -918,7 +922,10 @@ export default function Lead() {
       //      columnPinning: {
       //     right: ['actions'],
       // },
+       columnOrder: getSavedColumnOrder(COLUMN_ORDER_KEY),   // 👈 restore saved order
     },
+
+        ...columnOrderingOptions,
 
     onPaginationChange: setPagination, // ✅ Hook for page changes
     autoResetPageIndex: false,
@@ -931,6 +938,7 @@ export default function Lead() {
         color: "#000",
         padding: ".7rem 0.3rem",
       },
+      sx: headCellHoverSx,
     },
     muiTableBodyCellProps: {
       sx: {
@@ -951,6 +959,11 @@ export default function Lead() {
       },
     },
   });
+
+
+
+
+      const { resetColumnOrder } = usePersistedColumnOrder(table, COLUMN_ORDER_KEY);
 
   useEffect(() => {
     const filteredRows = table

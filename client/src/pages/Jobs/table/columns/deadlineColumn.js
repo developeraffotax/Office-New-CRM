@@ -17,7 +17,7 @@ export const deadlineColumn = ({ handleUpdateDates }) => ({
   // accessorKey: "job.jobDeadline",
  
   accessorFn: (row) => row.job?.jobDeadline || "",
- 
+ header: "Deadline",
   Header: ({ column }) => (
     <DateHeader column={column} />
   ),

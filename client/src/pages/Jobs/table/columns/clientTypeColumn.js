@@ -4,6 +4,7 @@ export const clientTypeColumn = (ctx) => {
   return {
     id: "ClientType",
     accessorKey: "clientType",
+     header: "Client Type",
     Header: ({ column }) => {
       return (
         <div className=" flex flex-col gap-[2px] w-[80px] items-center justify-center  ">

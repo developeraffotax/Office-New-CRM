@@ -11,6 +11,7 @@ export const assignColumn = ({
     id: "Assign",
     // accessorKey: "job.jobHolder",
     accessorFn: (row) => row.job?.jobHolder || "",
+        header: "Assignee",
     // ======================================================
     // HEADER (PURE UI ONLY)
     // ======================================================

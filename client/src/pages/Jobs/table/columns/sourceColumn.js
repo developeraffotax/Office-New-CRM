@@ -8,6 +8,7 @@ export const sourceColumn = (ctx) => {
   return {
     id: "Source",
     accessorKey: "source",
+       header: "Source",
     Header: ({ column }) => {
       return (
         <div className=" flex flex-col gap-[2px] w-[70px] items-center justify-center  ">

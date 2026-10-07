@@ -5,6 +5,7 @@ export const ownerColumn = ({users, handleUpdateLead}) => {
           id: "Owner",
           // accessorKey: "job.lead",
           accessorFn: (row) => row.job?.lead || "",
+                      header: "CL.Owner", 
           Header: ({ column }) => {
             return (
               <div className=" flex flex-col gap-[2px]">

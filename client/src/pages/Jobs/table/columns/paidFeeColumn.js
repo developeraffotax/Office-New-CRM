@@ -4,7 +4,7 @@ export const paidFeeColumn = ({ totalClientPaidFee }) => {
   return {
     id: "Fee",
     accessorKey: "fee",
-
+    header: "Fee",
     Header: ({ column }) => {
       return (
         <div className=" flex flex-col gap-[2px] w-full items-center justify-center  ">

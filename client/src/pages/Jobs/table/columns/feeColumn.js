@@ -6,7 +6,7 @@ export const feeColumn = ({totalFee, handleUpdateFee}) => {
     return {
                 id: "Fee",
                 accessorKey: "fee",
-                
+                 header: "Fee", 
                 Header: ({ column }) => {
                   
                   return (

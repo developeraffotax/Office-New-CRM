@@ -7,6 +7,7 @@ export const statusColumn = (ctx) => {
     return         {
           id: "Status",
           // accessorKey: "status",
+                 header: "Status",
           Header: ({ column }) => {
             return (
               <div className=" flex flex-col gap-[2px]">

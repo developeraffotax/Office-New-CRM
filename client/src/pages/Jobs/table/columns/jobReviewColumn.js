@@ -2,7 +2,7 @@ export const jobReviewColumn = ({ handleUpdateUser, users }) => {
   return {
     id: "jobReview",
     accessorFn: (row) => row?.review || "",
-
+header: "Job Review", 
     Header: ({ column }) => {
       return (
         <div className=" flex flex-col gap-[2px]">

@@ -12,6 +12,7 @@ export const companyNameColumn = ({ columnFilters, searchValue }) => {
     maxSize: 300,
     size: 200,
     grow: false,
+     header: "Company Name",
 
     Header: ({ column }) => {
       const [value, setValue] = useState(column.getFilterValue() ?? "");

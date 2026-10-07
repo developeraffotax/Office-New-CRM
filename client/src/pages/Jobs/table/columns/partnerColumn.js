@@ -5,6 +5,7 @@ export const partnerColumn = (ctx) => {
     return   {
                 id: "Partner",
                 accessorKey: "partner",
+                    header: "Partner",
                 Header: ({ column }) => {
                   return (
                     <div className=" flex flex-col gap-[2px] w-[80px] items-center justify-center  ">

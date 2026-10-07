@@ -49,19 +49,17 @@ import { usePersistedUsersNew } from "../../hooks/usePersistedUsersNew";
 import SelectedUsersNew from "../../components/SelectedUsersNew";
 import AnchoredPopover from "../../components/AnchoredPopover";
 import { MdDragIndicator } from "react-icons/md"; // six-dot grip
+import { getSavedColumnOrder, usePersistedColumnOrder } from "../../hooks/usePersistedColumnOrder";
+import { columnOrderingOptions, headCellHoverSx } from "../../utlis/columnOrdering";
 
 
-
-const COLUMN_ORDER_KEY = "tasksColumnOrder";
-
+ 
 
 
-const tableIcons = {
-  DragHandleIcon: (props) => <MdDragIndicator {...props} />,
-};
+const COLUMN_ORDER_KEY = "tasks:column_order";
 
 
-
+ 
 
 const AllTasks = ({ justShowTable = false }) => {
   const dispatch = useDispatch();
@@ -250,15 +248,7 @@ const closeComment = () => {
   
 
 
-const getSavedColumnOrder = () => {
-  try {
-    const saved = JSON.parse(localStorage.getItem(COLUMN_ORDER_KEY));
-    return Array.isArray(saved) && saved.length ? saved : undefined;
-  } catch {
-    return undefined;
-  }
-};
-
+ 
 
 
 
@@ -665,8 +655,7 @@ const getSavedColumnOrder = () => {
     manualPagination: true,
     manualFiltering: true,
     // manualSorting: true,
-    enableColumnOrdering: true, 
-    enableGrouping: false,   // 👈 stops MRT_ToolbarDropZone from rendering
+ 
 
     rowCount: rowCount,
     enablePagination: true,
@@ -698,7 +687,7 @@ const getSavedColumnOrder = () => {
       columnVisibility: {
         _id: false,
       },
-       columnOrder: getSavedColumnOrder(),   // 👈 restore saved order
+       columnOrder: getSavedColumnOrder(COLUMN_ORDER_KEY),   // 👈 restore saved order
     },
 
     state: {
@@ -716,6 +705,9 @@ const getSavedColumnOrder = () => {
       showLoadingOverlay: false,
     },
 
+
+    ...columnOrderingOptions,
+
     muiTableHeadCellProps: {
       style: {
         fontWeight: "600",
@@ -724,10 +716,7 @@ const getSavedColumnOrder = () => {
         color: "#000",
         padding: ".7rem 0.3rem",
       },
-       sx: {
-      "&:hover .mrt-drag-handle": { opacity: 1 },
-
-    },
+       sx: headCellHoverSx,
     },
 
     muiTableBodyCellProps: {
@@ -750,25 +739,16 @@ const getSavedColumnOrder = () => {
     },
 
 
-    icons: tableIcons,
+ 
 
-    muiColumnDragHandleProps: {
-    className: "mrt-drag-handle",
-    sx: {
-      position: "absolute",
-      top: 2,
-      right: 6,            // leaves room for the resize handle on the edge
-      p: 0,
-      opacity: 0,          // shown on header hover
-      color: "#9ca3af",
-      transition: "opacity .15s",
-      "&:hover": { color: "#374151", background: "transparent" },
-      "& svg": { fontSize: 14 },
-    },
-  },
+ 
 
 
   });
+
+
+
+  const { resetColumnOrder } = usePersistedColumnOrder(table, COLUMN_ORDER_KEY);
 
   // ==========================================
   // EFFECTS

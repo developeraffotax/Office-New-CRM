@@ -3,6 +3,7 @@ export const jobPreparedColumn = ({ handleUpdateUser, users }) => {
     id: "jobPrepared",
     accessorFn: (row) => row?.prepared || "",
 
+     header: "Job Prepared", 
     Header: ({ column }) => {
       return (
         <div className=" flex flex-col gap-[2px]">

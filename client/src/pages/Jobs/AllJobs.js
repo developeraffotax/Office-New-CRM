@@ -76,6 +76,8 @@ import { LEADS_SOURCES } from "../../constants/constants";
 import SelectedUsersNew from "../../components/SelectedUsersNew";
 import { usePersistedUsersNew } from "../../hooks/usePersistedUsersNew";
 import AnchoredPopover from "../../components/AnchoredPopover";
+import { getSavedColumnOrder, usePersistedColumnOrder } from "../../hooks/usePersistedColumnOrder";
+import { columnOrderingOptions, headCellHoverSx } from "../../utlis/columnOrdering";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -90,6 +92,9 @@ const csvConfig = mkConfig({
   useBom: true,
   useKeysAsHeaders: true,
 });
+
+
+const COLUMN_ORDER_KEY = "jobs:column_order";
 
 export default function AllJobs() {
   const dispatch = useDispatch();
@@ -1566,7 +1571,11 @@ export default function AllJobs() {
       columnVisibility: {
         _id: false,
       },
+       columnOrder: getSavedColumnOrder(COLUMN_ORDER_KEY),   // 👈 restore saved order
     },
+
+
+    ...columnOrderingOptions,
 
     state: {
       rowSelection,
@@ -1622,6 +1631,7 @@ export default function AllJobs() {
         color: "#000",
         padding: ".7rem 0.3rem",
       },
+      sx: headCellHoverSx,
     },
 
     muiTableBodyCellProps: {
@@ -1682,6 +1692,11 @@ export default function AllJobs() {
       );
     },
   });
+
+
+
+
+    const { resetColumnOrder } = usePersistedColumnOrder(table, COLUMN_ORDER_KEY);
 
   // -------Update Bulk Jobs------------->
 

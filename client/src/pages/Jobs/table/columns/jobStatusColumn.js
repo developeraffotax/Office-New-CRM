@@ -30,6 +30,7 @@ export const jobStatusColumn = ({
 
     accessorFn: (row) => row.job?.jobStatus || "",
 
+    header: "Job Status", 
     // ✅ HEADER (same UI, server-side safe)
     Header: ({ column }) => {
       

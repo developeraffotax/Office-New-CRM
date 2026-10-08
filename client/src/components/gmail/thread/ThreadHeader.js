@@ -121,11 +121,9 @@ export default function ThreadHeader({
             });
           }}
         />
-      </div>
 
-      <div className="flex justify-center items-center gap-3">
 
-          <AssignUser
+        <AssignUser
           users={users}
           mongoThreadId={mongoThreadId}
           currentUserId={userId}
@@ -133,6 +131,13 @@ export default function ThreadHeader({
           showLabel
         />
 
+
+
+      </div>
+
+      <div className="flex justify-center items-center gap-3">
+
+          
 
 
 

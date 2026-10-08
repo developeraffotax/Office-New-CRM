@@ -131,12 +131,7 @@ export default function AssignUser({
       tabIndex={0}
       onKeyDown={handleKeyDown}
     >
-      {/* Label */}
-      {showLabel && (
-        <span className="text-sm text-gray-700 font-medium">
-          {currentUser ? currentUser.name : " "}
-        </span>
-      )}
+      
 
       {/* Assign button */}
       <button
@@ -152,6 +147,14 @@ export default function AssignUser({
       >
         <FiUserPlus className="size-4" />
       </button>
+
+
+      {/* Label */}
+      {showLabel && (
+        <span className="text-sm text-gray-700 font-medium">
+          {currentUser ? currentUser.name : " "}
+        </span>
+      )}
 
       {/* Dropdown */}
       {open && (

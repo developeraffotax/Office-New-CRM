@@ -7,6 +7,7 @@ import { TbLoader2 } from "react-icons/tb";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import Loader from "../../utlis/Loader";
+import JobDriveLinkButton from "../Modals/JobDriveLinkButton";
 
 export default function HandleHRModal({
   setShowAddTask,
@@ -26,6 +27,7 @@ export default function HandleHRModal({
   const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [title, setTitle] = useState("");
+    const [docLink, setDocLink] = useState("");
 
   const [showProductLink, setShowProductLink] = useState(false);
   const [productLink, setProductLink] = useState("");
@@ -47,6 +49,7 @@ export default function HandleHRModal({
       setDescription(data?.task?.description || "");
       setProductLink(data?.task?.productLink || "");
       setShowProductLink(!!data?.task?.productLink);
+      setDocLink(data?.task?.docLink || "");
     } catch (error) {
       console.log(error);
       toast.error("Failed to load task details");
@@ -73,6 +76,7 @@ export default function HandleHRModal({
         product,          // ← send product id
         description,
         productLink,
+        docLink
       };
 
       if (taskId) {
@@ -117,6 +121,7 @@ export default function HandleHRModal({
     setProduct("");
     setDescription("");
     setProductLink("");
+    setDocLink("");
     setShowProductLink(false);
   };
 
@@ -250,6 +255,8 @@ export default function HandleHRModal({
               onChange={setDescription}
             />
 
+
+
             {/* Product Link + Submit */}
             <div className="flex items-center justify-between mt-[3rem] gap-24">
               <div className="flex items-center gap-2 w-full">
@@ -299,6 +306,17 @@ export default function HandleHRModal({
                 )}
               </button>
             </div>
+
+
+            
+            <JobDriveLinkButton
+             
+                enabled={true}
+                link={docLink}
+                onSave={setDocLink}
+              />
+
+              
           </form>
         )}
       </div>

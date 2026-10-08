@@ -35,8 +35,16 @@ import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { Link } from "react-router-dom";
 import { FiExternalLink } from "react-icons/fi";
 import { formatRef, refFilterFn } from "../../utlis/formatRef";
-import { Button, Checkbox, FormControlLabel, MenuItem, Popover, Select } from "@mui/material";
+import {
+  Button,
+  Checkbox,
+  FormControlLabel,
+  MenuItem,
+  Popover,
+  Select,
+} from "@mui/material";
 import HandleHrProductModal from "../../components/hr/HandleHrProductModal";
+import { FaGoogleDrive } from "react-icons/fa";
 
 const months = [
   "January",
@@ -61,8 +69,6 @@ const availableSorts = [
   { label: "Software", value: "software" },
 ];
 
-
-
 const updates_object_init = {
   title: "",
   department: "",
@@ -80,10 +86,7 @@ const initialColumnVisibility = {
   department: true,
   product: true,
   software: true,
-
-
-
-}
+};
 
 export default function HR() {
   const auth = useSelector((state) => state.auth.auth);
@@ -112,7 +115,9 @@ export default function HR() {
   const [showDescription, setShowDescription] = useState(false);
 
   const [showcolumn, setShowColumn] = useState(false);
-  const [columnVisibility, setColumnVisibility] = useState({...initialColumnVisibility});
+  const [columnVisibility, setColumnVisibility] = useState({
+    ...initialColumnVisibility,
+  });
 
   const [enableRowOrdering, setEnableRowOrdering] = useState(true);
 
@@ -120,62 +125,47 @@ export default function HR() {
   const currentMonthIndex = new Date().getMonth();
   const [month, setMonth] = useState(currentMonthIndex);
 
-const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
- 
   const [sortFields, setSortFields] = useState([
-  // Example:
-  { field: "position", direction: "asc" }
-]);
+    // Example:
+    { field: "position", direction: "asc" },
+  ]);
 
+  console.log("COLUMN VISIBILITY", columnVisibility);
+  console.log("deparmentsData🎈🎈🎈", deparmentsData);
 
-console.log("COLUMN VISIBILITY", columnVisibility)
-console.log("deparmentsData🎈🎈🎈", deparmentsData, )
+  const handleFieldToggle = (field) => {
+    setSortFields((prev) => {
+      const exists = prev.find((x) => x.field === field);
 
+      if (exists) {
+        return prev.filter((x) => x.field !== field);
+      }
 
-const handleFieldToggle = (field) => {
-  setSortFields((prev) => {
-    const exists = prev.find((x) => x.field === field);
+      return [
+        ...prev,
+        {
+          field,
+          direction: "asc",
+        },
+      ];
+    });
+  };
 
-    if (exists) {
-      return prev.filter((x) => x.field !== field);
-    }
+  const handleDirectionChange = (field, direction) => {
+    setSortFields((prev) =>
+      prev.map((item) =>
+        item.field === field ? { ...item, direction } : item,
+      ),
+    );
+  };
 
-    return [
-      ...prev,
-      {
-        field,
-        direction: "asc",
-      },
-    ];
-  });
-};
-
-
-const handleDirectionChange = (field, direction) => {
-  setSortFields((prev) =>
-    prev.map((item) =>
-      item.field === field
-        ? { ...item, direction }
-        : item
-    )
-  );
-};
-
-
-
-
-const buildSortQuery = () => {
-  return sortFields
-    .map(
-      (item) =>
-        `${item.field}:${item.direction}`
-    )
-    .join(",");
-};
-
-
-
+  const buildSortQuery = () => {
+    return sortFields
+      .map((item) => `${item.field}:${item.direction}`)
+      .join(",");
+  };
 
   // const [activeBtn, setActiveBtn] = useState("");
   const [showJobHolder, setShowJobHolder] = useState(true);
@@ -198,7 +188,7 @@ const buildSortQuery = () => {
   useEffect(() => {
     if (userName && userName.length > 0) {
       const savedVisibility = JSON.parse(
-        localStorage.getItem("visibileHrColumn")
+        localStorage.getItem("visibileHrColumn"),
       );
 
       if (savedVisibility) {
@@ -208,7 +198,7 @@ const buildSortQuery = () => {
           acc[col] = true;
           return acc;
         }, {});
-        setColumnVisibility({...initialColumnVisibility, ...usersColumns});
+        setColumnVisibility({ ...initialColumnVisibility, ...usersColumns });
       }
     }
   }, [userName]);
@@ -228,12 +218,10 @@ const buildSortQuery = () => {
       setIsLoading(true);
     }
     try {
-
-        const sort = buildSortQuery();
-
+      const sort = buildSortQuery();
 
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/hr/all/tasks?sort=${sort}`
+        `${process.env.REACT_APP_API_URL}/api/v1/hr/all/tasks?sort=${sort}`,
       );
 
       const rawTasks = data?.tasks;
@@ -243,7 +231,7 @@ const buildSortQuery = () => {
       } else {
         const filteredTasks = rawTasks?.filter((task) => {
           return task.department.users.some(
-            (user) => user.user.name === auth.user.name
+            (user) => user.user.name === auth.user.name,
           );
         });
 
@@ -265,34 +253,27 @@ const buildSortQuery = () => {
   }, []);
 
   // ----------Fetch All Departments-------->
-const fetchAllDepartments = async () => {
-  try {
-    const { data } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/department/all`
-    );
-
-    let departments = data.departments;
-
-    if (!isAdmin(auth)) {
-      departments = departments.filter((dpt) =>
-        dpt.users.some((user) => user?.user._id === auth?.user?.id)
+  const fetchAllDepartments = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/department/all`,
       );
+
+      let departments = data.departments;
+
+      if (!isAdmin(auth)) {
+        departments = departments.filter((dpt) =>
+          dpt.users.some((user) => user?.user._id === auth?.user?.id),
+        );
+      }
+
+      console.log("🧡🧡🧡🧡🧡🧡 Departments:", departments);
+
+      setDepartmentData(departments);
+    } catch (error) {
+      console.log(error);
     }
-
-
-    console.log("🧡🧡🧡🧡🧡🧡 Departments:", departments);
-
-    setDepartmentData(departments);
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-
-
-
-
-
+  };
 
   useEffect(() => {
     fetchAllDepartments();
@@ -303,7 +284,7 @@ const fetchAllDepartments = async () => {
   const fetchAllHrRoles = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/hrRole/all`
+        `${process.env.REACT_APP_API_URL}/api/v1/hrRole/all`,
       );
       setHrRoleData(data.hrRoles);
     } catch (error) {
@@ -311,20 +292,17 @@ const fetchAllDepartments = async () => {
     }
   };
 
-
-
-    // ----------Fetch All Roles-------->
+  // ----------Fetch All Roles-------->
   const fetchAllHrProducts = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/hrProduct/all`
+        `${process.env.REACT_APP_API_URL}/api/v1/hrProduct/all`,
       );
       setHrProductData(data.products);
     } catch (error) {
       console.log(error);
     }
   };
-
 
   useEffect(() => {
     fetchAllHrRoles();
@@ -336,7 +314,7 @@ const fetchAllDepartments = async () => {
 
     // Preserve the order from savedOrder, but only if the username still exists in the fetched data
     const ordered = savedOrder.filter((name) =>
-      fetchedUsernames.includes(name)
+      fetchedUsernames.includes(name),
     );
 
     // Add any new usernames that aren't in the saved order
@@ -347,32 +325,24 @@ const fetchAllDepartments = async () => {
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
-
-
-     
     let URL = `${process.env.REACT_APP_API_URL}/api/v1/user/get/active/team`;
 
-
-    
     if (isAdmin(auth)) {
-      URL = `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+      URL = `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`;
     }
 
-
-
-
     try {
-      const { data } = await axios.get( URL );
+      const { data } = await axios.get(URL);
 
       setUsers(
         data?.users?.filter((user) =>
-          user.role?.access.some((item) => item?.permission?.includes("HR"))
-        ) || []
+          user.role?.access.some((item) => item?.permission?.includes("HR")),
+        ) || [],
       );
 
       const userNameArr = data?.users
         ?.filter((user) =>
-          user.role?.access.some((item) => item?.permission?.includes("HR"))
+          user.role?.access.some((item) => item?.permission?.includes("HR")),
         )
         .map((user) => user.name);
 
@@ -399,7 +369,7 @@ const fetchAllDepartments = async () => {
     setCopyLoad(true);
     try {
       const { data } = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/v1/hr/copy/task/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/hr/copy/task/${id}`,
       );
       if (data) {
         getAllTasks();
@@ -448,12 +418,12 @@ const fetchAllDepartments = async () => {
   const deleteDepartment = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/department/delete/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/department/delete/${id}`,
       );
       if (data) {
-  fetchAllDepartments();
-  fetchAllHrProducts();
-}
+        fetchAllDepartments();
+        fetchAllHrProducts();
+      }
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message);
@@ -480,7 +450,7 @@ const fetchAllDepartments = async () => {
   const deleteRole = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/hrRole/delete/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/hrRole/delete/${id}`,
       );
       if (data) {
         fetchAllHrRoles();
@@ -491,11 +461,6 @@ const fetchAllDepartments = async () => {
     }
   };
 
-
-
-
-
-  
   // ---------Delete Role-------->
   const handleDeleteProductConfirmation = (id) => {
     Swal.fire({
@@ -516,7 +481,7 @@ const fetchAllDepartments = async () => {
   const deleteProduct = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/hrProduct/delete/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/hrProduct/delete/${id}`,
       );
       if (data) {
         fetchAllHrProducts();
@@ -526,9 +491,6 @@ const fetchAllDepartments = async () => {
       toast.error(error?.response?.data?.message);
     }
   };
-
-
-
 
   // ---------Delete Task-------->
   const handleDeleteTaskConfirmation = (tid) => {
@@ -550,7 +512,7 @@ const fetchAllDepartments = async () => {
   const deleteTask = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/hr/remove/task/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/hr/remove/task/${id}`,
       );
       if (data) {
         setTaskData((prevTasks) => prevTasks.filter((task) => task._id !== id));
@@ -567,7 +529,7 @@ const fetchAllDepartments = async () => {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/hr/update/status/${taskId}`,
-        { statusId, status }
+        { statusId, status },
       );
       if (data) {
         getAllTasks();
@@ -606,10 +568,10 @@ const fetchAllDepartments = async () => {
         `${process.env.REACT_APP_API_URL}/api/v1/hr/update/bulk`,
         {
           rowSelection: Object.keys(rowSelection).filter(
-            (id) => rowSelection[id] === true
+            (id) => rowSelection[id] === true,
           ),
           updates,
-        }
+        },
       );
 
       if (data) {
@@ -630,7 +592,7 @@ const fetchAllDepartments = async () => {
     setIsFetching(true);
     try {
       const { data, status } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/hr/task/detail/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/hr/task/detail/${id}`,
       );
 
       if (data) {
@@ -647,24 +609,20 @@ const fetchAllDepartments = async () => {
   // ---------------Table Detail------------->
   const columns = useMemo(
     () => [
-
-
       {
-    id: "hrTaskRef",
-    accessorFn: (row) => row.hrTaskRef || "", // safely handle missing jobRef
-    // header: "Ref",
-    size: 70,
+        id: "hrTaskRef",
+        accessorFn: (row) => row.hrTaskRef || "", // safely handle missing jobRef
+        // header: "Ref",
+        size: 70,
 
-    
-            Header: ({ column }) => {
+        Header: ({ column }) => {
           return (
             <div className="flex flex-col gap-1">
               <span className="font-semibold">Ref</span>
-    
+
               {/* 🔍 Header Search Input */}
               <input
                 type="text"
-                
                 className="border font-normal rounded px-2 py-1 text-sm outline-none"
                 value={column.getFilterValue() ?? ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
@@ -673,36 +631,29 @@ const fetchAllDepartments = async () => {
           );
         },
         filterFn: refFilterFn,
- 
-    Cell: ({ cell }) => {
 
-      const prefix = "HR"; 
-      const number = cell.getValue();
-      const cellValue = formatRef(prefix, number);
-        
-      
+        Cell: ({ cell }) => {
+          const prefix = "HR";
+          const number = cell.getValue();
+          const cellValue = formatRef(prefix, number);
 
-      const handleCopy = () => {
-        if(!number) return;
-        navigator.clipboard.writeText(cellValue);
-        toast.success(`Copied ${cellValue}`);
-      };
+          const handleCopy = () => {
+            if (!number) return;
+            navigator.clipboard.writeText(cellValue);
+            toast.success(`Copied ${cellValue}`);
+          };
 
-
-      return (
-        <span
-        className=" text-gray-700 font-semibold text-sm cursor-pointer "
-        onClick={handleCopy}
-        title="Click to copy"
-      >
-        {cellValue}
-      </span>
-      )
-    },
-    
-  },
-
-
+          return (
+            <span
+              className=" text-gray-700 font-semibold text-sm cursor-pointer "
+              onClick={handleCopy}
+              title="Click to copy"
+            >
+              {cellValue}
+            </span>
+          );
+        },
+      },
 
       {
         accessorKey: "hrRole.roleName",
@@ -757,10 +708,6 @@ const fetchAllDepartments = async () => {
         filterVariant: "select",
       },
 
-
-
-
-
       {
         accessorKey: "department.departmentName",
         id: "department",
@@ -768,54 +715,54 @@ const fetchAllDepartments = async () => {
         maxSize: 200,
         size: 170,
         grow: false,
-Header: ({ column, table }) => {
-  return (
-    <div className="flex flex-col gap-[2px]">
-      <span
-        className="ml-1 cursor-pointer"
-        title="Clear Filter"
-        onClick={() => {
-          column.setFilterValue("");
-          table.getColumn("product")?.setFilterValue("");
-        }}
-      >
-        Department
-      </span>
-      <select
-        value={column.getFilterValue() || ""}
-        onChange={(e) => {
-          const deptName = e.target.value;
-          column.setFilterValue(deptName);
+        Header: ({ column, table }) => {
+          return (
+            <div className="flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                  table.getColumn("product")?.setFilterValue("");
+                }}
+              >
+                Department
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  const deptName = e.target.value;
+                  column.setFilterValue(deptName);
 
-          const productCol = table.getColumn("product");
+                  const productCol = table.getColumn("product");
 
-          if (!deptName) {
-            productCol?.setFilterValue("");
-            return;
-          }
+                  if (!deptName) {
+                    productCol?.setFilterValue("");
+                    return;
+                  }
 
-          // first product (alphabetical, since the API sorts by name) in this department
-          const firstProduct = hrProductData.find((p) =>
-            p.departments?.some((d) => d.departmentName === deptName)
+                  // first product (alphabetical, since the API sorts by name) in this department
+                  const firstProduct = hrProductData.find((p) =>
+                    p.departments?.some((d) => d.departmentName === deptName),
+                  );
+
+                  productCol?.setFilterValue(firstProduct?.name || "");
+                }}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {deparmentsData?.map((department) => (
+                  <option
+                    key={department?._id}
+                    value={department?.departmentName || ""}
+                  >
+                    {department?.departmentName}
+                  </option>
+                ))}
+              </select>
+            </div>
           );
-
-          productCol?.setFilterValue(firstProduct?.name || "");
-        }}
-        className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-      >
-        <option value="">Select</option>
-        {deparmentsData?.map((department) => (
-          <option
-            key={department?._id}
-            value={department?.departmentName || ""}
-          >
-            {department?.departmentName}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-},
+        },
         Cell: ({ cell, row }) => {
           const department = row.original?.department?.departmentName || "N/A"; // Handle undefined
           return (
@@ -833,30 +780,29 @@ Header: ({ column, table }) => {
           );
         },
         filterSelectOptions: deparmentsData?.map(
-          (dep) => dep?.departmentName || ""
+          (dep) => dep?.departmentName || "",
         ),
         filterVariant: "select",
       },
 
-
-            {
+      {
         accessorKey: "product.name",
         id: "product",
         minSize: 100,
         maxSize: 200,
         size: 170,
         grow: false,
-        Header: ({ column, table  }) => {
-           const selectedDept = table.getColumn("department")?.getFilterValue();
+        Header: ({ column, table }) => {
+          const selectedDept = table.getColumn("department")?.getFilterValue();
 
-           console.log("SELECTED DEPARTMENT", selectedDept)
-           console.log("hrProductData hrProductData", hrProductData)
+          console.log("SELECTED DEPARTMENT", selectedDept);
+          console.log("hrProductData hrProductData", hrProductData);
 
-  const options = selectedDept
-    ? hrProductData.filter((p) =>
-        p.departments?.some((d) => d.departmentName === selectedDept)
-      )
-    : hrProductData;
+          const options = selectedDept
+            ? hrProductData.filter((p) =>
+                p.departments?.some((d) => d.departmentName === selectedDept),
+              )
+            : hrProductData;
           return (
             <div className="flex flex-col gap-[2px] w-[120px]">
               <span
@@ -882,7 +828,7 @@ Header: ({ column, table }) => {
           );
         },
         Cell: ({ cell, row }) => {
-          const product = row.original?.product?.name || "N/A";  
+          const product = row.original?.product?.name || "N/A";
           return (
             <div className="w-full px-1">
               <span>{product}</span>
@@ -898,12 +844,11 @@ Header: ({ column, table }) => {
             cellValue.toString().toLowerCase() === filterValue.toLowerCase()
           );
         },
-        filterSelectOptions: hrProductData?.map((product) => product?.name || ""),
+        filterSelectOptions: hrProductData?.map(
+          (product) => product?.name || "",
+        ),
         filterVariant: "select",
       },
-
-
-
 
       // {
       //   accessorKey: "category",
@@ -1043,7 +988,7 @@ Header: ({ column, table }) => {
                 </div>
 
                 {productLink && (
-                  <Link to={productLink} target="_blank" >
+                  <Link to={productLink} target="_blank">
                     <FiExternalLink className="w-5 h-5 text-gray-700 transition-all duration-200 hover:text-blue-600" />
                   </Link>
                 )}
@@ -1052,22 +997,17 @@ Header: ({ column, table }) => {
           );
         },
         filterFn: (row, columnId, filterValue) => {
-  if (!filterValue) return true;
+          if (!filterValue) return true;
 
-  const cellValue =
-    row.original[columnId]?.toString().toLowerCase() || "";
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
 
-  // Split search text into words
-  const words = filterValue
-    .toLowerCase()
-    .trim()
-    .split(/\s+/); // split by spaces
+          // Split search text into words
+          const words = filterValue.toLowerCase().trim().split(/\s+/); // split by spaces
 
-  // Check every word exists in text
-  return words.every((word) =>
-    cellValue.includes(word)
-  );
-},
+          // Check every word exists in text
+          return words.every((word) => cellValue.includes(word));
+        },
         size: 500,
         minSize: 350,
         maxSize: 560,
@@ -1103,7 +1043,7 @@ Header: ({ column, table }) => {
         },
         Cell: ({ row }) => {
           const matchedUser = row.original.users?.find(
-            (u) => u?.user?.name === name
+            (u) => u?.user?.name === name,
           );
 
           const [isShow, setIsShow] = useState(false);
@@ -1152,7 +1092,7 @@ Header: ({ column, table }) => {
         grow: false,
         filterFn: (row, columnId, filterValue) => {
           const status = row.original.users?.find(
-            (u) => u?.user?.name === name
+            (u) => u?.user?.name === name,
           )?.status;
 
           return status === filterValue || filterValue === "";
@@ -1166,6 +1106,8 @@ Header: ({ column, table }) => {
         accessorKey: "actions",
         header: "Actions",
         Cell: ({ cell, row }) => {
+          const docLink = row?.original?.docLink || "";
+
           const copyToClipboard = async (id) => {
             const origin = window.location.origin;
 
@@ -1211,14 +1153,36 @@ Header: ({ column, table }) => {
               >
                 <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
               </span>
+
+              <span>
+                {docLink ? (
+                  <a
+                    href={docLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Open Google Drive link"
+                    className="text-orange-600 hover:text-orange-700"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <FaGoogleDrive className="h-5 w-5" />
+                  </a>
+                ) : (
+                  <span
+                    title="No Google Drive link added"
+                    className="text-gray-400 cursor-not-allowed"
+                  >
+                    <FaGoogleDrive className="h-5 w-5" />
+                  </span>
+                )}
+              </span>
             </div>
           );
         },
-        size: 130,
+        size: 150,
       },
     ],
     // eslint-disable-next-line
-    [users, auth, taskData, deparmentsData, columnVisibility]
+    [users, auth, taskData, deparmentsData, columnVisibility],
   );
 
   // Clear table Filter
@@ -1233,15 +1197,11 @@ Header: ({ column, table }) => {
     columns,
     data: taskData || [],
 
+    enableRowOrdering: columnVisibility.move,
+    enableRowNumbers: columnVisibility.numbering,
+    enableRowSelection: columnVisibility.selection,
+    enableSorting: false,
 
-     enableRowOrdering: columnVisibility.move,
-         enableRowNumbers: columnVisibility.numbering,
-         enableRowSelection: columnVisibility.selection,
-  enableSorting: false,
-
-
-
-  
     onRowSelectionChange: setRowSelection,
     state: { rowSelection, columnVisibility },
     onColumnVisibilityChange: setColumnVisibility,
@@ -1254,7 +1214,7 @@ Header: ({ column, table }) => {
     muiTableContainerProps: { sx: { maxHeight: "850px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
- 
+
     enableGlobalFilter: true,
 
     enableColumnResizing: true,
@@ -1267,36 +1227,35 @@ Header: ({ column, table }) => {
       density: "compact",
     },
 
-    
-  muiRowDragHandleProps: ({ table }) => ({
-    onDragEnd: async () => {
-      const { draggingRow, hoveredRow } = table.getState();
+    muiRowDragHandleProps: ({ table }) => ({
+      onDragEnd: async () => {
+        const { draggingRow, hoveredRow } = table.getState();
 
-      if (!draggingRow || !hoveredRow) return;
+        if (!draggingRow || !hoveredRow) return;
 
-      const updatedData = [...taskData];
+        const updatedData = [...taskData];
 
-      updatedData.splice(
-        hoveredRow.index,
-        0,
-        updatedData.splice(draggingRow.index, 1)[0]
-      );
+        updatedData.splice(
+          hoveredRow.index,
+          0,
+          updatedData.splice(draggingRow.index, 1)[0],
+        );
 
-      setTaskData(updatedData);
+        setTaskData(updatedData);
 
-      try {
-        await axios.put(`${process.env.REACT_APP_API_URL}/api/v1/hr/reorder`, {
-          taskIds: updatedData.map((row) => row._id),
-        });
-        toast.success("Reordered Successfully!")
-      } catch (error) {
-        console.error(error);
-      }
-    },
-  }),
-  
-
-
+        try {
+          await axios.put(
+            `${process.env.REACT_APP_API_URL}/api/v1/hr/reorder`,
+            {
+              taskIds: updatedData.map((row) => row._id),
+            },
+          );
+          toast.success("Reordered Successfully!");
+        } catch (error) {
+          console.error(error);
+        }
+      },
+    }),
 
     muiTableHeadCellProps: {
       style: {
@@ -1384,7 +1343,7 @@ Header: ({ column, table }) => {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
       if (data) {
@@ -1413,7 +1372,7 @@ Header: ({ column, table }) => {
     const items = reorder(
       userName,
       result.source.index,
-      result.destination.index
+      result.destination.index,
     );
     localStorage.setItem("hr_usernamesOrder", JSON.stringify(items));
     setUserName(items);
@@ -1421,22 +1380,19 @@ Header: ({ column, table }) => {
 
   // --------------Job_Holder Length---------->
 
-const getJobHolderCount = (name) => {
-  let yesCount = 0;
+  const getJobHolderCount = (name) => {
+    let yesCount = 0;
 
-  taskData?.forEach((task) => {
-    task?.users?.forEach((u) => {
-      if (
-        u?.user?.name === name &&
-        u?.status === "Yes"
-      ) {
-        yesCount++;
-      }
+    taskData?.forEach((task) => {
+      task?.users?.forEach((u) => {
+        if (u?.user?.name === name && u?.status === "Yes") {
+          yesCount++;
+        }
+      });
     });
-  });
 
-  return yesCount;
-};
+    return yesCount;
+  };
 
   const setColumnFromOutsideTable = (colKey, filterVal) => {
     const col = table.getColumn(colKey);
@@ -1471,41 +1427,38 @@ const getJobHolderCount = (name) => {
               </span>
             )}
 
-            {
-              isAdmin(auth) && <div className="flex justify-center items-center  gap-2 ">
-              <span
-                className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
-                  showEdit && "bg-orange-500 text-white"
-                }`}
-                onClick={() => {
-                  setShowEdit(!showEdit);
-                }}
-                title="Edit Multiple Jobs"
-              >
-                <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
-              </span>
+            {isAdmin(auth) && (
+              <div className="flex justify-center items-center  gap-2 ">
+                <span
+                  className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
+                    showEdit && "bg-orange-500 text-white"
+                  }`}
+                  onClick={() => {
+                    setShowEdit(!showEdit);
+                  }}
+                  title="Edit Multiple Jobs"
+                >
+                  <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
+                </span>
 
-              <span
-                className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
-                  showJobHolder && "bg-orange-500 text-white"
-                }`}
-                onClick={() => {
-                  setShowJobHolder((prev) => !prev);
-                }}
-                title="Filter by Job Holder"
-              >
-                <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
-              </span>
-            </div>
-            }
+                <span
+                  className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
+                    showJobHolder && "bg-orange-500 text-white"
+                  }`}
+                  onClick={() => {
+                    setShowJobHolder((prev) => !prev);
+                  }}
+                  title="Filter by Job Holder"
+                >
+                  <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
+                </span>
+              </div>
+            )}
           </div>
 
           {/* ---------Template Buttons */}
           <div className="flex items-center gap-4 sm:w-fit w-full justify-end sm:justify-normal">
-
-
- 
-             {/* Hide & Show */}
+            {/* Hide & Show */}
             <div className=" hidden sm:flex relative">
               <div
                 className={` p-1 rounded-md hover:shadow-md bg-gray-50 cursor-pointer border ${
@@ -1529,352 +1482,314 @@ const getJobHolderCount = (name) => {
               )}
             </div>
 
-
-<div className="relative">
-  <button
-   onClick={() => setOpen(true)}
-    className="px-3 py-2 border rounded-lg"
-  >
-    Sort
-  </button>
-
-{open && (
-  <div
-    className="absolute top-full left-0 mt-2 w-[320px] bg-white rounded-xl shadow-xl border border-gray-200 z-50"
-  >
-    <div className="p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-800">
-          Sort By
-        </h3>
-
-        <button
-          onClick={() => setOpen(false)}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          ✕
-        </button>
-      </div>
-
-      <div className="space-y-3">
-        {availableSorts.map((item) => {
-          const selected = sortFields.find(
-            (x) => x.field === item.value
-          );
-
-          return (
-            <div
-              key={item.value}
-              className="flex items-center justify-between"
-            >
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={!!selected}
-                  onChange={() =>
-                    handleFieldToggle(item.value)
-                  }
-                  className="h-4 w-4"
-                />
-
-                <span className="text-sm text-gray-700">
-                  {item.label}
-                </span>
-              </label>
-
-              {selected && (
-                <select
-                  value={selected.direction}
-                  onChange={(e) =>
-                    handleDirectionChange(
-                      item.value,
-                      e.target.value
-                    )
-                  }
-                  className="border rounded-md px-2 py-1 text-sm"
-                >
-                  <option value="asc">
-                    Asc
-                  </option>
-
-                  <option value="desc">
-                    Desc
-                  </option>
-                </select>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <button
-        onClick={() => {
-          getAllTasks();
-           
-        }}
-        className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 text-sm font-medium"
-      >
-        Apply
-      </button>
-    </div>
-  </div>
-)}
-</div>
-
- 
-           
-
-{ isAdmin(auth) &&
-  <div className="flex items-center justify-end gap-2">
-
-              <form>
-              <input
-                type="file"
-                name="file"
-                onChange={(e) => importJobData(e.target.files[0])}
-                accept=".csv, .xlsx"
-                id="importTasksHR"
-                className="hidden"
-              />
-              <label
-                htmlFor="importTasksHR"
-                className={`${
-                  style.button1
-                } !bg-gray-100 !shadow-none text-black hidden sm:flex  hover:bg-orange-500 text-[15px] bg-gradient-to-bl from-[#ffe4e6]  to-[#d8d8d8] ${
-                  fLoading ? "cursor-not-allowed opacity-90" : ""
-                }`}
-                style={{ padding: ".4rem 1.1rem", color: "#000" }}
-                title={"Import csv or excel file!"}
-                onClick={(e) => fLoading && e.preventDefault()}
+            <div className="relative">
+              <button
+                onClick={() => setOpen(true)}
+                className="px-3 py-2 border rounded-lg"
               >
-                {fLoading ? (
-                  <TbLoader className="h-6 w-6 animate-spin text-black" />
-                ) : (
-                  "Import"
-                )}
-              </label>
-            </form>
- 
-            
-            <div
-              className=" hidden sm:flex items-center justify-between relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2  gap-1"
-              onClick={() => setShowDepartment(!showDepartment)}
-            >
-              <span className="text-[15px] text-gray-900 cursor-pointer">
-                Departments
-              </span>
-              <span
-                onClick={() => setShowDepartment(!showDepartment)}
-                className="cursor-pointer"
-              >
-                {!showDepartment ? (
-                  <IoIosArrowDown className="h-5 w-5 text-black cursor-pointer" />
-                ) : (
-                  <IoIosArrowUp className="h-5 w-5 text-black cursor-pointer" />
-                )}
-              </span>
-              {/* -----------Projects------- */}
-              {showDepartment && (
-                <div
-                  ref={closeProject}
-                  className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]"
-                >
-                  {deparmentsData &&
-                    deparmentsData?.map((deprtment) => (
-                      <div
-                        key={deprtment._id}
-                        className="w-full flex items-center justify-between gap-1 rounded-md bg-white border py-1 px-1 hover:bg-gray-100"
+                Sort
+              </button>
+
+              {open && (
+                <div className="absolute top-full left-0 mt-2 w-[320px] bg-white rounded-xl shadow-xl border border-gray-200 z-50">
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold text-gray-800">Sort By</h3>
+
+                      <button
+                        onClick={() => setOpen(false)}
+                        className="text-gray-500 hover:text-gray-700"
                       >
-                        <p className="text-[13px] w-[8rem] ">
-                          {deprtment?.departmentName}
-                        </p>
-                        <div className="flex items-center gap-1">
-                          <span
-                            onClick={() => {
-                              setDepartmentId(deprtment._id);
-                              setIshandleDepartment(true);
-                            }}
-                            title="Edit Department"
+                        ✕
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {availableSorts.map((item) => {
+                        const selected = sortFields.find(
+                          (x) => x.field === item.value,
+                        );
+
+                        return (
+                          <div
+                            key={item.value}
+                            className="flex items-center justify-between"
                           >
-                            <MdOutlineEdit className="h-5 w-5 cursor-pointer hover:text-sky-500 transition-all duration-200" />
-                          </span>
-                          <span
-                            title="Delete Delete"
-                            onClick={() =>
-                              handleDeleteConfirmation(deprtment._id)
-                            }
-                          >
-                            <AiTwotoneDelete className="h-5 w-5 cursor-pointer hover:text-red-500 transition-all duration-200" />
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={!!selected}
+                                onChange={() => handleFieldToggle(item.value)}
+                                className="h-4 w-4"
+                              />
+
+                              <span className="text-sm text-gray-700">
+                                {item.label}
+                              </span>
+                            </label>
+
+                            {selected && (
+                              <select
+                                value={selected.direction}
+                                onChange={(e) =>
+                                  handleDirectionChange(
+                                    item.value,
+                                    e.target.value,
+                                  )
+                                }
+                                className="border rounded-md px-2 py-1 text-sm"
+                              >
+                                <option value="asc">Asc</option>
+
+                                <option value="desc">Desc</option>
+                              </select>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        getAllTasks();
+                      }}
+                      className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 text-sm font-medium"
+                    >
+                      Apply
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
-            
-            <button
-              className={`${style.button1} text-[15px] `}
-              onClick={() => setIshandleDepartment(true)}
-              style={{ padding: ".4rem 1rem" }}
-            >
-              Add Department
-            </button>
 
-            
-            <div
-              className="ml-5 hidden sm:flex items-center justify-between relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2  gap-1"
-              onClick={() => setShowHrRoles(!showHrRoles)}
-            >
-              <span className="text-[15px] text-gray-900 cursor-pointer">
-                Roles
-              </span>
-              <span
-                onClick={() => setShowHrRoles(!showHrRoles)}
-                className="cursor-pointer"
-              >
-                {!showHrRoles ? (
-                  <IoIosArrowDown className="h-5 w-5 text-black cursor-pointer" />
-                ) : (
-                  <IoIosArrowUp className="h-5 w-5 text-black cursor-pointer" />
-                )}
-              </span>
-              {/* -----------Roles------- */}
-              {showHrRoles && (
+            {isAdmin(auth) && (
+              <div className="flex items-center justify-end gap-2">
+                <form>
+                  <input
+                    type="file"
+                    name="file"
+                    onChange={(e) => importJobData(e.target.files[0])}
+                    accept=".csv, .xlsx"
+                    id="importTasksHR"
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="importTasksHR"
+                    className={`${
+                      style.button1
+                    } !bg-gray-100 !shadow-none text-black hidden sm:flex  hover:bg-orange-500 text-[15px] bg-gradient-to-bl from-[#ffe4e6]  to-[#d8d8d8] ${
+                      fLoading ? "cursor-not-allowed opacity-90" : ""
+                    }`}
+                    style={{ padding: ".4rem 1.1rem", color: "#000" }}
+                    title={"Import csv or excel file!"}
+                    onClick={(e) => fLoading && e.preventDefault()}
+                  >
+                    {fLoading ? (
+                      <TbLoader className="h-6 w-6 animate-spin text-black" />
+                    ) : (
+                      "Import"
+                    )}
+                  </label>
+                </form>
+
                 <div
-                  ref={closeProject}
-                  className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]"
+                  className=" hidden sm:flex items-center justify-between relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2  gap-1"
+                  onClick={() => setShowDepartment(!showDepartment)}
                 >
-                  {hrRoleData &&
-                    hrRoleData?.map((role) => (
-                      <div
-                        key={role._id}
-                        className="w-full flex items-center justify-between gap-1 rounded-md bg-white border py-1 px-1 hover:bg-gray-100"
-                      >
-                        <p className="text-[13px] w-[8rem] ">
-                          {role?.roleName}
-                        </p>
-                        <div className="flex items-center gap-1">
-                          <span
-                            onClick={() => {
-                              setHrRole(role);
-
-                              setIsHandleHrRole(true);
-                            }}
-                            title="Edit Role"
+                  <span className="text-[15px] text-gray-900 cursor-pointer">
+                    Departments
+                  </span>
+                  <span
+                    onClick={() => setShowDepartment(!showDepartment)}
+                    className="cursor-pointer"
+                  >
+                    {!showDepartment ? (
+                      <IoIosArrowDown className="h-5 w-5 text-black cursor-pointer" />
+                    ) : (
+                      <IoIosArrowUp className="h-5 w-5 text-black cursor-pointer" />
+                    )}
+                  </span>
+                  {/* -----------Projects------- */}
+                  {showDepartment && (
+                    <div
+                      ref={closeProject}
+                      className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]"
+                    >
+                      {deparmentsData &&
+                        deparmentsData?.map((deprtment) => (
+                          <div
+                            key={deprtment._id}
+                            className="w-full flex items-center justify-between gap-1 rounded-md bg-white border py-1 px-1 hover:bg-gray-100"
                           >
-                            <MdOutlineEdit className="h-5 w-5 cursor-pointer hover:text-sky-500 transition-all duration-200" />
-                          </span>
-                          <span
-                            title="Delete Role"
-                            onClick={() =>
-                              handleDeleteRoleConfirmation(role._id)
-                            }
-                          >
-                            <AiTwotoneDelete className="h-5 w-5 cursor-pointer hover:text-red-500 transition-all duration-200" />
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                            <p className="text-[13px] w-[8rem] ">
+                              {deprtment?.departmentName}
+                            </p>
+                            <div className="flex items-center gap-1">
+                              <span
+                                onClick={() => {
+                                  setDepartmentId(deprtment._id);
+                                  setIshandleDepartment(true);
+                                }}
+                                title="Edit Department"
+                              >
+                                <MdOutlineEdit className="h-5 w-5 cursor-pointer hover:text-sky-500 transition-all duration-200" />
+                              </span>
+                              <span
+                                title="Delete Delete"
+                                onClick={() =>
+                                  handleDeleteConfirmation(deprtment._id)
+                                }
+                              >
+                                <AiTwotoneDelete className="h-5 w-5 cursor-pointer hover:text-red-500 transition-all duration-200" />
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-             
 
-            <button
-              className={`${style.button1} text-[15px] `}
-              onClick={() => setIsHandleHrRole(true)}
-              style={{ padding: ".4rem 1rem" }}
-            >
-              Add Role
-            </button>
+                <button
+                  className={`${style.button1} text-[15px] `}
+                  onClick={() => setIshandleDepartment(true)}
+                  style={{ padding: ".4rem 1rem" }}
+                >
+                  Add Department
+                </button>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-                        <div
-              className="ml-5 hidden sm:flex items-center justify-between relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2  gap-1"
-              onClick={() => setShowHrProducts(!showHrProducts)}
-            >
-              <span className="text-[15px] text-gray-900 cursor-pointer">
-                Products
-              </span>
-              <span
-                onClick={() => setShowHrProducts(!showHrProducts)}
-                className="cursor-pointer"
-              >
-                {!showHrProducts ? (
-                  <IoIosArrowDown className="h-5 w-5 text-black cursor-pointer" />
-                ) : (
-                  <IoIosArrowUp className="h-5 w-5 text-black cursor-pointer" />
-                )}
-              </span>
-              {/* -----------Products------- */}
-              {showHrProducts && (
                 <div
-                  ref={closeProject}
-                  className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]"
+                  className="ml-5 hidden sm:flex items-center justify-between relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2  gap-1"
+                  onClick={() => setShowHrRoles(!showHrRoles)}
                 >
-                  {hrProductData &&
-                    hrProductData?.map((product) => (
-                      <div
-                        key={product._id}
-                        className="w-full flex items-center justify-between gap-1 rounded-md bg-white border py-1 px-1 hover:bg-gray-100"
-                      >
-                        <p className="text-[13px] w-[8rem] ">
-                          {product?.name}
-                        </p>
-                        <div className="flex items-center gap-1">
-                          <span
-                            onClick={() => {
-                              setHrProduct(product);
+                  <span className="text-[15px] text-gray-900 cursor-pointer">
+                    Roles
+                  </span>
+                  <span
+                    onClick={() => setShowHrRoles(!showHrRoles)}
+                    className="cursor-pointer"
+                  >
+                    {!showHrRoles ? (
+                      <IoIosArrowDown className="h-5 w-5 text-black cursor-pointer" />
+                    ) : (
+                      <IoIosArrowUp className="h-5 w-5 text-black cursor-pointer" />
+                    )}
+                  </span>
+                  {/* -----------Roles------- */}
+                  {showHrRoles && (
+                    <div
+                      ref={closeProject}
+                      className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]"
+                    >
+                      {hrRoleData &&
+                        hrRoleData?.map((role) => (
+                          <div
+                            key={role._id}
+                            className="w-full flex items-center justify-between gap-1 rounded-md bg-white border py-1 px-1 hover:bg-gray-100"
+                          >
+                            <p className="text-[13px] w-[8rem] ">
+                              {role?.roleName}
+                            </p>
+                            <div className="flex items-center gap-1">
+                              <span
+                                onClick={() => {
+                                  setHrRole(role);
 
-                              setIsHandleHrProduct(true);
-                            }}
-                            title="Edit Product"
-                          >
-                            <MdOutlineEdit className="h-5 w-5 cursor-pointer hover:text-sky-500 transition-all duration-200" />
-                          </span>
-                          <span
-                            title="Delete Product"
-                            onClick={() =>
-                              handleDeleteProductConfirmation(product._id)
-                            }
-                          >
-                            <AiTwotoneDelete className="h-5 w-5 cursor-pointer hover:text-red-500 transition-all duration-200" />
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                                  setIsHandleHrRole(true);
+                                }}
+                                title="Edit Role"
+                              >
+                                <MdOutlineEdit className="h-5 w-5 cursor-pointer hover:text-sky-500 transition-all duration-200" />
+                              </span>
+                              <span
+                                title="Delete Role"
+                                onClick={() =>
+                                  handleDeleteRoleConfirmation(role._id)
+                                }
+                              >
+                                <AiTwotoneDelete className="h-5 w-5 cursor-pointer hover:text-red-500 transition-all duration-200" />
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-             
 
-            <button
-              className={`${style.button1} text-[15px] `}
-              onClick={() => setIsHandleHrProduct(true)}
-              style={{ padding: ".4rem 1rem" }}
-            >
-              Add Product
-            </button>
+                <button
+                  className={`${style.button1} text-[15px] `}
+                  onClick={() => setIsHandleHrRole(true)}
+                  style={{ padding: ".4rem 1rem" }}
+                >
+                  Add Role
+                </button>
 
+                <div
+                  className="ml-5 hidden sm:flex items-center justify-between relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2  gap-1"
+                  onClick={() => setShowHrProducts(!showHrProducts)}
+                >
+                  <span className="text-[15px] text-gray-900 cursor-pointer">
+                    Products
+                  </span>
+                  <span
+                    onClick={() => setShowHrProducts(!showHrProducts)}
+                    className="cursor-pointer"
+                  >
+                    {!showHrProducts ? (
+                      <IoIosArrowDown className="h-5 w-5 text-black cursor-pointer" />
+                    ) : (
+                      <IoIosArrowUp className="h-5 w-5 text-black cursor-pointer" />
+                    )}
+                  </span>
+                  {/* -----------Products------- */}
+                  {showHrProducts && (
+                    <div
+                      ref={closeProject}
+                      className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]"
+                    >
+                      {hrProductData &&
+                        hrProductData?.map((product) => (
+                          <div
+                            key={product._id}
+                            className="w-full flex items-center justify-between gap-1 rounded-md bg-white border py-1 px-1 hover:bg-gray-100"
+                          >
+                            <p className="text-[13px] w-[8rem] ">
+                              {product?.name}
+                            </p>
+                            <div className="flex items-center gap-1">
+                              <span
+                                onClick={() => {
+                                  setHrProduct(product);
 
+                                  setIsHandleHrProduct(true);
+                                }}
+                                title="Edit Product"
+                              >
+                                <MdOutlineEdit className="h-5 w-5 cursor-pointer hover:text-sky-500 transition-all duration-200" />
+                              </span>
+                              <span
+                                title="Delete Product"
+                                onClick={() =>
+                                  handleDeleteProductConfirmation(product._id)
+                                }
+                              >
+                                <AiTwotoneDelete className="h-5 w-5 cursor-pointer hover:text-red-500 transition-all duration-200" />
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
 
-
-
-</div>
-}
+                <button
+                  className={`${style.button1} text-[15px] `}
+                  onClick={() => setIsHandleHrProduct(true)}
+                  style={{ padding: ".4rem 1rem" }}
+                >
+                  Add Product
+                </button>
+              </div>
+            )}
 
             <button
               className={`${style.button1} text-[15px] `}
@@ -1885,7 +1800,7 @@ const getJobHolderCount = (name) => {
             </button>
           </div>
         </div>
-         
+
         {copyLoad && (
           <div className="pb-5">
             <div class="loader"></div>
@@ -1916,44 +1831,46 @@ const getJobHolderCount = (name) => {
                           onClick={() => {
                             setActive1("All");
                             userName.forEach((u) =>
-                              setColumnFromOutsideTable(u, "")
+                              setColumnFromOutsideTable(u, ""),
                             );
                           }}
                         >
                           All
                         </div>
 
-                        {userName.filter((user) => getJobHolderCount(user) !== 0).map((user, index) => {
-                          return (
-                            <Draggable
-                              key={user}
-                              draggableId={user}
-                              index={index}
-                            >
-                              {(provided) => (
-                                <div
-                                  className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 !cursor-pointer font-[500] text-[14px] ${
-                                    active1 === user &&
-                                    "  border-b-2 text-orange-600 border-orange-600"
-                                  }`}
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  onClick={() => {
-                                    setActive1(user);
-                                    userName.forEach((u) =>
-                                      setColumnFromOutsideTable(u, "")
-                                    );
+                        {userName
+                          .filter((user) => getJobHolderCount(user) !== 0)
+                          .map((user, index) => {
+                            return (
+                              <Draggable
+                                key={user}
+                                draggableId={user}
+                                index={index}
+                              >
+                                {(provided) => (
+                                  <div
+                                    className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 !cursor-pointer font-[500] text-[14px] ${
+                                      active1 === user &&
+                                      "  border-b-2 text-orange-600 border-orange-600"
+                                    }`}
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    onClick={() => {
+                                      setActive1(user);
+                                      userName.forEach((u) =>
+                                        setColumnFromOutsideTable(u, ""),
+                                      );
 
-                                    setColumnFromOutsideTable(user, "Yes");
-                                  }}
-                                >
-                                  {user} ({getJobHolderCount(user)})
-                                </div>
-                              )}
-                            </Draggable>
-                          );
-                        })}
+                                      setColumnFromOutsideTable(user, "Yes");
+                                    }}
+                                  >
+                                    {user} ({getJobHolderCount(user)})
+                                  </div>
+                                )}
+                              </Draggable>
+                            );
+                          })}
                         {/* {provided.placeholder} */}
                       </div>
                     )}
@@ -2129,25 +2046,21 @@ const getJobHolderCount = (name) => {
           </div>
         )}
 
-
- 
         {/* -----------------Handle HR Products--------------- */}
-          {isHandleHrProduct && (
-            <div className="fixed top-0 left-0 z-[999] w-full h-full py-4 px-4 bg-gray-300/70 flex items-center justify-center">
-              <div className="w-[32rem]">
-                <HandleHrProductModal
-                  setIsHandleHrProduct={setIsHandleHrProduct}
-                  fetchAllHrProducts={fetchAllHrProducts}
-                  hrProduct={hrProduct}
-                  setHrProduct={setHrProduct}
-                  getAllTasks={getAllTasks}
-                  deparmentsData={deparmentsData}
-                />
-              </div>
+        {isHandleHrProduct && (
+          <div className="fixed top-0 left-0 z-[999] w-full h-full py-4 px-4 bg-gray-300/70 flex items-center justify-center">
+            <div className="w-[32rem]">
+              <HandleHrProductModal
+                setIsHandleHrProduct={setIsHandleHrProduct}
+                fetchAllHrProducts={fetchAllHrProducts}
+                hrProduct={hrProduct}
+                setHrProduct={setHrProduct}
+                getAllTasks={getAllTasks}
+                deparmentsData={deparmentsData}
+              />
             </div>
-          )}
-
-
+          </div>
+        )}
 
         {/* -----------------Handle Departments--------------- */}
         {ishandleDepartment && (

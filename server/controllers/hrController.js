@@ -8,7 +8,7 @@ import hrProductModel from "../models/hrProductModel.js";
 // Create
 export const createHrTask = async (req, res) => {
   try {
-    const { title, department, product, category, software, description, productLink, hrRole, } = req.body;
+    const { title, department, product, category, software, description, productLink, hrRole, docLink } = req.body;
 
     const departmentDetail = await departmentModel.findById(department);
     if (!departmentDetail) {
@@ -41,7 +41,9 @@ export const createHrTask = async (req, res) => {
       software,
       description,
       productLink,
+      docLink,
       users: departmentDetail.users,
+
     });
 
     res.status(200).send({
@@ -63,7 +65,7 @@ export const createHrTask = async (req, res) => {
 export const updateHrTask = async (req, res) => {
   try {
     const taskId = req.params.id;
-    const { title, department, product, category, software, description, productLink, hrRole, } = req.body;
+    const { title, department, product, category, software, description, productLink, hrRole, docLink} = req.body;
 
     const existingTask = await hrModel.findById(taskId);
 
@@ -120,6 +122,7 @@ export const updateHrTask = async (req, res) => {
         description,
         productLink,
         users: updatedUsers,
+        docLink,
       },
       { new: true }
     );

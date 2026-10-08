@@ -51,6 +51,7 @@ import AnchoredPopover from "../../components/AnchoredPopover";
 import { MdDragIndicator } from "react-icons/md"; // six-dot grip
 import { getSavedColumnOrder, usePersistedColumnOrder } from "../../hooks/usePersistedColumnOrder";
 import { columnOrderingOptions, headCellHoverSx } from "../../utlis/columnOrdering";
+import DraggableProjectTabs from "./DraggableProjectTabs";
 
 
  
@@ -1188,59 +1189,13 @@ useEffect(() => {
       <div className="flex flex-col   ">
         {/* -----------Filters By Deps--------- */}
         <div className="flex items-center flex-row overflow-x-auto hidden1 gap-2 py-1.5 max-lg:hidden">
-          <div className="flex items-center flex-row overflow-x-auto hidden1 gap-1  ">
-            {/* --- Aligned "All" Tab --- */}
-            <div
-              onClick={() => setColumnFromOutsideTable("departmentName", "")}
-              className={`
-                      relative flex items-center gap-1 px-2 py-1.5 cursor-pointer
-                      text-[13px] font-[400] whitespace-nowrap  
-                      rounded-t-md border-b-2 font-google
-                      ${
-                        !projectFilter
-                          ? "text-orange-600 border-orange-500 bg-orange-50"
-                          : "text-gray-800 border-transparent hover:text-gray-900 hover:bg-gray-50"
-                      }
-                    `}
-            >
-              <span className="tracking-wide">
-                All ({taskStats?.totalTasks})
-              </span>
-
-              {!projectFilter && (
-                <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-orange-500 rounded-full" />
-              )}
-            </div>
-
-            {/* --- Department Tabs --- */}
-             {[...projects]?.map(({ projectName, _id }, i) => {
-      const isActive = projectFilter === _id;
-      return (
-        <div
-          key={i}
-          onClick={() => setColumnFromOutsideTable("departmentName", _id)}
-          className={`
-                  relative flex items-center gap-1 px-2 py-1.5 cursor-pointer
-                  text-[13px] font-[400] whitespace-nowrap  
-                  rounded-t-md border-b-2 font-google
-                  ${
-                    isActive
-                      ? "text-orange-600 border-orange-500 bg-orange-50"
-                      : "text-gray-800 border-transparent hover:text-gray-900 hover:bg-gray-50"
-                  }
-                `}
-        >
-          <span className="tracking-wide">
-            {projectName} ({getProjectTaskCounts(_id)})
-          </span>
-
-          {isActive && (
-            <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-orange-500 rounded-full" />
-          )}
-        </div>
-      );
-    })}
-          </div>
+          <DraggableProjectTabs
+  projects={projects}
+  projectFilter={projectFilter}
+  totalCount={taskStats?.totalTasks}
+  getCount={getProjectTaskCounts}
+  onSelect={(id) => setColumnFromOutsideTable("departmentName", id)}
+/>
 
           {/*  */}
           {/* -------------Filter Open Buttons-------- */}

@@ -78,6 +78,7 @@ import { usePersistedUsersNew } from "../../hooks/usePersistedUsersNew";
 import AnchoredPopover from "../../components/AnchoredPopover";
 import { getSavedColumnOrder, usePersistedColumnOrder } from "../../hooks/usePersistedColumnOrder";
 import { columnOrderingOptions, headCellHoverSx } from "../../utlis/columnOrdering";
+import DraggableDepartmentTabs from "./DraggableDepartmentTabs";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -2242,50 +2243,18 @@ const handleExportData = async () => {
 
         {/* -----------Filters By Deparment--------- */}
         <div className="flex items-center overflow-x-auto hidden1 gap-1    py-1.5 max-lg:hidden">
-          {departments?.map((dep, i) => {
-            const activeDep = departmentFilter || "All";
-            const isActive = activeDep === dep;
-
-            return (
-              <div
-                key={i}
-                onClick={() => {
-                  setActive(dep);
-                  setShowCompleted(false);
-                  setShowInactive(false);
-                  dispatch(setFilterId(""));
-
-                  if (dep === "All") {
-                    setColumnFromOutsideTable("Department", "");
-                  } else {
-                    setColumnFromOutsideTable("Department", dep);
-                  }
-                }}
-                className={`
-                  relative flex items-center gap-1 px-2 py-1.5 cursor-pointer
-                  text-[13px] font-[400] whitespace-nowrap  
-                  rounded-t-md border-b-2 font-google
-
-                  ${
-                    isActive
-                      ? "text-orange-600 border-orange-500 bg-orange-50"
-                      : "text-gray-800 border-transparent hover:text-gray-900 hover:bg-gray-50"
-                  }
-                `}
-              >
-                <span className="tracking-wide ">
-                  {dep} ({getdepartmentJobCounts(dep)})
-                </span>
-                {/* <span className={`text-[11px] ${isActive ? "text-orange-600" : "text-gray-600"}`}>
-                  {getdepartmentJobCounts(dep)}
-                </span> */}
-
-                {isActive && (
-                  <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-orange-500 rounded-full" />
-                )}
-              </div>
-            );
-          })}
+         <DraggableDepartmentTabs
+  departments={departments}
+  activeDepartment={departmentFilter || "All"}
+  getCount={getdepartmentJobCounts}
+  onSelect={(dep) => {
+    setActive(dep);
+    setShowCompleted(false);
+    setShowInactive(false);
+    dispatch(setFilterId(""));
+    setColumnFromOutsideTable("Department", dep === "All" ? "" : dep);
+  }}
+/>
 
           {/*  */}
           {/* -------------Filter Open Buttons-------- */}

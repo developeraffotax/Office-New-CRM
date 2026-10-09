@@ -2138,7 +2138,7 @@ export default function TimeSheet() {
               <BsPieChartFill className="h-6 w-6" />
             </span>
 
-            {isAdmin(auth.user) && (
+            {(isAdmin(auth.user) || auth?.user?.role?.name === "HR/Fin/Admin") && (
               <button
                 onClick={() => navigate("/timesheet/attendance-chart")}
                 title="Employee In/Out Chart"

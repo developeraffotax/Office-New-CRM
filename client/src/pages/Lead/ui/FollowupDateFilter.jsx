@@ -48,6 +48,22 @@ export default function FollowupDateFilter({ setColumnFromOutsideTable }) {
       </button>
 
       <button
+        className={`${btnBase} ${active === "2 days later" ? btnActive : btnInactive}`}
+        onClick={() => handleClick("2 days later")}
+        title="2 days later"
+      >
+        2D
+      </button>
+
+      <button
+        className={`${btnBase} ${active === "3 days later" ? btnActive : btnInactive}`}
+        onClick={() => handleClick("3 days later")}
+        title="3 days later"
+      >
+        3D
+      </button>
+
+      <button
         className={`${btnBase} ${active === "Upcoming" ? btnActive : btnInactive}`}
         onClick={() => handleClick("Upcoming")}
         title="Upcoming"

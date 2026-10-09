@@ -2,7 +2,27 @@ import { format } from "date-fns";
 import DateRangePopover from "../../../../utlis/DateRangePopover";
 import { useEffect, useMemo, useRef, useState, memo } from "react";
 import toast from "react-hot-toast";
-import { DEFAULT_DATE_FILTERS } from "../../constants";
+ 
+
+
+
+
+
+  const DEFAULT_DATE_FILTERS = [
+  "Expired",
+  "Today",
+  "Tomorrow",
+  "In 2 days",   // ← NEW
+  "In 3 days",   // ← NEW
+  "In 7 days",
+  "In 15 days",
+  "In 30 Days",
+  "In 60 Days",
+  "Upcoming",
+];
+
+
+
 
 export const jobDateColumn = ({ handleUpdateDates }) => ({
   id: "Job_Date",

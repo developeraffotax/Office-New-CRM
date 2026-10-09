@@ -1440,14 +1440,32 @@ export const getLeadColumns = (ctx) => {
         switch (filterValue) {
           case "Expired":
             return cellDate < startOfToday;
-          case "Upcoming":
-            return cellDate > tomorrow;
+         case "Upcoming": {
+            // Day +4 and later (after the 3-day window)
+            const afterThreeDays = new Date(today);
+            afterThreeDays.setDate(today.getDate() + 4);
+            afterThreeDays.setHours(0, 0, 0, 0);
+            return cellDate >= afterThreeDays;
+          }
           case "Today":
             return cellDate.toDateString() === today.toDateString();
           case "Tomorrow": {
             const tomorrow = new Date(today);
             tomorrow.setDate(today.getDate() + 1);
             return cellDate.toDateString() === tomorrow.toDateString();
+          }
+
+          case "2 days later": {
+            const twoDaysLater = new Date(today);
+            twoDaysLater.setDate(today.getDate() + 2);
+            return cellDate.toDateString() === twoDaysLater.toDateString();
+          }
+
+
+          case "3 days later": {
+            const threeDaysLater = new Date(today);
+            threeDaysLater.setDate(today.getDate() + 3);
+            return cellDate.toDateString() === threeDaysLater.toDateString();
           }
           case "In 7 days": {
             const in7Days = new Date(today);
@@ -1482,6 +1500,8 @@ export const getLeadColumns = (ctx) => {
         "Expired",
         "Today",
         "Tomorrow",
+        "2 days later",
+        "3 days later",
         "In 7 days",
         "In 15 days",
         "30 Days",

@@ -8,6 +8,8 @@ const START_DATE_FILTERS = [
   "Yesterday",
   "Today",
   "Tomorrow",
+  "2 days later",   // ← NEW
+  "3 days later",   // ← NEW
   "In 7 days",
   "In 15 days",
   "In 30 Days",

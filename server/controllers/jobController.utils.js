@@ -16,6 +16,8 @@ const ALL_DATE_FILTERS = [
   "Last 15 days",
   "Last 30 Days",
 
+  "In 2 days",   // ← NEW
+  "In 3 days",   // ← NEW
   "In 7 days",
   "In 15 days",
   "In 30 Days",
@@ -163,6 +165,37 @@ const getDatePresetRange = (preset) => {
       };
     }
 
+    /* -------------------- NEW: exact single days -------------------- */
+
+case "2 days later": {
+  // Day after tomorrow (today + 2)
+  const day = new Date(startOfToday);
+  day.setDate(day.getDate() + 2);
+
+  const nextDay = new Date(day);
+  nextDay.setDate(nextDay.getDate() + 1);
+
+  return {
+    $gte: day,
+    $lt: nextDay,
+  };
+}
+
+case "3 days later": {
+  // 3rd day from today (today + 3)
+  const day = new Date(startOfToday);
+  day.setDate(day.getDate() + 3);
+
+  const nextDay = new Date(day);
+  nextDay.setDate(nextDay.getDate() + 1);
+
+  return {
+    $gte: day,
+    $lt: nextDay,
+  };
+}
+
+
     case "In 7 days": {
       const future = new Date(startOfToday);
       future.setDate(future.getDate() + 7);
@@ -203,10 +236,15 @@ const getDatePresetRange = (preset) => {
       };
     }
 
-    case "Upcoming":
-      return {
-        $gte: startOfToday,
-      };
+case "Upcoming": {
+  // Tasks from day +4 onward (after the 3-day window)
+  const afterThreeDays = new Date(startOfToday);
+  afterThreeDays.setDate(afterThreeDays.getDate() + 4);
+
+  return {
+    $gte: afterThreeDays,
+  };
+}
 
     /* -------------------- CURRENT PERIODS -------------------- */
 

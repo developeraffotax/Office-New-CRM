@@ -411,33 +411,65 @@ export default function EmployeeInOutChart() {
             },
           },
         },
+        // dataLabels: {
+        //   enabled: true,
+
+        //   formatter: (val, opts) => {
+        //     const point =
+        //       opts?.w?.config?.series?.[0]?.data?.[opts.dataPointIndex];
+
+        //     if (point?.meta?.isHoliday) {
+        //       return point.meta.isWeekend ? "Off" : "Absent";
+        //     }
+
+        //     if (Array.isArray(point?.y)) {
+        //       const [inMin, outMin] = point.y;
+        //       return formatDuration(inMin, outMin);
+        //     }
+
+        //     return formatMinutesLabel(val);
+        //   },
+
+        //   offsetY: 0,
+
+        //   style: {
+        //     fontSize: "10px",
+        //     fontWeight: 600,
+        //     colors: ["#ffffff"],
+        //   },
+        // },
+
+
         dataLabels: {
-          enabled: true,
+  enabled: true,
 
-          formatter: (val, opts) => {
-            const point =
-              opts?.w?.config?.series?.[0]?.data?.[opts.dataPointIndex];
+  formatter: (val, opts) => {
+    const point =
+      opts?.w?.config?.series?.[0]?.data?.[opts.dataPointIndex];
 
-            if (point?.meta?.isHoliday) {
-              return point.meta.isWeekend ? "Off" : "Absent";
-            }
+    if (point?.meta?.isHoliday) {
+      return point.meta.isWeekend ? "Off" : "Absent";
+    }
 
-            if (Array.isArray(point?.y)) {
-              const [inMin, outMin] = point.y;
-              return formatDuration(inMin, outMin);
-            }
+    // worked time (sum of sessions), not first-in → last-out
+    if (point?.meta?.workedMin != null) {
+      return formatDuration(0, point.meta.workedMin);
+    }
 
-            return formatMinutesLabel(val);
-          },
+    return formatMinutesLabel(val);
+  },
 
-          offsetY: 0,
+  offsetY: 0,
 
-          style: {
-            fontSize: "10px",
-            fontWeight: 600,
-            colors: ["#ffffff"],
-          },
-        },
+  style: {
+    fontSize: "10px",
+    fontWeight: 600,
+    colors: ["#ffffff"],
+  },
+},
+
+
+
         grid: { borderColor: "#e5e7eb" },
         xaxis: {
           type: "category",

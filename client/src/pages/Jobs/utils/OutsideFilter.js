@@ -32,7 +32,7 @@ export default function OutsideFilter({
   };
 
   const btnBase =
-    "w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-all select-none outline-none border-2";
+    "w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-all select-none outline-none border-2";
 
   const btnActive =
     "bg-orange-50 text-orange-600 border-orange-500 shadow-sm";

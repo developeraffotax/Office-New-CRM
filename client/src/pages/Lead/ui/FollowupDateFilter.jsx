@@ -14,12 +14,14 @@ export default function FollowupDateFilter({ setColumnFromOutsideTable }) {
   };
 
   const btnBase =
-    "w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-all select-none outline-none";
+    "w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-all select-none outline-none border-2";
 
   const btnActive =
-    "bg-orange-600 text-white shadow-sm shadow-orange-300 ";
+    "bg-orange-50 text-orange-600 border-orange-500 shadow-sm";
+
   const btnInactive =
-    "bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 hover:border-gray-400";
+    "bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400";
+
 
   return (
     <div className="flex items-center gap-4  ">

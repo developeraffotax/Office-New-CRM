@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
@@ -31,6 +31,13 @@ import ManualRangePicker from "./ManualRangePicker";
 import QuickFilterMenu from "./QuickFilterMenu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+
+import EventAvailableRoundedIcon from "@mui/icons-material/EventAvailableRounded";
+import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
+import FlagRoundedIcon from "@mui/icons-material/FlagRounded";
+import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
+import TrendingDownRoundedIcon from "@mui/icons-material/TrendingDownRounded";
+import { SummaryTile } from "./SummaryTile";
 
 dayjs.extend(isSameOrBefore);
 
@@ -130,8 +137,69 @@ const referenceYAnnotations = [
   },
 ];
 
+const DELTA_POSITION = "above";
+const TARGET_MINUTES = 8 * 60;
+// true  -> sum of session lengths (breaks excluded)
+// false -> first check-in to last check-out
+const USE_SESSION_SUM = true;
+// true -> past weekdays with no record count as -8h in the total
+const COUNT_ABSENT_AS_SHORT = false;
+
+const DELTA_GREEN = "#16A34A";
+const DELTA_RED = "#DC2626";
+const DELTA_NEUTRAL = "#64748B";
+
+const deltaColor = (m) =>
+  m == null ? DELTA_NEUTRAL : m >= 0 ? DELTA_GREEN : DELTA_RED;
+
+// compact label for the axis: "+1h20m", "-45m", "+2h"
+const formatSigned = (mins) => {
+  if (mins == null) return "";
+  const r = Math.round(mins);
+  const abs = Math.abs(r);
+  const h = Math.floor(abs / 60);
+  const m = abs % 60;
+  const body = h && m ? `${h}h${m}m` : h ? `${h}h` : `${m}m`;
+  return `${r >= 0 ? "+" : "-"}${body}`;
+};
+
+// const SummaryTile = ({ label, value, color }) => (
+//   <Box
+//     sx={{
+//       px: 2,
+//       py: 1,
+//       border: "1px solid #e5e7eb",
+//       borderRadius: 2,
+//       bgcolor: "#fff",
+//     }}
+//   >
+//     <Typography variant="caption" color="text.secondary">
+//       {label}
+//     </Typography>
+//     <Typography
+//       variant="h6"
+//       fontWeight={700}
+//       sx={{ color: color || "text.primary", lineHeight: 1.2 }}
+//     >
+//       {value}
+//     </Typography>
+//   </Box>
+// );
+
 export default function EmployeeInOutChart() {
   const navigate = useNavigate();
+
+  const [plotLayout, setPlotLayout] = useState({ left: 0, width: 0 });
+
+  const syncPlotLayout = useCallback((chartContext) => {
+    const g = chartContext?.w?.globals;
+    if (!g) return;
+    const left = Math.round(g.translateX);
+    const width = Math.round(g.gridWidth);
+    setPlotLayout((prev) =>
+      prev.left === left && prev.width === width ? prev : { left, width },
+    );
+  }, []);
 
   const [users, setUsers] = useState([]);
   const [jobHolderName, setJobHolderName] = useState("");
@@ -218,86 +286,101 @@ export default function EmployeeInOutChart() {
 
   // Build both the range-bar dataset and the trend dataset from the
   // merged (gap-filled) list.
-  const { rangeBarData, trendCheckIn, trendCheckOut, holidayAnnotations } =
-    useMemo(() => {
-      const rangeBar = [];
-      const trendIn = [];
-      const trendOut = [];
-      const holidays = [];
+  const { rangeBarData, trendCheckIn, trendCheckOut, summary } = useMemo(() => {
+    const rangeBar = [];
+    const trendIn = [];
+    const trendOut = [];
+    let totalDelta = 0;
+    let workedTotal = 0;
+    let daysWorked = 0;
 
-      mergedAttendance.forEach((day) => {
-        const dayTs = dayjs(day.date).startOf("day").valueOf();
-        const label = dayjs(day.date).format("DD MMM");
-        if (day.isHoliday) {
-          const dow = dayjs(day.date).day(); // 0 = Sun, 6 = Sat
-          const isWeekend = dow === 0 || dow === 6;
+    mergedAttendance.forEach((day) => {
+      const dayTs = dayjs(day.date).startOf("day").valueOf();
+      const label = dayjs(day.date).format("DD MMM");
 
-          rangeBar.push({
-            x: label,
-            y: [REFERENCE_LINE_1, REFERENCE_LINE_2],
+      if (day.isHoliday) {
+        const dow = dayjs(day.date).day();
+        const isWeekend = dow === 0 || dow === 6;
 
-            // slate for weekend off-days, dark red for actual unexplained absence
-            fillColor: isWeekend ? "#94A3B8" : "#7F1D1D",
+        const countAsShort =
+          COUNT_ABSENT_AS_SHORT &&
+          !isWeekend &&
+          dayjs(day.date).isBefore(dayjs(), "day");
+        const delta = countAsShort ? -TARGET_MINUTES : null;
+        if (countAsShort) totalDelta += delta;
 
-            meta: {
-              date: day.date,
-              isHoliday: true,
-              isWeekend,
-            },
-          });
+        rangeBar.push({
+          x: label,
+          y: [REFERENCE_LINE_1, REFERENCE_LINE_2],
+          fillColor: isWeekend ? "#94A3B8" : "#7F1D1D",
+          meta: { date: day.date, isHoliday: true, isWeekend, delta },
+        });
+        trendIn.push({
+          x: dayTs,
+          y: null,
+          meta: { isHoliday: true, isWeekend },
+        });
+        trendOut.push({
+          x: dayTs,
+          y: null,
+          meta: { isHoliday: true, isWeekend },
+        });
+        return;
+      }
 
-          trendIn.push({
-            x: dayTs,
-            y: null,
-            meta: { isHoliday: true, isWeekend },
-          });
+      const inMin = timeToMinutes(day.checkIn);
+      const outMin = timeToMinutes(day.checkOut);
+      const spanMin = inMin !== null && outMin !== null ? outMin - inMin : null;
 
-          trendOut.push({
-            x: dayTs,
-            y: null,
-            meta: { isHoliday: true, isWeekend },
-          });
+      const workedMin = Math.round(
+        USE_SESSION_SUM && day.workedMinutes > 0
+          ? day.workedMinutes
+          : spanMin ?? 0,
+      );
+      const delta = spanMin !== null ? workedMin - TARGET_MINUTES : null;
 
-          return;
-        }
+      if (delta !== null) {
+        totalDelta += delta;
+        workedTotal += workedMin;
+        daysWorked += 1;
+      }
 
-        const inMin = timeToMinutes(day.checkIn);
-        const outMin = timeToMinutes(day.checkOut);
+      if (inMin !== null && outMin !== null) {
+        rangeBar.push({
+          x: label,
+          y: [Math.round(inMin), Math.round(outMin)],
+          meta: {
+            date: day.date,
+            sessions: day.sessionCount,
+            isHoliday: false,
+            workedMin,
+            delta,
+          },
+        });
+      }
+      if (inMin !== null) {
+        trendIn.push({
+          x: dayTs,
+          y: Math.round(inMin),
+          meta: { sessions: day.sessionCount },
+        });
+      }
+      if (outMin !== null) {
+        trendOut.push({
+          x: dayTs,
+          y: Math.round(outMin),
+          meta: { sessions: day.sessionCount },
+        });
+      }
+    });
 
-        if (inMin !== null && outMin !== null) {
-          rangeBar.push({
-            x: label,
-            y: [Math.round(inMin), Math.round(outMin)],
-            meta: {
-              date: day.date,
-              sessions: day.sessionCount,
-              isHoliday: false,
-            },
-          });
-        }
-        if (inMin !== null) {
-          trendIn.push({
-            x: dayTs,
-            y: Math.round(inMin),
-            meta: { sessions: day.sessionCount },
-          });
-        }
-        if (outMin !== null) {
-          trendOut.push({
-            x: dayTs,
-            y: Math.round(outMin),
-            meta: { sessions: day.sessionCount },
-          });
-        }
-      });
-
-      return {
-        rangeBarData: rangeBar,
-        trendCheckIn: trendIn,
-        trendCheckOut: trendOut,
-        holidayAnnotations: holidays,
-      };
-    }, [mergedAttendance]);
+    return {
+      rangeBarData: rangeBar,
+      trendCheckIn: trendIn,
+      trendCheckOut: trendOut,
+      summary: { totalDelta, workedTotal, daysWorked },
+    };
+  }, [mergedAttendance]);
 
   const isRangeView = chartType === "bar";
 
@@ -315,6 +398,7 @@ export default function EmployeeInOutChart() {
           type: "rangeBar",
           toolbar: { show: true },
           fontFamily: "inherit",
+          events: { mounted: syncPlotLayout, updated: syncPlotLayout },
         },
         colors: ["#325ea8", "#6366F1"],
         plotOptions: {
@@ -328,32 +412,32 @@ export default function EmployeeInOutChart() {
           },
         },
         dataLabels: {
-  enabled: true,
+          enabled: true,
 
-  formatter: (val, opts) => {
-    const point =
-      opts?.w?.config?.series?.[0]?.data?.[opts.dataPointIndex];
+          formatter: (val, opts) => {
+            const point =
+              opts?.w?.config?.series?.[0]?.data?.[opts.dataPointIndex];
 
-    if (point?.meta?.isHoliday) {
-      return point.meta.isWeekend ? "Off" : "Absent";
-    }
+            if (point?.meta?.isHoliday) {
+              return point.meta.isWeekend ? "Off" : "Absent";
+            }
 
-    if (Array.isArray(point?.y)) {
-      const [inMin, outMin] = point.y;
-      return formatDuration(inMin, outMin);
-    }
+            if (Array.isArray(point?.y)) {
+              const [inMin, outMin] = point.y;
+              return formatDuration(inMin, outMin);
+            }
 
-    return formatMinutesLabel(val);
-  },
+            return formatMinutesLabel(val);
+          },
 
-  offsetY: 0,
+          offsetY: 0,
 
-  style: {
-    fontSize: "10px",
-    fontWeight: 600,
-    colors: ["#ffffff"],
-  },
-},
+          style: {
+            fontSize: "10px",
+            fontWeight: 600,
+            colors: ["#ffffff"],
+          },
+        },
         grid: { borderColor: "#e5e7eb" },
         xaxis: {
           type: "category",
@@ -374,13 +458,17 @@ export default function EmployeeInOutChart() {
             if (!point) return "";
             const date = dayjs(point.meta?.date).format("DD MMM YYYY");
             if (point.meta?.isHoliday) {
-  return `
-    <div class="px-3 py-2 text-xs">
-      <div class="font-semibold">${date}</div>
-      <div>${point.meta.isWeekend ? "Weekend" : "Absent — no attendance recorded"}</div>
-    </div>
-  `;
-}
+              return `
+                      <div class="px-3 py-2 text-xs">
+                        <div class="font-semibold">${date}</div>
+                        <div>${
+                          point.meta.isWeekend
+                            ? "Weekend"
+                            : "Absent — no attendance recorded"
+                        }</div>
+                      </div>
+                    `;
+            }
             const [inMin, outMin] = point.y;
             const sessions = point.meta?.sessions;
             return `
@@ -389,6 +477,20 @@ export default function EmployeeInOutChart() {
                 <div>In: ${formatMinutesLabel(inMin)}</div>
                 <div>Out: ${formatMinutesLabel(outMin)}</div>
                 <div>Duration: ${formatDuration(inMin, outMin)}</div>
+                ${
+                  point.meta?.delta != null
+                    ? `<div>Worked: ${formatDuration(
+                        0,
+                        point.meta.workedMin,
+                      )}</div>
+<div style="color:${deltaColor(point.meta.delta)};font-weight:600">
+  ${point.meta.delta >= 0 ? "Extra" : "Short"}: ${formatDuration(
+                        0,
+                        Math.abs(point.meta.delta),
+                      )}
+</div>`
+                    : ""
+                }
                 ${sessions > 1 ? `<div>${sessions} sessions merged</div>` : ""}
               </div>
             `;
@@ -403,6 +505,13 @@ export default function EmployeeInOutChart() {
         type: chartType,
         toolbar: { show: true },
         fontFamily: "inherit",
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: (val) => formatMinutesLabel(val),
+        offsetY: -6,
+        style: { fontSize: "10px", fontWeight: 600 },
+        background: { enabled: false },
       },
       colors: ["#22C55E", "#EF4444"],
       stroke: {
@@ -457,7 +566,10 @@ export default function EmployeeInOutChart() {
         },
       },
     };
-  }, [chartType, dateRange, isRangeView, holidayAnnotations]);
+  }, [chartType, dateRange, isRangeView, rangeBarData, syncPlotLayout]);
+
+  const expectedMin = summary.daysWorked * TARGET_MINUTES;
+  const isExtra = summary.totalDelta >= 0;
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -633,14 +745,32 @@ export default function EmployeeInOutChart() {
                 </Stack>
               </>
             )}
-<Stack direction="row" spacing={1} alignItems="center">
-  <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: "#94A3B8" }} />
-  <Typography variant="body2" color="text.secondary">Weekend / Off</Typography>
-</Stack>
-<Stack direction="row" spacing={1} alignItems="center">
-  <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: "#7F1D1D" }} />
-  <Typography variant="body2" color="text.secondary">Absent</Typography>
-</Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Box
+                sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: 1,
+                  bgcolor: "#94A3B8",
+                }}
+              />
+              <Typography variant="body2" color="text.secondary">
+                Weekend / Off
+              </Typography>
+            </Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Box
+                sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: 1,
+                  bgcolor: "#7F1D1D",
+                }}
+              />
+              <Typography variant="body2" color="text.secondary">
+                Absent
+              </Typography>
+            </Stack>
           </Stack>
         </Stack>
 
@@ -671,16 +801,141 @@ export default function EmployeeInOutChart() {
                 </Typography>
               </Box>
             ) : (
-              <Chart
-                key={chartType}
-                options={chartOptions}
-                series={series}
-                type={isRangeView ? "rangeBar" : chartType}
-                height={600}
-              />
+              <>
+                {isRangeView && plotLayout.width > 0 && rangeBarData.length < 35 && (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      minHeight: 28,
+                      mb: 0.5,
+                    }}
+                  >
+                    {/* left gutter, same width as the Y axis */}
+                    <Box
+                      sx={{
+                        width: plotLayout.left,
+                        flexShrink: 0,
+                        p: 1,
+                        textAlign: "right",
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        fontWeight={600}
+                        
+                      >
+                        Short / Extra
+                      </Typography>
+                    </Box>
+
+                    {/* one cell per bar, same total width as the plot area */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        width: plotLayout.width,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {rangeBarData.map((p) => (
+                        <Box
+                          key={p.x}
+                          sx={{
+                            flex: 1,
+                            minWidth: 0,
+                            display: "flex",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {p.meta?.delta != null && (
+                            <Box
+                              sx={{
+                                px: rangeBarData.length > 20 ? 0.25 : 0.75,
+                                py: 0.25,
+                                borderRadius: 1,
+                                bgcolor: deltaColor(p.meta.delta),
+                                color: "#fff",
+                                fontSize: 12,
+                                fontWeight: 600,
+                                lineHeight: 1.3,
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {formatSigned(p.meta.delta)}
+                            </Box>
+                          )}
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+
+                <Chart
+                  key={chartType}
+                  options={chartOptions}
+                  series={series}
+                  type={isRangeView ? "rangeBar" : chartType}
+                  height={600}
+                />
+              </>
             )}
           </CardContent>
         </Card>
+
+        <Box
+          sx={{
+            display: "grid",
+
+            gap: 1.5,
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              lg: "repeat(8, 1fr)",
+            },
+          }}
+        >
+          <SummaryTile
+            label="Days worked"
+            value={summary.daysWorked}
+            hint={activeLabel}
+            accent="#6366F1"
+            icon={<EventAvailableRoundedIcon fontSize="small" />}
+          />
+
+          <SummaryTile
+            label="Total worked"
+            value={formatDuration(0, summary.workedTotal)}
+            progress={
+              expectedMin ? (summary.workedTotal / expectedMin) * 100 : 0
+            }
+            accent="#325ea8"
+            icon={<AccessTimeRoundedIcon fontSize="small" />}
+          />
+
+          <SummaryTile
+            label="Expected"
+            value={formatDuration(0, expectedMin)}
+            hint="8h per working day"
+            accent="#64748B"
+            icon={<FlagRoundedIcon fontSize="small" />}
+          />
+
+          <SummaryTile
+            tinted
+            label={isExtra ? "Extra time" : "Short time"}
+            value={formatSigned(summary.totalDelta)}
+            hint={activeLabel}
+            accent={deltaColor(summary.totalDelta)}
+            icon={
+              isExtra ? (
+                <TrendingUpRoundedIcon fontSize="small" />
+              ) : (
+                <TrendingDownRoundedIcon fontSize="small" />
+              )
+            }
+          />
+        </Box>
       </Stack>
     </LocalizationProvider>
   );

@@ -1147,6 +1147,15 @@ export const getUserDailyAttendance = async (req, res) => {
           holiday: "",  
         },
       },
+      // {
+      //   $group: {
+      //     _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+      //     date: { $first: "$date" },
+      //     checkIn: { $min: "$startTime" },
+      //     checkOut: { $max: "$endTime" },
+      //     sessionCount: { $sum: 1 },
+      //   },
+      // },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
@@ -1154,6 +1163,19 @@ export const getUserDailyAttendance = async (req, res) => {
           checkIn: { $min: "$startTime" },
           checkOut: { $max: "$endTime" },
           sessionCount: { $sum: 1 },
+          workedMinutes: {
+            $sum: {
+              $divide: [
+                {
+                  $subtract: [
+                    { $dateFromString: { dateString: "$endTime", onError: null, onNull: null } },
+                    { $dateFromString: { dateString: "$startTime", onError: null, onNull: null } },
+                  ],
+                },
+                60000,
+              ],
+            },
+          },
         },
       },
       { $sort: { date: 1 } },

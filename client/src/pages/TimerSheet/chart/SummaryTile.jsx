@@ -1,11 +1,7 @@
 import { alpha } from "@mui/material/styles";
 import LinearProgress from "@mui/material/LinearProgress";
-import EventAvailableRoundedIcon from "@mui/icons-material/EventAvailableRounded";
-import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
-import FlagRoundedIcon from "@mui/icons-material/FlagRounded";
-import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
-import TrendingDownRoundedIcon from "@mui/icons-material/TrendingDownRounded";
 import { Box, Typography } from "@mui/material";
+
 
 
 export const SummaryTile = ({

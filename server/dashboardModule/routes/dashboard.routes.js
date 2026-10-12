@@ -1,6 +1,7 @@
 import express from "express";
 import { getChartData, getMultiChartData } from "../controllers/dashboard.controller.js";
 import { getStats } from "../controllers/stats.controller.js";
+import { exportKpiTable, getKpiTable } from "../controllers/table.controller.js";
 
 const router = express.Router();
 
@@ -15,6 +16,10 @@ router.get("/multi/:chartKey", getMultiChartData);
 
 router.get("/stats", getStats);
 
+
+
+router.get("/kpi-table", getKpiTable);
+router.get("/kpi-table/export", exportKpiTable);
 
 // router.get("/stats/unique-clients", getUniqueClientJobsStats);
 

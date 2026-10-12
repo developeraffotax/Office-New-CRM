@@ -62,11 +62,16 @@ import { aiPerMinuteLimiter } from "../utils/rateLimiter.js";
 
 import dashboardRoutes from "../dashboardModule/routes/dashboard.routes.js";
 
+import tableRoutes from "../kpiTableModule/routes/table.routes.js";
+
 
 
 export const registerRoutes = (app) => {
   
    app.use("/api/v1/dashboard",   dashboardRoutes);
+
+   app.use("/api/v1/kpi-table",   tableRoutes);
+
 
    app.use("/api/v1/whatsapp/webhook", whatsappWebhookRoutes);
 

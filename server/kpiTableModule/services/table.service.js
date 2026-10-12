@@ -1,12 +1,5 @@
-import { chartRegistry } from "../charts/chart.registry.js";
-import {
-  kpiTableRows,
-  kpiOnlyMetrics,
-  customMetrics,
-  TEAM_TOTAL,
-  TEAM_KEY,
-} from "../charts/kpiTable.registry.js";
-import { applyFilters } from "../utils/chartHelpers.js";
+import { kpiTableRows, kpiMetrics, TEAM_TOTAL } from "../tables/table.registry.js";
+import { applyFilters } from "../utils/helpers.js";
 import { ApiError } from "../utils/ApiError.js";
 
 const splitList = (v) =>
@@ -27,7 +20,9 @@ const buildDateMatch = (def, start, end) => {
 /** One aggregation per metric, grouped by the model's jobHolder field -> { user: value } */
 const aggregateByUser = async (def, { start, end, query }) => {
   const groupField = def.allowedFilters?.find(([q]) => q === "jobHolder")?.[1];
-  if (!groupField) throw new ApiError(500, `"${def.label}" has no jobHolder filter, can't split by user`);
+  if (!groupField) {
+    throw new ApiError(500, `"${def.label}" has no jobHolder filter, can't split by user`);
+  }
 
   const match = {
     ...applyFilters({ ...def.baseMatch }, query, def.allowedFilters),
@@ -53,8 +48,7 @@ const aggregateByUser = async (def, { start, end, query }) => {
 };
 
 const resolveMetric = async (key, ctx) => {
-  if (customMetrics[key]) return customMetrics[key](ctx);
-  const def = kpiOnlyMetrics[key] || chartRegistry[key];
+  const def = kpiMetrics[key];
   if (!def) throw new ApiError(500, `KPI table references unknown metric "${key}"`);
   return aggregateByUser(def, ctx);
 };
@@ -66,42 +60,43 @@ const AGGREGATORS = {
 };
 
 /**
- * Returns { columns: [...users, "Team Total"], rows: [{ key, label, format, heat, values: [...] }] }
+ * Returns { columns: [...users, "Team Total"], rows: [{ key, label, format, values: [...] }] }
  * values[i] lines up with columns[i]. null = no data (UI shows "–", Excel leaves it blank).
  */
 export const buildKpiTable = async ({ start, end, query }) => {
   const wantedRows = splitList(query.rows);
+  const unknownRows = wantedRows.filter((k) => !kpiTableRows.some((r) => r.key === k));
+  if (unknownRows.length) {
+    throw new ApiError(400, `Unknown KPI row(s): ${unknownRows.join(", ")}`);
+  }
   const rowDefs = wantedRows.length
     ? kpiTableRows.filter((r) => wantedRows.includes(r.key))
     : kpiTableRows;
 
   const selectedUsers = splitList(query.jobHolder);
-  const ctx = { start, end, query, users: selectedUsers };
+  const ctx = { start, end, query };
 
   // fetch every metric once, only the ones the requested rows actually need
   const metricKeys = [...new Set(rowDefs.flatMap((r) => (r.metric ? [r.metric] : r.deps)))];
   const metrics = Object.fromEntries(
-    await Promise.all(metricKeys.map(async (k) => [k, (await resolveMetric(k, ctx)) || {}])),
+    await Promise.all(metricKeys.map(async (k) => [k, await resolveMetric(k, ctx)])),
   );
 
   // columns: the selected users, or (nothing selected) everyone who has data
   const users = selectedUsers.length
     ? selectedUsers
-    : [
-        ...new Set(
-          Object.values(metrics).flatMap((m) => Object.keys(m).filter((k) => k !== TEAM_KEY)),
-        ),
-      ].sort((a, b) => a.localeCompare(b));
+    : [...new Set(Object.values(metrics).flatMap((m) => Object.keys(m)))].sort((a, b) =>
+        a.localeCompare(b),
+      );
   const columns = [...users, TEAM_TOTAL];
 
-  // raw metric value for one user, or for the team (override if the fetcher gave one, else the sum)
+  // raw metric value for one user, or for the team (sum of the users)
   const read = (metricKey, col = TEAM_TOTAL) => {
     const m = metrics[metricKey];
     if (!m) return 0;
-    if (col === TEAM_TOTAL) {
-      return m[TEAM_KEY] ?? users.reduce((sum, u) => sum + (m[u] || 0), 0);
-    }
-    return m[col] || 0;
+    return col === TEAM_TOTAL
+      ? users.reduce((sum, u) => sum + (m[u] || 0), 0)
+      : m[col] || 0;
   };
 
   const cell = (def, col) => {
@@ -128,10 +123,13 @@ export const buildKpiTable = async ({ start, end, query }) => {
       key: def.key,
       label: def.label,
       format: def.format,
-      heat: def.heat,
       values: [...cells, team].map(round2),
     };
   });
 
   return { columns, rows };
 };
+
+/** Row definitions only (no data) - lets the UI render pickers / empty states without a data query. */
+export const listKpiRows = () =>
+  kpiTableRows.map(({ key, label, format }) => ({ key, label, format }));

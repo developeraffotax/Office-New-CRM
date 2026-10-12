@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 
-const API = `${process.env.REACT_APP_API_URL}/api/v1/chart`;
+import { fetchKpiTable, downloadKpiTableExport } from "../api/kpiTableApi";
 
 const nf = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 });
 const gbp = new Intl.NumberFormat("en-GB", {
@@ -68,10 +68,7 @@ export default function KpiTable({ dateRange, source, users }) {
       setLoading(true);
       setError("");
       try {
-        const { data } = await axios.get(`${API}/kpi-table`, {
-          params,
-          signal: controller.signal,
-        });
+        const data = await fetchKpiTable(params, controller.signal);
         setTable({ columns: data.columns || [], rows: data.rows || [] });
       } catch (err) {
         if (axios.isCancel(err)) return;
@@ -102,18 +99,7 @@ export default function KpiTable({ dateRange, source, users }) {
   const handleExport = async () => {
     setExporting(true);
     try {
-      const { data } = await axios.get(`${API}/kpi-table/export`, {
-        params: { ...params, rows: selectedKeys.join(",") },
-        responseType: "blob",
-      });
-      const url = URL.createObjectURL(new Blob([data]));
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `sales-kpi_${startISO?.slice(0, 10)}_${endISO?.slice(0, 10)}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      await downloadKpiTableExport({ ...params, rows: selectedKeys.join(",") });
     } catch (err) {
       setError("Export failed");
     } finally {

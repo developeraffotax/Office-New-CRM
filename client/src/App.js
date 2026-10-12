@@ -73,6 +73,7 @@ import UserLeadChart from "./pages/Lead/userLeadChart/UserLeadChart";
 import GooglesheetViewer from "./components/GoogleSheet/GoogleSheetViewer";
 import ManageGooglesheets from "./components/GoogleSheet/ManageGoogleSheets ";
 import { fetchMySheets } from "./redux/slices/googleSheetSlice";
+import KpiTablePage from "./components/KpiTable/KpiTablePage";
  
  
  
@@ -179,7 +180,10 @@ function App() {
       ),
       Templates: <Route path="/templates" element={<Template />} />,
       Subscription: <Route path="/subscriptions" element={<Subscription />} />,
-      Activity: <Route path="/activity" element={<ScreenshotDashboard />} />
+      Activity: <Route path="/activity" element={<ScreenshotDashboard />} />,
+
+
+
 
     }),
     []
@@ -234,6 +238,10 @@ function App() {
             <Route path="/leads-targets" element={<UserLeadChart />} />
             <Route path="/google-sheets/manage" element={<ManageGooglesheets />} />
             <Route path="/google-sheets/:sheetId" element={<GooglesheetViewer />} />
+
+
+
+            <Route path="/kpi-table" element={<KpiTablePage /> } />
             
             
             

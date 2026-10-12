@@ -19,8 +19,8 @@ import QuickFilterMenu from "./ui/QuickFilterMenu";
 import QuickRangeButtons from "./ui/QuickRangeButtons";
 import UserFilterSelect from "./ui/UserFilterSelect";
 import KpiSavedViews from "./ui/KpiSavedViews";
-import KpiTable from "./KpiTable";
-import useKpiFilters from "./useKpiFilters";
+import KpiTable from "./tables/KpiTable";
+import useKpiFilters from "./hooks/useKpiFilters";
 import { useSavedFilters } from "../SavedFilters/useSavedFilters";
 import { LEADS_SOURCES } from "../../constants/constants";
 

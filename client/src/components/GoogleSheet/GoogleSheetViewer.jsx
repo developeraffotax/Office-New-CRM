@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import {
-  FiAlertCircle,
-  FiFileText,
-  FiShield,
-} from "react-icons/fi";
+import { FiAlertCircle, FiFileText, FiShield } from "react-icons/fi";
 
 import { getSheetApi } from "../../services/googlesheetService";
 import Spinner from "../../utlis/Spinner";
@@ -19,7 +15,6 @@ export default function GoogleSheetViewer() {
   const { sheetId } = useParams();
   const [sheet, setSheet] = useState(null);
   const [status, setStatus] = useState("loading");
-  
 
   useEffect(() => {
     let cancelled = false;
@@ -86,9 +81,7 @@ export default function GoogleSheetViewer() {
               </div>
 
               <h2 className="text-base font-semibold text-gray-900">
-                {isForbidden
-                  ? "Access restricted"
-                  : "Unable to load sheet"}
+                {isForbidden ? "Access restricted" : "Unable to load sheet"}
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-gray-500">
@@ -102,35 +95,7 @@ export default function GoogleSheetViewer() {
   }
 
   return (
-    <div className="w-full h-full min-h-0 flex flex-col bg-gray-50">
-      {/* <div className="shrink-0 bg-white border-b border-gray-200">
-        <div className="px-4 sm:px-5 py-3">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center min-w-0 gap-3">
-              <div className="shrink-0 w-9 h-9 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
-                <FiFileText className="w-[17px] h-[17px] text-gray-600" />
-              </div>
-
-              <div className="min-w-0">
-                <h1 className="text-sm font-semibold text-gray-900 truncate">
-                  {sheet.name}
-                </h1>
-
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-
-                  <span className="text-[11px] text-gray-500">
-                    Google Sheet
-                  </span>
-                </div>
-              </div>
-            </div>
-
-           
-          </div>
-        </div>
-      </div> */}
-
+    <div className="w-full h-full min-h-0 flex flex-col bg-gray-50 zoom-out">
       <div className="flex-1 min-h-0 ">
         <div className="relative w-full h-full overflow-hidden  bg-white border border-gray-200 shadow-sm">
           <div className="absolute top-0 left-0 right-0 h-px bg-gray-100 z-10 pointer-events-none" />

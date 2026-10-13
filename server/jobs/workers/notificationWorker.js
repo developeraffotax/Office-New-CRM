@@ -90,12 +90,15 @@ const processNotificationJob = async (job) => {
       for (const { user, title } of recipients) {
         const notification = await notificationModel.create({
           title,
-          redirectLink: `/ticket/detail/${ticket._id}`,
+          //redirectLink: `/ticket/detail/${ticket._id}`,
+          redirectLink: `/mail?folder=inbox&companyName=${ticket?.company?.toLowerCase()}&mailThreadId=${ticket?.mailThreadId}`,
           description: `You've received a response to a ticket with the subject "${ticket.subject}" from "${ticket.companyName}" and client "${ticket.clientName}".`,
           taskId: ticket._id,
           userId: user._id,
-          type: "ticket_received",
-          entityType: "ticket",
+          //type: "ticket_received",
+          //entityType: "ticket",
+          type: "email_received",
+          entityType: "mailbox",
         });
 
         await sendSocketNotification(notification, ticket, user._id, "ticket");

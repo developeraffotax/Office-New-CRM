@@ -3,6 +3,7 @@ import subscriptionModel from "../../models/subscriptionModel.js";
 import proposalModel from "../../models/proposalModel.js";
 import leadModel from "../../models/leadModel.js";
 import EmailMessage from "../../emailModule/models/EmailMessage.js";
+import { fetchGoalTargetsByUser } from "./goalTargets.js";
 
 export const TEAM_TOTAL = "Team Total";
 
@@ -20,6 +21,10 @@ const SUBSCRIPTION_FILTERS = [
 
 // Same behaviour as the "leads.conversion" chart: 0 when there is nothing to divide by
 const pct = (a, b) => (b > 0 ? Number(((a / b) * 100).toFixed(2)) : 0);
+
+// Achievement vs a target: null ("–") when no target is set, so "no target" isn't shown as 0%
+const achievement = (actual, target) =>
+  target > 0 ? Number(((actual / target) * 100).toFixed(2)) : null;
 
 /**
  * Metrics the table can read. Copied from chartRegistry so table numbers match the charts
@@ -136,6 +141,18 @@ export const kpiMetrics = {
     ],
   },
 
+  // --- TARGETS (from goalModel, same as getWonLeadData) ---
+  // These use `fetch` instead of Model/dateField: goals are keyed by user _id, not name.
+  // A metric with `fetch` gets ({ start, end, users, query }) and returns { [userName]: number }.
+  "targets.leadValue": {
+    label: "Target Lead Value",
+    fetch: (ctx) => fetchGoalTargetsByUser({ ...ctx, goalType: "Target Lead Value" }),
+  },
+  "targets.leadCount": {
+    label: "Target Lead Count",
+    fetch: (ctx) => fetchGoalTargetsByUser({ ...ctx, goalType: "Target Lead Count" }),
+  },
+
   // --- JOBS ---
   "jobs.prepared": {
     label: "Jobs Prepared",
@@ -195,6 +212,26 @@ const totalSales = (v) => (v["sales.new"] || 0) + (v["sales.subscription"] || 0)
  * then add one object here.
  */
 export const kpiTableRows = [
+  // --- Targets & achievement ---
+  // Value achievement = New Sales (won lead value) / Target Lead Value,
+  // count achievement = Leads Won / Target Lead Count.
+  { key: "salesTarget", label: "Sales Target (£)", format: "currency", metric: "targets.leadValue" },
+  {
+    key: "targetAchievement",
+    label: "Target Achievement (%)",
+    format: "percent",
+    deps: ["sales.new", "targets.leadValue"],
+    calculate: (v) => achievement(v["sales.new"], v["targets.leadValue"]),
+  },
+  { key: "leadCountTarget", label: "Lead Count Target", format: "number", metric: "targets.leadCount" },
+  {
+    key: "leadCountAchievement",
+    label: "Lead Count Achievement (%)",
+    format: "percent",
+    deps: ["leads.won", "targets.leadCount"],
+    calculate: (v) => achievement(v["leads.won"], v["targets.leadCount"]),
+  },
+
   // --- Sales ---
   {
     key: "totalSales",

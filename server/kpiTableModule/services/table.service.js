@@ -59,6 +59,7 @@ const aggregateByUser = async (def, { start, end, query }) => {
 const resolveMetric = async (key, ctx) => {
   const def = kpiMetrics[key];
   if (!def) throw new ApiError(500, `KPI table references unknown metric "${key}"`);
+  if (typeof def.fetch === "function") return (await def.fetch(ctx)) || {}; // custom source (e.g. targets)
   return aggregateByUser(def, ctx);
 };
 
@@ -83,7 +84,7 @@ export const buildKpiTable = async ({ start, end, query }) => {
     : kpiTableRows;
 
   const selectedUsers = splitList(query.jobHolder);
-  const ctx = { start, end, query };
+  const ctx = { start, end, query, users: selectedUsers };
 
   // fetch every metric once, only the ones the requested rows actually need
   const metricKeys = [...new Set(rowDefs.flatMap((r) => (r.metric ? [r.metric] : r.deps)))];

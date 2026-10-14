@@ -185,6 +185,11 @@ export default function KpiTable({ dateRange, source, users }) {
             {table.rows.map((row, idx) => {
               const checked = !deselected.has(row.key);
 
+              // colours come from the backend (one accent per group); grey fallback
+              const gc = row.groupColor;
+              const bandBg = gc?.bg || GROUP_BG;
+              const accent = gc?.accent || "#D1D5DB";
+
               // a divider row is drawn whenever the group changes
               const startsGroup = row.group && row.group !== table.rows[idx - 1]?.group;
               const groupKeys = startsGroup
@@ -202,13 +207,17 @@ export default function KpiTable({ dateRange, source, users }) {
                           position: "sticky",
                           left: 0,
                           zIndex: 1,
-                          background: GROUP_BG,
-                          borderTop: "2px solid",
-                          borderTopColor: "divider",
+                          background: bandBg,
+                          borderTop: `2px solid ${accent}`,
+                          borderLeft: `4px solid ${accent}`,
                         }}
                       >
                         <Checkbox
                           size="small"
+                          sx={{
+                            color: accent,
+                            "&.Mui-checked, &.MuiCheckbox-indeterminate": { color: accent },
+                          }}
                           checked={groupOn === groupKeys.length}
                           indeterminate={groupOn > 0 && groupOn < groupKeys.length}
                           onChange={() => toggleGroup(groupKeys)}
@@ -219,14 +228,13 @@ export default function KpiTable({ dateRange, source, users }) {
                           position: "sticky",
                           left: CHECK_W,
                           zIndex: 1,
-                          background: GROUP_BG,
-                          borderTop: "2px solid",
-                          borderTopColor: "divider",
+                          background: bandBg,
+                          borderTop: `2px solid ${accent}`,
                           fontWeight: 700,
                           fontSize: 12,
                           letterSpacing: 0.6,
                           textTransform: "uppercase",
-                          color: "text.secondary",
+                          color: gc?.text || "text.secondary",
                         }}
                       >
                         {row.groupLabel || row.group}
@@ -234,9 +242,8 @@ export default function KpiTable({ dateRange, source, users }) {
                       <TableCell
                         colSpan={table.columns.length}
                         sx={{
-                          background: GROUP_BG,
-                          borderTop: "2px solid",
-                          borderTopColor: "divider",
+                          background: bandBg,
+                          borderTop: `2px solid ${accent}`,
                         }}
                       />
                     </TableRow>
@@ -244,7 +251,13 @@ export default function KpiTable({ dateRange, source, users }) {
                 <TableRow hover selected={checked}>
                   <TableCell
                     padding="checkbox"
-                    sx={{ position: "sticky", left: 0, zIndex: 1, background: "#fff" }}
+                    sx={{
+                      position: "sticky",
+                      left: 0,
+                      zIndex: 1,
+                      background: "#fff",
+                      borderLeft: `4px solid ${accent}`,
+                    }}
                   >
                     <Checkbox size="small" checked={checked} onChange={() => toggleRow(row.key)} />
                   </TableCell>

@@ -26,6 +26,30 @@ const pct = (a, b) => (b > 0 ? Number(((a / b) * 100).toFixed(2)) : 0);
 const achievement = (actual, target) =>
   target > 0 ? Number(((actual / target) * 100).toFixed(2)) : null;
 
+
+
+
+
+// --- group colours ---------------------------------------------------------
+// Give a group ONE accent colour (#RRGGBB); the light band background and the dark
+// label colour are derived from it, so the UI and the Excel export always agree.
+const mixHex = (hex, withHex, t) => {
+  const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [a, b] = [rgb(hex), rgb(withHex)];
+  return (
+    "#" +
+    a.map((v, i) => Math.round(v * (1 - t) + b[i] * t).toString(16).padStart(2, "0")).join("")
+  );
+};
+const groupPalette = (accent) => ({
+  accent,                                   // left stripe + top border
+  bg: mixHex(accent, "#ffffff", 0.85),      // divider row background (opaque, so sticky cells work)
+  text: mixHex(accent, "#000000", 0.5),     // divider row label
+});
+ 
+
+
+
 /**
  * Metrics the table can read. Copied from chartRegistry so table numbers match the charts
  * (plus leads.progress / leads.lost, which have no chart of their own).
@@ -220,6 +244,7 @@ export const kpiTableGroups = [
   {
     key: "targets",
     label: "Targets & Achievement",
+    color: "#2563EB", // blue
     // Value achievement = New Sales (won lead value) / Target Lead Value,
     // count achievement = Leads Won / Target Lead Count.
     rows: [
@@ -245,6 +270,8 @@ export const kpiTableGroups = [
   {
     key: "sales",
     label: "Sales",
+    color: "#2563EB", // blue
+
     rows: [
       
       { key: "newSales", label: "New Sales (£)", format: "currency", metric: "sales.new" },
@@ -277,6 +304,7 @@ export const kpiTableGroups = [
   {
     key: "leads",
     label: "Leads",
+    color: "#2563EB", // blue
     rows: [
       
       { key: "leadsReceived", label: "Leads Received", format: "number", metric: "leads.total" },
@@ -297,6 +325,7 @@ export const kpiTableGroups = [
   {
     key: "outreach",
     label: "Outreach",
+    color: "#D97706", // amber
     rows: [
       { key: "emailsSent", label: "Initial Emails Sent", format: "number", metric: "emails.initial" },
       { key: "repliesSent", label: "Replies Sent", format: "number", metric: "emails.replies" },
@@ -307,6 +336,7 @@ export const kpiTableGroups = [
   {
     key: "jobs",
     label: "Jobs",
+    color: "#D97706", // amber
     rows: [
       { key: "jobsPrepared", label: "Jobs Prepared", format: "number", metric: "jobs.prepared" },
       { key: "jobsReviewed", label: "Jobs Reviewed", format: "number", metric: "jobs.review" },
@@ -317,5 +347,10 @@ export const kpiTableGroups = [
 
 // Flat, ordered list the service works with. Each row remembers which group it is in.
 export const kpiTableRows = kpiTableGroups.flatMap((g) =>
-  g.rows.map((r) => ({ ...r, group: g.key, groupLabel: g.label })),
+  g.rows.map((r) => ({
+    ...r,
+    group: g.key,
+    groupLabel: g.label,
+    groupColor: groupPalette(g.color || "#6B7280"),
+  })),
 );

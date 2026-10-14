@@ -11,6 +11,7 @@ const day = (d) => new Date(d).toISOString().slice(0, 10);
 export const kpiExportFilename = (start, end) => `sales-kpi_${day(start)}_${day(end)}.xlsx`;
 
 const solid = (argb) => ({ type: "pattern", pattern: "solid", fgColor: { argb } });
+const argb = (hex) => `FF${hex.replace("#", "").toUpperCase()}`; // "#6366F1" -> "FF6366F1"
 
 /**
  * { columns, rows } (from buildKpiTable) -> ExcelJS workbook.
@@ -40,10 +41,14 @@ export const buildKpiWorkbook = ({ columns, rows }) => {
       band.height = 20;
       const cell = band.getCell(1);
       cell.value = r.groupLabel || r.group;
-      cell.font = { bold: true, color: { argb: "FF374151" } };
-      cell.fill = solid("FFE5E7EB");
+      const gc = r.groupColor;
+      cell.font = { bold: true, color: { argb: gc ? argb(gc.text) : "FF374151" } };
+      cell.fill = solid(gc ? argb(gc.bg) : "FFE5E7EB");
       cell.alignment = { vertical: "middle", horizontal: "left", indent: 1 };
-      cell.border = { top: { style: "medium", color: { argb: "FF9CA3AF" } } };
+      cell.border = {
+        top: { style: "medium", color: { argb: gc ? argb(gc.accent) : "FF9CA3AF" } },
+        left: { style: "thick", color: { argb: gc ? argb(gc.accent) : "FF9CA3AF" } },
+      };
     }
 
     // --- data row ---
@@ -52,6 +57,10 @@ export const buildKpiWorkbook = ({ columns, rows }) => {
       ...Object.fromEntries(r.values.map((v, i) => [`c${i}`, v])),
     });
     row.getCell(1).alignment = { indent: 1 };
+    if (r.groupColor) {
+      // coloured stripe down the left edge of every row in the group
+      row.getCell(1).border = { left: { style: "thick", color: { argb: argb(r.groupColor.accent) } } };
+    }
 
     r.values.forEach((_, i) => {
       const cell = row.getCell(i + 2);

@@ -135,6 +135,7 @@ export const buildKpiTable = async ({ start, end, query }) => {
       format: def.format,
       group: def.group,
       groupLabel: def.groupLabel,
+      groupColor: def.groupColor,
       values: [...cells, team].map(round2),
     };
   });
@@ -144,10 +145,11 @@ export const buildKpiTable = async ({ start, end, query }) => {
 
 /** Row definitions only (no data) - lets the UI render pickers / empty states without a data query. */
 export const listKpiRows = () =>
-  kpiTableRows.map(({ key, label, format, group, groupLabel }) => ({
+  kpiTableRows.map(({ key, label, format, group, groupLabel, groupColor }) => ({
     key,
     label,
     format,
     group,
     groupLabel,
+    groupColor,
   }));

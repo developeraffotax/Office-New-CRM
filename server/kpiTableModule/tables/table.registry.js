@@ -192,9 +192,13 @@ export const kpiMetrics = {
 const totalSales = (v) => (v["sales.new"] || 0) + (v["sales.subscription"] || 0);
 
 /**
- * THE TABLE. One object = one row, shown in this order.
+ * THE TABLE, split into GROUPS. Each group becomes a divider row (with its own
+ * select-all checkbox) in the UI and a banded header row in the Excel export.
  *
- *  key        unique id (also used by ?rows=a,b,c for selecting / exporting)
+ * Group:  { key, label, rows: [ ...row objects ] }
+ *
+ * Row:
+ *  key        unique across ALL groups (also used by ?rows=a,b,c for selecting / exporting)
  *  label      text in the first column
  *  format     "number" | "currency" | "percent"   (UI + Excel number format)
  *  metric     one metric key                 -> cell = that metric's value
@@ -209,72 +213,109 @@ const totalSales = (v) => (v["sales.new"] || 0) + (v["sales.subscription"] || 0)
  *     function({ cells, users, read }) -> anything you like
  *
  * To add a KPI later: add its metric to `kpiMetrics` (if it isn't there yet),
- * then add one object here.
+ * then add one row object to the group it belongs to.
+ * To add a group: add one { key, label, rows } object; to reorder, move it.
  */
-export const kpiTableRows = [
-  // --- Targets & achievement ---
-  // Value achievement = New Sales (won lead value) / Target Lead Value,
-  // count achievement = Leads Won / Target Lead Count.
-  { key: "salesTarget", label: "Sales Target (£)", format: "currency", metric: "targets.leadValue" },
+export const kpiTableGroups = [
   {
-    key: "targetAchievement",
-    label: "Target Achievement (%)",
-    format: "percent",
-    deps: ["sales.new", "targets.leadValue"],
-    calculate: (v) => achievement(v["sales.new"], v["targets.leadValue"]),
-  },
-  { key: "leadCountTarget", label: "Lead Count Target", format: "number", metric: "targets.leadCount" },
-  {
-    key: "leadCountAchievement",
-    label: "Lead Count Achievement (%)",
-    format: "percent",
-    deps: ["leads.won", "targets.leadCount"],
-    calculate: (v) => achievement(v["leads.won"], v["targets.leadCount"]),
-  },
-
-  // --- Sales ---
-  {
-    key: "totalSales",
-    label: "Total Sales (£)",
-    format: "currency",
-    deps: ["sales.new", "sales.subscription"],
-    calculate: totalSales,
-  },
-  { key: "newSales", label: "New Sales (£)", format: "currency", metric: "sales.new" },
-  {
-    key: "subscriptionSales",
-    label: "Subscription Sales (£)",
-    format: "currency",
-    metric: "sales.subscription",
-  },
-  { key: "subscriptionCount", label: "Subscription Count", format: "number", metric: "subscriptions.count" },
-  {
-    key: "subscriptionValue",
-    label: "Subscription Value (£)",
-    format: "currency",
-    metric: "subscriptions.value",
+    key: "targets",
+    label: "Targets & Achievement",
+    // Value achievement = New Sales (won lead value) / Target Lead Value,
+    // count achievement = Leads Won / Target Lead Count.
+    rows: [
+      { key: "salesTarget", label: "Sales Target (£)", format: "currency", metric: "targets.leadValue" },
+      {
+        key: "targetAchievement",
+        label: "Target Achievement (%)",
+        format: "percent",
+        deps: ["sales.new", "targets.leadValue"],
+        calculate: (v) => achievement(v["sales.new"], v["targets.leadValue"]),
+      },
+      // { key: "leadCountTarget", label: "Lead Count Target", format: "number", metric: "targets.leadCount" },
+      // {
+      //   key: "leadCountAchievement",
+      //   label: "Lead Count Achievement (%)",
+      //   format: "percent",
+      //   deps: ["leads.won", "targets.leadCount"],
+      //   calculate: (v) => achievement(v["leads.won"], v["targets.leadCount"]),
+      // },
+    ],
   },
 
-  // --- Leads ---
-  { key: "leadsWon", label: "Leads Won (Clients)", format: "number", metric: "leads.won" },
   {
-    key: "conversion",
-    label: "Conversion Rate (%)",
-    format: "percent",
-    deps: ["leads.total", "leads.won"],
-    calculate: (v) => pct(v["leads.won"], v["leads.total"]),
+    key: "sales",
+    label: "Sales",
+    rows: [
+      
+      { key: "newSales", label: "New Sales (£)", format: "currency", metric: "sales.new" },
+      {
+        key: "subscriptionSales",
+        label: "Subscription Sales (£)",
+        format: "currency",
+        metric: "sales.subscription",
+      },
+
+      {
+        key: "totalSales",
+        label: "Total Sales (£)",
+        format: "currency",
+        deps: ["sales.new", "sales.subscription"],
+        calculate: totalSales,
+      },
+
+
+      // { key: "subscriptionCount", label: "Subscription Count", format: "number", metric: "subscriptions.count" },
+      // {
+      //   key: "subscriptionValue",
+      //   label: "Subscription Value (£)",
+      //   format: "currency",
+      //   metric: "subscriptions.value",
+      // },
+    ],
   },
-  { key: "leadsReceived", label: "Leads Received", format: "number", metric: "leads.total" },
-  { key: "progressLeads", label: "Progress Leads", format: "number", metric: "leads.progress" },
-  { key: "lostLeads", label: "Lost Leads", format: "number", metric: "leads.lost" },
 
-  // --- Outreach ---
-  { key: "emailsSent", label: "Initial Emails Sent", format: "number", metric: "emails.initial" },
-  { key: "repliesSent", label: "Replies Sent", format: "number", metric: "emails.replies" },
-  { key: "proposalsSent", label: "Proposal Sent", format: "number", metric: "proposals.count" },
+  {
+    key: "leads",
+    label: "Leads",
+    rows: [
+      
+      { key: "leadsReceived", label: "Leads Received", format: "number", metric: "leads.total" },
+      { key: "progressLeads", label: "Progress Leads", format: "number", metric: "leads.progress" },
+      { key: "lostLeads", label: "Lost Leads", format: "number", metric: "leads.lost" },
 
-  // --- Jobs ---
-  { key: "jobsPrepared", label: "Jobs Prepared", format: "number", metric: "jobs.prepared" },
-  { key: "jobsReviewed", label: "Jobs Reviewed", format: "number", metric: "jobs.review" },
-  { key: "jobsFiled", label: "Jobs Filed", format: "number", metric: "jobs.filed" },
+      { key: "leadsWon", label: "Leads Won (Clients)", format: "number", metric: "leads.won" },
+      {
+        key: "conversion",
+        label: "Conversion Rate (%)",
+        format: "percent",
+        deps: ["leads.total", "leads.won"],
+        calculate: (v) => pct(v["leads.won"], v["leads.total"]),
+      },
+    ],
+  },
+
+  {
+    key: "outreach",
+    label: "Outreach",
+    rows: [
+      { key: "emailsSent", label: "Initial Emails Sent", format: "number", metric: "emails.initial" },
+      { key: "repliesSent", label: "Replies Sent", format: "number", metric: "emails.replies" },
+      { key: "proposalsSent", label: "Proposal Sent", format: "number", metric: "proposals.count" },
+    ],
+  },
+
+  {
+    key: "jobs",
+    label: "Jobs",
+    rows: [
+      { key: "jobsPrepared", label: "Jobs Prepared", format: "number", metric: "jobs.prepared" },
+      { key: "jobsReviewed", label: "Jobs Reviewed", format: "number", metric: "jobs.review" },
+      { key: "jobsFiled", label: "Jobs Filed", format: "number", metric: "jobs.filed" },
+    ],
+  },
 ];
+
+// Flat, ordered list the service works with. Each row remembers which group it is in.
+export const kpiTableRows = kpiTableGroups.flatMap((g) =>
+  g.rows.map((r) => ({ ...r, group: g.key, groupLabel: g.label })),
+);

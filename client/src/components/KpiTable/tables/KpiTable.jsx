@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
   Alert,
@@ -36,6 +36,7 @@ const formatValue = (v, format) => {
 
 const CHECK_W = 52;
 const LABEL_W = 240;
+const GROUP_BG = "#EEF0F3";
 
 export default function KpiTable({ dateRange, source, users }) {
   const [table, setTable] = useState({ columns: [], rows: [] });
@@ -95,6 +96,15 @@ export default function KpiTable({ dateRange, source, users }) {
 
   const toggleAll = () =>
     setDeselected(allSelected ? new Set(table.rows.map((r) => r.key)) : new Set());
+
+  // select / deselect every row of one group at once
+  const toggleGroup = (keys) =>
+    setDeselected((prev) => {
+      const next = new Set(prev);
+      const allOn = keys.every((k) => !next.has(k));
+      keys.forEach((k) => (allOn ? next.add(k) : next.delete(k)));
+      return next;
+    });
 
   const handleExport = async () => {
     setExporting(true);
@@ -172,10 +182,66 @@ export default function KpiTable({ dateRange, source, users }) {
           </TableHead>
 
           <TableBody>
-            {table.rows.map((row) => {
+            {table.rows.map((row, idx) => {
               const checked = !deselected.has(row.key);
+
+              // a divider row is drawn whenever the group changes
+              const startsGroup = row.group && row.group !== table.rows[idx - 1]?.group;
+              const groupKeys = startsGroup
+                ? table.rows.filter((r) => r.group === row.group).map((r) => r.key)
+                : [];
+              const groupOn = groupKeys.filter((k) => !deselected.has(k)).length;
+
               return (
-                <TableRow key={row.key} hover selected={checked}>
+                <Fragment key={row.key}>
+                  {startsGroup && (
+                    <TableRow>
+                      <TableCell
+                        padding="checkbox"
+                        sx={{
+                          position: "sticky",
+                          left: 0,
+                          zIndex: 1,
+                          background: GROUP_BG,
+                          borderTop: "2px solid",
+                          borderTopColor: "divider",
+                        }}
+                      >
+                        <Checkbox
+                          size="small"
+                          checked={groupOn === groupKeys.length}
+                          indeterminate={groupOn > 0 && groupOn < groupKeys.length}
+                          onChange={() => toggleGroup(groupKeys)}
+                        />
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          position: "sticky",
+                          left: CHECK_W,
+                          zIndex: 1,
+                          background: GROUP_BG,
+                          borderTop: "2px solid",
+                          borderTopColor: "divider",
+                          fontWeight: 700,
+                          fontSize: 12,
+                          letterSpacing: 0.6,
+                          textTransform: "uppercase",
+                          color: "text.secondary",
+                        }}
+                      >
+                        {row.groupLabel || row.group}
+                      </TableCell>
+                      <TableCell
+                        colSpan={table.columns.length}
+                        sx={{
+                          background: GROUP_BG,
+                          borderTop: "2px solid",
+                          borderTopColor: "divider",
+                        }}
+                      />
+                    </TableRow>
+                  )}
+                <TableRow hover selected={checked}>
                   <TableCell
                     padding="checkbox"
                     sx={{ position: "sticky", left: 0, zIndex: 1, background: "#fff" }}
@@ -191,19 +257,17 @@ export default function KpiTable({ dateRange, source, users }) {
                     <TableCell
                       key={i}
                       align="right"
-                      sx={{
-                        ...(i === lastIdx && { fontWeight: 700, backgroundColor: "#F9FAFB" }),
-                        ...(row.heat === "achievement" &&
-                          typeof v === "number" && {
-                            color: v >= 100 ? "success.main" : "warning.dark",
-                            fontWeight: 600,
-                          }),
-                      }}
+                      sx={
+                        i === lastIdx
+                          ? { fontWeight: 700, backgroundColor: "#F9FAFB" }
+                          : undefined
+                      }
                     >
                       {formatValue(v, row.format)}
                     </TableCell>
                   ))}
                 </TableRow>
+                </Fragment>
               );
             })}
 

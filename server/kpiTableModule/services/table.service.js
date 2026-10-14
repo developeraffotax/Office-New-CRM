@@ -1,3 +1,4 @@
+import moment from "moment";
 import { kpiTableRows, kpiMetrics, TEAM_TOTAL } from "../tables/table.registry.js";
 import { applyFilters } from "../utils/helpers.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -7,14 +8,21 @@ const splitList = (v) =>
 
 const round2 = (n) => (typeof n === "number" ? Math.round(n * 100) / 100 : n);
 
+/**
+ * Date match built exactly like getTimeSeriesData does it:
+ * real Date objects (aggregate() doesn't cast), from start-of-day to end-of-day.
+ */
 const buildDateMatch = (def, start, end) => {
+  const startDate = moment(start).startOf("day").toDate();
+  const endDate = moment(end).endOf("day").toDate();
+
   if (def.rangeOverlap && def.dateEndField) {
     return {
-      [def.dateField]: { $lte: end },
-      [def.dateEndField]: { $gte: start },
+      [def.dateField]: { $lte: endDate },
+      [def.dateEndField]: { $gte: startDate },
     };
   }
-  return { [def.dateField]: { $gte: start, $lte: end } };
+  return { [def.dateField]: { $gte: startDate, $lte: endDate } };
 };
 
 /** One aggregation per metric, grouped by the model's jobHolder field -> { user: value } */
@@ -30,14 +38,15 @@ const aggregateByUser = async (def, { start, end, query }) => {
   };
 
   const { type, field } = def.valueConfig;
+  // same $convert the chart uses, so amounts stored as strings still add up
+  const value =
+    type === "sum"
+      ? { $sum: { $convert: { input: `$${field}`, to: "double", onError: 0, onNull: 0 } } }
+      : { $sum: 1 };
+
   const rows = await def.Model.aggregate([
     { $match: match },
-    {
-      $group: {
-        _id: `$${groupField}`,
-        value: type === "sum" ? { $sum: `$${field}` } : { $sum: 1 },
-      },
-    },
+    { $group: { _id: `$${groupField}`, value } },
   ]);
 
   const out = {};

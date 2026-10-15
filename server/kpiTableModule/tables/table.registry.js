@@ -244,7 +244,7 @@ export const kpiTableGroups = [
   {
     key: "targets",
     label: "Targets & Achievement",
-    color: "#2563EB", // blue
+    color: "#A9A9A9",  
     // Value achievement = New Sales (won lead value) / Target Lead Value,
     // count achievement = Leads Won / Target Lead Count.
     rows: [
@@ -270,7 +270,7 @@ export const kpiTableGroups = [
   {
     key: "sales",
     label: "Sales",
-    color: "#2563EB", // blue
+    color: "#A9A9A9",  
 
     rows: [
       
@@ -304,7 +304,8 @@ export const kpiTableGroups = [
   {
     key: "leads",
     label: "Leads",
-    color: "#2563EB", // blue
+    //color: "#2563EB", // blue
+    color: "#A9A9A9",  
     rows: [
       
       { key: "leadsReceived", label: "Leads Received", format: "number", metric: "leads.total" },
@@ -325,7 +326,8 @@ export const kpiTableGroups = [
   {
     key: "outreach",
     label: "Outreach",
-    color: "#D97706", // amber
+    //color: "#F3F4F6", // amber
+    color: "#A9A9A9",  
     rows: [
       { key: "emailsSent", label: "Initial Emails Sent", format: "number", metric: "emails.initial" },
       { key: "repliesSent", label: "Replies Sent", format: "number", metric: "emails.replies" },
@@ -336,7 +338,7 @@ export const kpiTableGroups = [
   {
     key: "jobs",
     label: "Jobs",
-    color: "#D97706", // amber
+    color: "#A9A9A9",  
     rows: [
       { key: "jobsPrepared", label: "Jobs Prepared", format: "number", metric: "jobs.prepared" },
       { key: "jobsReviewed", label: "Jobs Reviewed", format: "number", metric: "jobs.review" },

@@ -1,3 +1,4 @@
+ 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
@@ -17,6 +18,7 @@ import {
   Typography,
 } from "@mui/material";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 
 import { fetchKpiTable, downloadKpiTableExport } from "../api/kpiTableApi";
 
@@ -51,6 +53,7 @@ export default function KpiTable({ dateRange, source, users }) {
   const startISO = dateRange?.[0]?.toISOString();
   const endISO = dateRange?.[1]?.toISOString();
   const usersKey = users.join(",");
+  const hasUsers = users.length > 0; // no users selected -> no API call, show a prompt instead
 
   // Param names must match what ChartPanel sends to the chart endpoints.
   const params = useMemo(
@@ -64,6 +67,14 @@ export default function KpiTable({ dateRange, source, users }) {
   );
 
   useEffect(() => {
+    // nothing selected: clear whatever was showing and skip the request entirely
+    if (!hasUsers) {
+      setTable({ columns: [], rows: [] });
+      setError("");
+      setLoading(false);
+      return;
+    }
+
     const controller = new AbortController();
     (async () => {
       setLoading(true);
@@ -79,12 +90,13 @@ export default function KpiTable({ dateRange, source, users }) {
       }
     })();
     return () => controller.abort();
-  }, [params]);
+  }, [params, hasUsers]);
 
   const selectedKeys = table.rows
     .filter((r) => !deselected.has(r.key))
     .map((r) => r.key);
-  const allSelected = table.rows.length > 0 && selectedKeys.length === table.rows.length;
+  const allSelected =
+    table.rows.length > 0 && selectedKeys.length === table.rows.length;
   const someSelected = selectedKeys.length > 0 && !allSelected;
 
   const toggleRow = (key) =>
@@ -95,7 +107,9 @@ export default function KpiTable({ dateRange, source, users }) {
     });
 
   const toggleAll = () =>
-    setDeselected(allSelected ? new Set(table.rows.map((r) => r.key)) : new Set());
+    setDeselected(
+      allSelected ? new Set(table.rows.map((r) => r.key)) : new Set(),
+    );
 
   // select / deselect every row of one group at once
   const toggleGroup = (keys) =>
@@ -109,7 +123,10 @@ export default function KpiTable({ dateRange, source, users }) {
   const handleExport = async () => {
     setExporting(true);
     try {
-      await downloadKpiTableExport({ ...params, rows: selectedKeys.join(",") });
+      await downloadKpiTableExport({
+        ...params,
+        rows: selectedKeys.join(","),
+      });
     } catch (err) {
       setError("Export failed");
     } finally {
@@ -118,6 +135,22 @@ export default function KpiTable({ dateRange, source, users }) {
   };
 
   const lastIdx = table.columns.length - 1; // "Team Total"
+
+  if (!hasUsers) {
+    return (
+      <Paper variant="outlined" sx={{ py: 8, px: 3, textAlign: "center" }}>
+        <PeopleAltOutlinedIcon
+          sx={{ fontSize: 44, color: "text.disabled", mb: 1 }}
+        />
+        <Typography variant="subtitle1" fontWeight={600}>
+          Please select a user
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Choose one or more users from the filter above to see their KPIs.
+        </Typography>
+      </Paper>
+    );
+  }
 
   return (
     <Stack spacing={1.5}>
@@ -139,13 +172,22 @@ export default function KpiTable({ dateRange, source, users }) {
       {error && <Alert severity="error">{error}</Alert>}
       {loading && <LinearProgress />}
 
-      <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: "70vh" }}>
+      <TableContainer
+        component={Paper}
+        variant="outlined"
+        sx={{ maxHeight: "70vh" }}
+      >
         <Table stickyHeader size="small">
           <TableHead>
             <TableRow>
               <TableCell
                 padding="checkbox"
-                sx={{ position: "sticky", left: 0, zIndex: 3, minWidth: CHECK_W }}
+                sx={{
+                  position: "sticky",
+                  left: 0,
+                  zIndex: 3,
+                  minWidth: CHECK_W,
+                }}
               >
                 <Checkbox
                   size="small"
@@ -186,11 +228,16 @@ export default function KpiTable({ dateRange, source, users }) {
               const checked = !deselected.has(row.key);
 
               // a divider row is drawn whenever the group changes
-              const startsGroup = row.group && row.group !== table.rows[idx - 1]?.group;
+              const startsGroup =
+                row.group && row.group !== table.rows[idx - 1]?.group;
               const groupKeys = startsGroup
-                ? table.rows.filter((r) => r.group === row.group).map((r) => r.key)
+                ? table.rows
+                    .filter((r) => r.group === row.group)
+                    .map((r) => r.key)
                 : [];
-              const groupOn = groupKeys.filter((k) => !deselected.has(k)).length;
+              const groupOn = groupKeys.filter(
+                (k) => !deselected.has(k),
+              ).length;
 
               return (
                 <Fragment key={row.key}>
@@ -210,7 +257,9 @@ export default function KpiTable({ dateRange, source, users }) {
                         <Checkbox
                           size="small"
                           checked={groupOn === groupKeys.length}
-                          indeterminate={groupOn > 0 && groupOn < groupKeys.length}
+                          indeterminate={
+                            groupOn > 0 && groupOn < groupKeys.length
+                          }
                           onChange={() => toggleGroup(groupKeys)}
                         />
                       </TableCell>
@@ -241,32 +290,50 @@ export default function KpiTable({ dateRange, source, users }) {
                       />
                     </TableRow>
                   )}
-                <TableRow hover selected={checked}>
-                  <TableCell
-                    padding="checkbox"
-                    sx={{ position: "sticky", left: 0, zIndex: 1, background: "#fff" }}
-                  >
-                    <Checkbox size="small" checked={checked} onChange={() => toggleRow(row.key)} />
-                  </TableCell>
-                  <TableCell
-                    sx={{ position: "sticky", left: CHECK_W, zIndex: 1, background: "#fff" }}
-                  >
-                    {row.label}
-                  </TableCell>
-                  {row.values.map((v, i) => (
+
+                  <TableRow hover selected={checked}>
                     <TableCell
-                      key={i}
-                      align="right"
-                      sx={
-                        i === lastIdx
-                          ? { fontWeight: 700, backgroundColor: "#F9FAFB" }
-                          : undefined
-                      }
+                      padding="checkbox"
+                      sx={{
+                        position: "sticky",
+                        left: 0,
+                        zIndex: 1,
+                        background: "#fff",
+                      }}
                     >
-                      {formatValue(v, row.format)}
+                      <Checkbox
+                        size="small"
+                        checked={checked}
+                        onChange={() => toggleRow(row.key)}
+                      />
                     </TableCell>
-                  ))}
-                </TableRow>
+                    <TableCell
+                      sx={{
+                        position: "sticky",
+                        left: CHECK_W,
+                        zIndex: 1,
+                        background: "#fff",
+                      }}
+                    >
+                      {row.label}
+                    </TableCell>
+                    {row.values.map((v, i) => (
+                      <TableCell
+                        key={i}
+                        align="right"
+                        sx={
+                          i === lastIdx
+                            ? {
+                                fontWeight: 700,
+                                backgroundColor: "#F9FAFB",
+                              }
+                            : undefined
+                        }
+                      >
+                        {formatValue(v, row.format)}
+                      </TableCell>
+                    ))}
+                  </TableRow>
                 </Fragment>
               );
             })}
@@ -274,7 +341,13 @@ export default function KpiTable({ dateRange, source, users }) {
             {!loading && table.rows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={table.columns.length + 2}>
-                  <Box sx={{ p: 3, textAlign: "center", color: "text.secondary" }}>
+                  <Box
+                    sx={{
+                      p: 3,
+                      textAlign: "center",
+                      color: "text.secondary",
+                    }}
+                  >
                     No data for this range.
                   </Box>
                 </TableCell>
@@ -286,6 +359,7 @@ export default function KpiTable({ dateRange, source, users }) {
     </Stack>
   );
 }
+ 
 
 
 
@@ -387,29 +461,7 @@ export default function KpiTable({ dateRange, source, users }) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// WITH COLORING ADDED
-
-
+//   COLORED ONE
 
 
 // import { Fragment, useEffect, useMemo, useState } from "react";
@@ -431,6 +483,7 @@ export default function KpiTable({ dateRange, source, users }) {
 //   Typography,
 // } from "@mui/material";
 // import FileDownloadIcon from "@mui/icons-material/FileDownload";
+// import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 
 // import { fetchKpiTable, downloadKpiTableExport } from "../api/kpiTableApi";
 
@@ -465,6 +518,7 @@ export default function KpiTable({ dateRange, source, users }) {
 //   const startISO = dateRange?.[0]?.toISOString();
 //   const endISO = dateRange?.[1]?.toISOString();
 //   const usersKey = users.join(",");
+//   const hasUsers = users.length > 0; // no users selected -> no API call, show a prompt instead
 
 //   // Param names must match what ChartPanel sends to the chart endpoints.
 //   const params = useMemo(
@@ -478,6 +532,14 @@ export default function KpiTable({ dateRange, source, users }) {
 //   );
 
 //   useEffect(() => {
+//     // nothing selected: clear whatever was showing and skip the request entirely
+//     if (!hasUsers) {
+//       setTable({ columns: [], rows: [] });
+//       setError("");
+//       setLoading(false);
+//       return;
+//     }
+
 //     const controller = new AbortController();
 //     (async () => {
 //       setLoading(true);
@@ -493,7 +555,7 @@ export default function KpiTable({ dateRange, source, users }) {
 //       }
 //     })();
 //     return () => controller.abort();
-//   }, [params]);
+//   }, [params, hasUsers]);
 
 //   const selectedKeys = table.rows
 //     .filter((r) => !deselected.has(r.key))
@@ -532,6 +594,20 @@ export default function KpiTable({ dateRange, source, users }) {
 //   };
 
 //   const lastIdx = table.columns.length - 1; // "Team Total"
+
+//   if (!hasUsers) {
+//     return (
+//       <Paper variant="outlined" sx={{ py: 8, px: 3, textAlign: "center" }}>
+//         <PeopleAltOutlinedIcon sx={{ fontSize: 44, color: "text.disabled", mb: 1 }} />
+//         <Typography variant="subtitle1" fontWeight={600}>
+//           Please select a user
+//         </Typography>
+//         <Typography variant="body2" color="text.secondary">
+//           Choose one or more users from the filter above to see their KPIs.
+//         </Typography>
+//       </Paper>
+//     );
+//   }
 
 //   return (
 //     <Stack spacing={1.5}>

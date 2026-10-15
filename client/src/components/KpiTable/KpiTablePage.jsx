@@ -23,6 +23,7 @@ import KpiTable from "./tables/KpiTable";
 import useKpiFilters from "./hooks/useKpiFilters";
 import { useSavedFilters } from "../SavedFilters/useSavedFilters";
 import { LEADS_SOURCES } from "../../constants/constants";
+import KpiChartButton from "./ui/KpiChartButton";
 
 export default function KpiTablePage() {
   const f = useKpiFilters();
@@ -65,6 +66,7 @@ export default function KpiTablePage() {
         >
           {/* Left: dates, reset, saved views */}
           <Stack direction="row" spacing={1.5} flexWrap="wrap" alignItems="center" useFlexGap>
+            <KpiChartButton />
             <ManualRangePicker value={f.dateRange} onChange={f.setDateRange} />
             <QuickFilterMenu activeLabel={f.activeLabel} onSelect={f.handleQuickFilterSelect} />
             <QuickRangeButtons activeLabel={f.activeLabel} onSelect={f.handleQuickFilterSelect} />

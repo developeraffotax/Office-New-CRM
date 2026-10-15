@@ -46,6 +46,7 @@ import QuickRangeButtons from "./QuickRangeButtons";
 import { isAdmin } from "../../utlis/checkPermission";
 import { useSavedFilters } from "../SavedFilters/useSavedFilters";
 import KpiSavedViews from "./KpiSavedViews";
+import KpiTableButton from "./ui/KpiTableButton";
 
 // add near visibleTabGroups, module-level so the reference is stable across renders
 const EMPTY_SET = new Set();
@@ -284,7 +285,8 @@ const handleApplyView = (v) => {
             flexWrap="wrap"
             alignItems="center"
             useFlexGap
-          >
+          > 
+            <KpiTableButton />
             <ManualRangePicker value={dateRange} onChange={setDateRange} />
             <QuickFilterMenu
               activeLabel={activeLabel}

@@ -34,7 +34,7 @@ export default function AIReplySelector({ threadId, onSelect, companyName }) {
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [showProjectsModal, setShowProjectsModal] = useState(false);
   const [customInstructions, setCustomInstructions] = useState("");
-  const [showPrompt, setShowPrompt] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(true);
 
   const [project, setProject] = useState(() => {
     try {

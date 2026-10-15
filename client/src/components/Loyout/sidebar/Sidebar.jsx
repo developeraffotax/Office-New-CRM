@@ -37,6 +37,10 @@ import SidebarMobile from "./SidebarMobile";
 import { isNotificationAllowed } from "../header/getNotificationCategory";
 import { useWhatsappUnread } from "../../../context/WhatsappUnreadContext";
 
+
+const EMPTY_ARRAY = [];
+
+
 export default function Sidebar({
   hide = false,
   setHide,
@@ -53,9 +57,9 @@ export default function Sidebar({
   const mySheets = useSelector((state) => state.googleSheets.items);
 
   const { settings } = useSelector((state) => state.settings);
-  const notifications = useSelector(
-    (state) => state.notifications.notificationData || [],
-  );
+const notifications = useSelector(
+  (state) => state.notifications.notificationData || EMPTY_ARRAY,
+);
 
   const [isProfile, setIsProfile] = useState(false);
   const [isActive, setIsActive] = useState(false);

@@ -35,6 +35,45 @@ const formatTimer = (ms = 0) => {
   return `${h}:${m}:${s}`;
 };
 
+
+
+
+function TimerDocumentTitle() {
+  const dispatch = useDispatch();
+  const { timer, elapsed } = useSelector((state) => state.globalTimer);
+  const isRunning = timer?.isRunning;
+  const { settings } = useSelector((state) => state.settings);
+
+  const unread_notifications_count = useSelector(
+    (state) =>
+      state.notifications.notificationData.filter(
+        (n) => n.status === "unread" && isNotificationAllowed(n.type, settings),
+      ).length,
+  );
+
+  useEffect(() => {
+    if (!isRunning) return;
+    const id = setInterval(() => dispatch(tick()), 1000);
+    return () => clearInterval(id);
+  }, [isRunning, dispatch]);
+
+  useEffect(() => {
+    let mainTitle = isRunning ? formatTimer(elapsed) : "Affotax-CRM";
+    if (timer) {
+      mainTitle = `${mainTitle} | ${timer?.task || timer?.clientName}`;
+    }
+    document.title =
+      unread_notifications_count > 0
+        ? `(${unread_notifications_count})🔔 ${mainTitle}`
+        : mainTitle;
+  }, [elapsed, isRunning, unread_notifications_count]);
+
+  return null;
+}
+
+
+
+
 /* ---------------- Layout ---------------- */
 
 export default function Layout() {
@@ -50,57 +89,9 @@ export default function Layout() {
 
   /* Auth */
   const auth = useSelector((state) => state.auth.auth);
+ 
 
-  /* Global Timer (Redux) */
-  const { timer, elapsed } = useSelector((state) => state.globalTimer);
-  const isRunning = timer?.isRunning;
-
-  /* Settings */
-  const { settings } = useSelector((state) => state.settings);
-
-  /* Notifications */
-  const unread_notifications_count = useSelector(
-    (state) =>
-      state.notifications.notificationData.filter(
-        (n) => n.status === "unread" && isNotificationAllowed(n.type, settings),
-      ).length,
-  );
-
-  /* ---------------- Init Global Timer ---------------- */
-  // useEffect(() => {
-  //   dispatch(fetchGlobalTimer());
-  //   dispatch(initGlobalTimerListener());
-  // }, [dispatch]);
-
-  /* ---------------- Tick every second ---------------- */
-  useEffect(() => {
-    if (!isRunning) return;
-
-    const id = setInterval(() => {
-      dispatch(tick());
-    }, 1000);
-
-    return () => clearInterval(id);
-  }, [isRunning, dispatch]);
-
-  /* ---------------- Document Title ---------------- */
-  useEffect(() => {
-    // const timerRunningIn = localStorage.getItem("timer_in");
-    // if (location.pathname === timerRunningIn) return;
-
-    let mainTitle = isRunning ? formatTimer(elapsed) : "Affotax-CRM";
-
-    if (timer) {
-      mainTitle = `${mainTitle} | ${timer?.task || timer?.clientName}`;
-    }
-
-    if (unread_notifications_count > 0) {
-      document.title = `(${unread_notifications_count})🔔 ${mainTitle}`;
-    } else {
-      document.title = mainTitle;
-    }
-  }, [elapsed, isRunning, unread_notifications_count]);
-
+ 
   /* ---------------- Quick List ---------------- */
   const getQuickList = async () => {
     try {
@@ -134,6 +125,7 @@ export default function Layout() {
   return (
     <>
       <ReminderModal />
+      <TimerDocumentTitle />
       <OverdueModal />
       <WhatsappUnreadProvider enabled={hasPermission(auth?.user, "Whatsapp")}>
         <div className="relative w-full h-[100dvh] flex flex-col overflow-hidden">

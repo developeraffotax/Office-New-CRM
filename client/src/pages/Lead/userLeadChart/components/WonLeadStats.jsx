@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { FiCheck, FiInbox } from "react-icons/fi";
+import useLeadChartFilters from "../hooks/useLeadChartFilters";
+import { useSelector } from "react-redux";
 
 // Keep in sync with the palette in UserLeadChart.jsx — indices line up
 // because the backend returns `stats` in the same order as the selected
@@ -179,11 +181,18 @@ function EmptyState() {
   );
 }
 
+ 
+
+
 // `users` is an array of selected user names (or ["All"]) — one card is
 // fetched and rendered per user.
-export default function WonLeadStats({ users, dateRange, isAdmin }) {
+export default function WonLeadStats({ users, dateRange, isAdmin, dateBasis }) {
   const [stats, setStats] = useState([]);
   const [loading, setLoading] = useState(true);
+
+ 
+
+  console.log(dateBasis)
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -198,9 +207,12 @@ export default function WonLeadStats({ users, dateRange, isAdmin }) {
               users: users.length ? users.join(",") : "All",
               startDate: start ? start.toISOString() : null,
               endDate: end ? end.toISOString() : null,
+              dateBasis: dateBasis
             },
           }
         );
+
+        console.log("THE SREUSLT IS >>>>>>>>>>>>>> ", res.data)
 
         setStats(res.data.stats || []);
       } catch (err) {
@@ -216,7 +228,7 @@ export default function WonLeadStats({ users, dateRange, isAdmin }) {
     if ((isAdmin || users?.length) && dateRange?.[0] && dateRange?.[1]) {
       fetchStats();
     }
-  }, [users, dateRange, isAdmin]);
+  }, [users, dateRange, isAdmin, dateBasis ]);
 
   if (loading) {
     return (

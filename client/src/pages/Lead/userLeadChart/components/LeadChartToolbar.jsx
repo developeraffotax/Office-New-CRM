@@ -12,7 +12,8 @@ export default function LeadChartToolbar({
   users,
   teams,
   onReset,
-  savedViews
+  savedViews,
+  dateBasis
 }) {
   return (
     <Stack
@@ -28,6 +29,7 @@ export default function LeadChartToolbar({
             users={filters.selectedUsers}
             dateRange={filters.dateRange}
             isAdmin={admin}
+            dateBasis={dateBasis}
           />
         )}
       </Box>

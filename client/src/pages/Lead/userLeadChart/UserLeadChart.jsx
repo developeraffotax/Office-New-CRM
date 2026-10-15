@@ -115,6 +115,7 @@ const savedViews = (
           onReset={handleReset}
 
           savedViews={savedViews}
+          dateBasis={dateBasis}
         />
 
         <Divider sx={dividerSx} />

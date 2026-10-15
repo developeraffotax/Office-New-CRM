@@ -2429,7 +2429,16 @@ function parseRequestedUsers(query) {
 // -------------------------
 export const getWonLeadStats = async (req, res) => {
   try {
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, dateBasis = "created" } = req.query;
+
+    if (!Object.hasOwn(DATE_FIELDS, dateBasis)) {
+      return res.status(400).json({
+        error: `dateBasis must be one of ${Object.keys(DATE_FIELDS).join(", ")}`,
+      });
+    }
+    const dateField = DATE_FIELDS[dateBasis];
+
+
 
     const requestedUsers = parseRequestedUsers(req.query);
     const resolvedUsers = await resolveUsers(requestedUsers);
@@ -2441,7 +2450,7 @@ export const getWonLeadStats = async (req, res) => {
           jobHolder: { $in: ru.jobHolderNames },
         };
         if (startDate && endDate) {
-          leadFilters.leadCreatedAt = {
+          leadFilters[dateField] = {
             $gte: new Date(startDate),
             $lte: new Date(endDate),
           };

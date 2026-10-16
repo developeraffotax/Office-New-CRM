@@ -108,8 +108,8 @@ Cell: ({ row }) => {
   );
 },
 
-    size: 140,
-    minSize: 100,
+    size: 80,
+    minSize: 80,
     maxSize: 400,
     grow: false,
   };

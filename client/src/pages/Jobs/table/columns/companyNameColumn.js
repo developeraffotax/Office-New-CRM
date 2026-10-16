@@ -81,7 +81,13 @@ export const companyNameColumn = ({ columnFilters, searchValue }) => {
     if (!companyName) return;
 
     navigator.clipboard.writeText(companyName);
-    toast.success("Company Name copied!");
+    toast.success(
+          <div className="flex items-center gap-2 text-sm font-google">
+            <span className="font-medium">Copied</span>
+            <span className="text-gray-400">|</span>
+            <span className="text-gray-600 truncate max-w-[160px]">{companyName}</span>
+          </div>
+        );
   };
 
   return (

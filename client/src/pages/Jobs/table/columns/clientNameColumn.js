@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import CompanyInfo from "../../../../utlis/CompanyInfo";
 import { getColumnSearchValue } from "../../utils/getColumnSearchValue";
 import { highlightText } from "../../utils/highlightText";
+import toast from "react-hot-toast";
 
 export const clientNameColumn = ({
   getSingleJobDetail,
@@ -20,8 +21,6 @@ export const clientNameColumn = ({
       const [value, setValue] = useState(column.getFilterValue() ?? "");
       const debounceRef = useRef(null);
 
-       
-
       const handleChange = (e) => {
         const val = e.target.value;
         setValue(val);
@@ -33,9 +32,8 @@ export const clientNameColumn = ({
         }, 300);
       };
 
-            useEffect(() => {
+      useEffect(() => {
         const filterValue = column.getFilterValue() ?? "";
-
         setValue(filterValue);
       }, [column.getFilterValue()]);
 
@@ -64,7 +62,6 @@ export const clientNameColumn = ({
             value={value}
             onChange={handleChange}
             className="font-normal h-[1.8rem] px-2 bg-white rounded-md border border-gray-300 outline-none"
-             
           />
         </div>
       );
@@ -82,11 +79,24 @@ export const clientNameColumn = ({
         searchValue,
       );
 
+      const handleCopy = () => {
+        if (!clientName) return;
+        navigator.clipboard.writeText(clientName);
+        toast.success(
+          <div className="flex items-center gap-2 text-sm font-google">
+            <span className="font-medium">Copied</span>
+            <span className="text-gray-400">|</span>
+            <span className="text-gray-600 truncate max-w-[160px]">{clientName}</span>
+          </div>
+        );
+      };
+
       return (
         <div
           ref={anchorRef}
-          className="flex items-center justify-start text-[#0078c8] hover:text-[#0053c8] w-full h-full"
+          className="flex items-center w-full h-full text-[#0078c8] hover:text-[#0053c8]"
         >
+          {/* Client name – existing click behavior */}
           <span
             onClick={(e) => {
               if (e.ctrlKey || e.metaKey) {
@@ -96,10 +106,17 @@ export const clientNameColumn = ({
                 setCompanyName(companyName);
               }
             }}
-            className="cursor-pointer"
+            className="cursor-pointer shrink-0"
           >
             {highlightText(clientName, activeSearch)}
           </span>
+
+          {/* Empty space = copy area */}
+          <span
+            onClick={handleCopy}
+            className="flex-1 h-full min-w-[20px] cursor-pointer"
+            title="Click to copy client name"
+          />
 
           {showCompanyInfo && (
             <CompanyInfo

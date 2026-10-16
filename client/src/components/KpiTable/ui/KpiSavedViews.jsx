@@ -8,7 +8,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import AddIcon from "@mui/icons-material/Add";
 import toast from "react-hot-toast";
 
-const PAGE = "kpi_dashboard";
+const PAGE = "kpi_table";
 const MAX_QUICK = 4; // chips shown before collapsing into "+N"
 
 const getView = (f) => f.filters?.[0]?.value || {};

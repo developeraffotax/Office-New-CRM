@@ -138,7 +138,7 @@ export default function KpiTable({ dateRange, source, users }) {
 
   if (!hasUsers) {
     return (
-      <Paper variant="outlined" sx={{ py: 8, px: 3, textAlign: "center" }}>
+      <Paper variant="outlined" sx={{ py: 8, px: 3, textAlign: "center", }}>
         <PeopleAltOutlinedIcon
           sx={{ fontSize: 44, color: "text.disabled", mb: 1 }}
         />
@@ -175,7 +175,7 @@ export default function KpiTable({ dateRange, source, users }) {
       <TableContainer
         component={Paper}
         variant="outlined"
-        sx={{ maxHeight: "70vh" }}
+        sx={{ maxHeight: "80vh" }}
       >
         <Table stickyHeader size="small">
           <TableHead>

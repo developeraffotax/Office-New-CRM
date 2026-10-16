@@ -291,11 +291,13 @@ const handleApplyView = (v) => {
             <QuickFilterMenu
               activeLabel={activeLabel}
               onSelect={handleQuickFilterSelect}
+              showWeekly
             />
 
             <QuickRangeButtons
               activeLabel={activeLabel}
               onSelect={handleQuickFilterSelect}
+              showWeekly
             />
 
             {isFilterActive && (

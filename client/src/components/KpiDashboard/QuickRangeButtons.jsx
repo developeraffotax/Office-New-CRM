@@ -10,12 +10,21 @@ const QUICK_RANGES = [
   { code: "LY", label: "Last Year" },
 ];
 
-export default function QuickRangeButtons({ activeLabel, onSelect }) {
+// shown first in each half ("this" ones, then the "last" ones) when showWeekly is on
+const THIS_WEEK = { code: "W", label: "This Week" };
+const LAST_WEEK = { code: "LW", label: "Last Week" };
+
+// showWeekly: opt-in, so pages that don't pass it (e.g. the chart dashboard) look exactly as before
+export default function QuickRangeButtons({ activeLabel, onSelect, showWeekly = false }) {
   const ranges = getQuickDateRanges();
+
+  const buttons = showWeekly
+    ? [THIS_WEEK, ...QUICK_RANGES.slice(0, 3), LAST_WEEK, ...QUICK_RANGES.slice(3)]
+    : QUICK_RANGES;
 
   return (
     <ButtonGroup variant="outlined" size="small">
-      {QUICK_RANGES.map(({ code, label }) => {
+      {buttons.map(({ code, label }) => {
         const isActive = activeLabel === label;
         return (
           <Tooltip key={code} title={label} arrow>

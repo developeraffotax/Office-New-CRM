@@ -1,7 +1,9 @@
 import dayjs from "dayjs";
 import quarterOfYear from "dayjs/plugin/quarterOfYear";
+import isoWeek from "dayjs/plugin/isoWeek";
 
 dayjs.extend(quarterOfYear);
+dayjs.extend(isoWeek);
 
 // Single source of truth for every "quick" date range on the dashboard.
 // Computed fresh on each call so ranges stay correct across day/month/
@@ -11,8 +13,14 @@ export const getQuickDateRanges = () => {
   const lastMonth = now.subtract(1, "month");
   const lastQuarter = now.subtract(1, "quarter");
   const lastYear = now.subtract(1, "year");
+  const lastWeek = now.subtract(1, "week");
 
   return {
+    // Weeks run Monday -> Sunday (ISO weeks), matching the weekly views in getWonLeadData.
+    // (plain dayjs "week" would start on Sunday)
+    "This Week": [now.startOf("isoWeek"), now.endOf("isoWeek")],
+    "Last Week": [lastWeek.startOf("isoWeek"), lastWeek.endOf("isoWeek")],
+
     "This Month": [now.startOf("month"), now.endOf("month")],
     "Last Month": [lastMonth.startOf("month"), lastMonth.endOf("month")],
     "This Quarter": [now.startOf("quarter"), now.endOf("quarter")],

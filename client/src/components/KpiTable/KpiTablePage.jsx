@@ -68,8 +68,8 @@ export default function KpiTablePage() {
           <Stack direction="row" spacing={1.5} flexWrap="wrap" alignItems="center" useFlexGap>
             <KpiChartButton />
             <ManualRangePicker value={f.dateRange} onChange={f.setDateRange} />
-            <QuickFilterMenu activeLabel={f.activeLabel} onSelect={f.handleQuickFilterSelect} />
-            <QuickRangeButtons activeLabel={f.activeLabel} onSelect={f.handleQuickFilterSelect} />
+            <QuickFilterMenu activeLabel={f.activeLabel} onSelect={f.handleQuickFilterSelect} showWeekly/>
+            <QuickRangeButtons activeLabel={f.activeLabel} onSelect={f.handleQuickFilterSelect} showWeekly/>
 
             {f.isFilterActive && (
               <Button color="error" startIcon={<CancelIcon />} onClick={f.handleClearFilters}>

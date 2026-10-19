@@ -897,6 +897,38 @@ export const unLikeComment = async (req, res) => {
         success: true,
         message: "Comment unliked successfully!",
       });
+    } else if (type === "Lead") {
+      const lead = await leadModel.findById(jobId);
+      if (!lead) {
+        return res.status(400).send({
+          success: false,
+          message: "Lead not found!",
+        });
+      }
+      const comment = lead.comments.find((item) => item._id.equals(commentId));
+      if (!comment) {
+        return res.status(400).send({
+          success: false,
+          message: "Invalid comment id!",
+        });
+      }
+
+      if (!comment.likes.includes(req.user.id)) {
+        return res.status(400).send({
+          success: false,
+          message: "Post not liked yet!",
+        });
+      }
+
+      comment.likes = comment.likes.filter(
+        (id) => id.toString() !== req.user.id
+      );
+      await lead.save();
+
+      res.status(200).send({
+        success: true,
+        message: "Comment unliked successfully!",
+      });
     } else if (type === "Goals") {
       const goal = await goalModel.findById(jobId);
       if (!goal) {

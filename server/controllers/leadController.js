@@ -2583,3 +2583,84 @@ export const getAllLeads = async (req, res) => {
     return res.status(500).json({ message: "Failed to fetch leads" });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Get Single Lead Comments & mark user comments as read
+export const singleLeadComments = async (req, res) => {
+  try {
+    const leadId = req.params.id;
+    const requesting_userId = req.user.user._id;
+
+     
+    if (!leadId) {
+      return res.status(400).send({
+        success: false,
+        message: "Lead id is required!",
+      });
+    }
+
+    // ✅ Find lead and update comments status for current user's comments
+    const lead = await leadModel.findById(leadId).select("comments jobHolder");
+
+    if (!lead) {
+      return res.status(404).send({
+        success: false, 
+        message: "Lead not found!",
+      });
+    }
+ 
+ 
+    res.status(200).send({
+      success: true,
+      comments: lead,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in get single lead comments!",
+      error,
+    });
+  }
+};

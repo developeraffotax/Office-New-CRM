@@ -16,6 +16,7 @@ import {
   getSingleLead,
   getWonLeadData,
   getWonLeadStats,
+  singleLeadComments,
   updateBulkLeads,
   updateLead,
 } from "../controllers/leadController.js";
@@ -58,7 +59,8 @@ router.get("/get/all", getAllLeads);
 // Update Bulk Leads
 router.put("/update/bulk/leads", requiredSignIn, isAdmin, updateBulkLeads);
 
-
+// Get Single Task Comments
+router.get("/comments/:id", requiredSignIn, singleLeadComments);
 
 
 // Protected GET route to trigger the update manually

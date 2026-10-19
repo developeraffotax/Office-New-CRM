@@ -284,6 +284,15 @@ export default function JobCommentModal({
           //   note: "New Task Added",
           // });
         }
+      } else if (type === "Lead") {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/comments/${jobId}`
+        );
+        if (data) {
+          setIsLoading(false);
+          setCommentData(data?.comments?.comments);
+ 
+        }
       } else if (type === "Goals") {
         const { data } = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/v1/goals/get/comment/${jobId}`
@@ -358,6 +367,13 @@ export default function JobCommentModal({
       } else if (type === "Task") {
         const { data } = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/v1/tasks/task/comments/${jobId}`
+        );
+        if (data) {
+          setCommentData(data?.comments?.comments);
+        }
+      } else if (type === "Lead") {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/comments/${jobId}`
         );
         if (data) {
           setCommentData(data?.comments?.comments);

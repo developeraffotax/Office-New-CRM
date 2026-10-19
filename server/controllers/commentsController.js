@@ -2,6 +2,7 @@ import goalModel from "../models/goalModel.js";
 import jobsModel from "../models/jobsModel.js";
 import notificationModel from "../models/notificationModel.js";
 import taskModel from "../models/taskModel.js";
+import leadModel from "../models/leadModel.js";
 import ticketModel from "../models/ticketModel.js";
 import userModel from "../models/userModel.js";
 import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
@@ -174,6 +175,66 @@ export const createComment = async (req, res) => {
         success: true,
         message: "Comment Posted!",
         job: task,
+        notification: payload,
+      });
+    }  else if (type === "Lead") {
+      const lead = await leadModel.findById(jobId);
+      if (!lead) {
+        return res.status(400).send({
+          success: false,
+          message: "Lead not found!",
+        });
+      }
+
+     
+
+      const newComment = {
+        user: req.user.user,
+        comment: comment,
+        commentReplies: [],
+        senderId: senderId,
+        likes: [],
+      };
+
+      lead.comments.push(newComment);
+
+      await lead.save();
+
+      const leadJobHolder = lead.jobHolder;
+  
+
+      // Create Notification
+      const user = await userModel.findOne({ name: mentionUser ? mentionUser.trim() : leadJobHolder });
+
+      if (!user) {
+        //console.log("Task User: null");
+        return res.status(404).json({ error: "Lead Assignee not found" });
+      }
+ 
+
+
+      const payload ={
+        title: "New comment received!",
+        redirectLink:`/leads?leadId=${lead?._id.toString()}&tab=${lead?.status || "progress"}`,
+        description: `${req.user.user.name} add a new comment for Lead. ${comment}`,
+        taskId: jobId,
+        userId: user._id,
+        entityType: "lead",
+      }
+      
+        scheduleNotification(req.user?.user?.name !== user.name, payload);
+
+     
+
+      //  if (mentionUser && (user.name !== mentionUser?.trim())) {
+      //     await notifyMentionedUser(req, mentionUser, task, comment, jobId);
+      // }
+        
+
+      res.status(200).send({
+        success: true,
+        message: "Comment Posted!",
+        job: lead,
         notification: payload,
       });
     } else if (type === "Goals") {
@@ -417,6 +478,55 @@ export const commentReply = async (req, res) => {
         job: task,
         notification: payload,
       });
+    }  else if (type === "Lead") {
+      const lead = await leadModel.findById(jobId);
+      if (!lead) {
+        return res.status(400).send({
+          success: false,
+          message: "Lead not found!",
+        });
+      }
+      const comment = lead.comments.find((item) => item._id.equals(commentId));
+      if (!comment) {
+        return res.status(400).send({
+          success: false,
+          message: "Invalid comment id!",
+        });
+      }
+
+      // Replay
+      const newReply = {
+        user: req.user.user,
+        reply: commentReply,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      comment.commentReplies.push(newReply);
+      comment.status = "read";
+
+      await lead.save();
+
+ 
+
+      const payload = {
+        title: "New comment reply received!",
+        redirectLink:`/leads?leadId=${lead?._id.toString()}&tab=${lead?.status || "progress"}`,
+        description: `${req.user.user.name} add a new comment for Lead. ${comment}`,
+        taskId: jobId,
+        userId: comment.senderId,
+        entityType: "lead",
+      }
+
+        scheduleNotification(req.user?.user?.name !== comment.user.name, payload);
+
+
+      res.status(200).send({
+        success: true,
+        message: "Reply Posted!",
+        job: lead,
+        notification: payload,
+      });
     } else if (type === "Goals") {
       const goal = await goalModel.findById(jobId);
       if (!goal) {
@@ -607,6 +717,37 @@ export const likeComment = async (req, res) => {
       comment.likes.push(req.user.id);
       comment.status = "read";
       await task.save();
+
+      res.status(200).send({
+        success: true,
+        message: "Comment liked successfully!",
+      });
+    }  else if (type === "Lead") {
+      const lead = await leadModel.findById(jobId);
+      if (!lead) {
+        return res.status(400).send({
+          success: false,
+          message: "Lead not found!",
+        });
+      }
+      const comment = lead.comments.find((item) => item._id.equals(commentId));
+      if (!comment) {
+        return res.status(400).send({
+          success: false,
+          message: "Invalid comment id!",
+        });
+      }
+
+      if (comment.likes.includes(req.user.id)) {
+        return res.status(400).send({
+          success: false,
+          message: "Comment already liked!",
+        });
+      }
+
+      comment.likes.push(req.user.id);
+      comment.status = "read";
+      await lead.save();
 
       res.status(200).send({
         success: true,

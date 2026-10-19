@@ -40,6 +40,10 @@ export const getLeadColumns = (ctx) => {
     setEmailPopup,
     ticketMap,
     openEmailSidebar,
+
+          setCommentTaskId,
+      setCommentAnchorEl,
+      setIsComment,
   } = ctx;
 
   console.log("SELECTEDS TAB IS ", selectedTab);
@@ -2074,6 +2078,12 @@ export const getLeadColumns = (ctx) => {
           selectedTab={selectedTab}
           ticketMap={ticketMap}
           openEmailSidebar={openEmailSidebar}
+
+          setCommentTaskId={setCommentTaskId}
+      setCommentAnchorEl={setCommentAnchorEl}
+      setIsComment={setIsComment}
+
+      
         />
       ),
       size: 240,

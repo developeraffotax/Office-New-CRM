@@ -210,6 +210,19 @@ const handleNotificationClick = (e, item) => {
     return navigate(url);
   }
 
+
+  if (item.entityType === "lead") {
+    let url = `${item.redirectLink}`;
+
+    if (isNewTab) {
+      window.open(url, "_blank");
+      return;
+    }
+
+    setOpen(false);
+    return navigate(url);
+  }
+
   // Default behaviour
   const url = `${item.redirectLink}?comment_taskId=${item.taskId}`;
 

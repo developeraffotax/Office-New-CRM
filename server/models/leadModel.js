@@ -2,6 +2,30 @@ import mongoose from "mongoose";
 import { generateRef } from "../utils/generateRef.js";
  
 
+// Comment Schema
+const commentsSchema = new mongoose.Schema(
+  {
+    user: Object,
+    comment: String,
+    commentReplies: [Object],
+    senderId: { type: String },
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    status: {
+      type: String,
+      default: "unread",
+    },
+  },
+
+  { timestamps: true }
+);
+
+
+
 const leadSchema = new mongoose.Schema(
   {
     companyName: {
@@ -26,6 +50,11 @@ const leadSchema = new mongoose.Schema(
     brand: {
       type: String,
     },
+
+
+    comments: [commentsSchema],
+
+    
    
     leadCreatedAt: {
       type: Date,

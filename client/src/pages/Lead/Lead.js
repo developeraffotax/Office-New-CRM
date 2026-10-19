@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   MaterialReactTable,
@@ -49,6 +49,8 @@ import SelectedUsersNew from "../../components/SelectedUsersNew";
 import { usePersistedUsersNew } from "../../hooks/usePersistedUsersNew";
 import { getSavedColumnOrder, usePersistedColumnOrder } from "../../hooks/usePersistedColumnOrder";
 import { columnOrderingOptions, headCellHoverSx } from "../../utlis/columnOrdering";
+import AnchoredPopover from "../../components/AnchoredPopover";
+import JobCommentModal from "../Jobs/JobCommentModal";
 
 const updates_object_init = {
   companyName: "",
@@ -69,13 +71,32 @@ const updates_object_init = {
 };
 
 const COLUMN_ORDER_KEY = "leads:column_order";
+const VALID_TABS = ["progress", "won", "lost"];
 
 export default function Lead() {
-  const navigate = useNavigate();
+ 
 
-  const auth = useSelector((state) => state.auth.auth);
 
-  const [selectedTab, setSelectedTab] = useState("progress");
+const navigate = useNavigate();
+const [searchParams, setSearchParams] = useSearchParams();
+const leadIdParam = searchParams.get("leadId");
+const tabParam = searchParams.get("tab");
+
+const auth = useSelector((state) => state.auth.auth);
+
+const [selectedTab, setSelectedTab] = useState(
+  VALID_TABS.includes(tabParam) ? tabParam : "progress",
+);
+ 
+
+
+useEffect(() => {
+  if (VALID_TABS.includes(tabParam)) setSelectedTab(tabParam);
+}, [tabParam]);
+
+
+
+
   const [isLoading, setIsLoading] = useState(false);
 
   const [showUserLeadChart, setShowUserLeadChart] = useState(false);
@@ -95,6 +116,20 @@ export default function Lead() {
 
   // const [clientName, setClientName] = useState("");
   // const [companyName, setCompanyName] = useState("");
+
+
+    const [isComment, setIsComment] = useState(false);
+    const [commentAnchorEl, setCommentAnchorEl] = useState(null);
+  
+  const closeComment = () => {
+    setIsComment(false);
+    setCommentAnchorEl(null);
+  };
+    const [commentTaskId, setCommentTaskId] = useState("");
+
+
+
+
 
   const [newTicket, setNewTicket] = useState({
     open: false,
@@ -856,6 +891,10 @@ export default function Lead() {
         setEmailPopup,
         ticketMap,
         openEmailSidebar,
+
+      setCommentTaskId,
+      setCommentAnchorEl,
+      setIsComment,
       });
 
       return allColumns.filter((col) => columnVisibility[col.accessorKey]);
@@ -881,15 +920,30 @@ export default function Lead() {
   );
 
   // Clear table Filter
-  const handleClearFilters = () => {
-    table.setColumnFilters([]);
-    table.setGlobalFilter("");
-    setSelectFilter("");
-  };
+const handleClearFilters = () => {
+  table.setColumnFilters([]);
+  table.setGlobalFilter("");
+  setSelectFilter("");
+
+  if (searchParams.has("leadId") || searchParams.has("tab")) {
+    const next = new URLSearchParams(searchParams);
+    next.delete("leadId");
+    next.delete("tab");
+    setSearchParams(next, { replace: true });
+  }
+};
+
+
+  const tableData = useMemo(() => {
+  if (!leadIdParam) return leadData || [];
+  return (leadData || []).filter((lead) => lead._id === leadIdParam);
+}, [leadData, leadIdParam]);
+
+
 
   const table = useMaterialReactTable({
     columns,
-    data: leadData || [],
+    data: tableData,
 
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
@@ -1638,6 +1692,28 @@ export default function Lead() {
           setEmailPopup={setEmailPopup}
         />
       )}
+
+
+            {isComment && (
+        <AnchoredPopover open={isComment} anchorEl={commentAnchorEl} onClose={closeComment}>
+          {(maxHeight) => (
+            <JobCommentModal
+              setIsComment={setIsComment}
+              jobId={commentTaskId}
+              setJobId={setCommentTaskId}
+              users={userName}
+              type={"Lead"}
+              getTasks1={getAllLeads}
+ 
+              anchored
+              maxHeight={maxHeight}
+            />
+          )}
+        </AnchoredPopover>
+      )}
+
+
+
     </>
   );
 }

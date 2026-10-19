@@ -15,6 +15,7 @@ import { TbLoader2 } from "react-icons/tb";
 import toast from "react-hot-toast";
 import { getClientIdFromCompanyName } from "../../utlis/apiGetters/apiGetters";
 import { hasSubrole } from "../../utlis/checkPermission";
+import { MdInsertComment } from "react-icons/md";
 
 export const ActionsCell = ({
   auth,
@@ -27,7 +28,11 @@ export const ActionsCell = ({
   setClientName,
   setCompanyName,
   ticketMap,
-  openEmailSidebar
+  openEmailSidebar,
+
+  setCommentTaskId,
+      setCommentAnchorEl,
+      setIsComment,
 }) => {
   const [creatingTicket, setCreatingTicket] = useState(false);
 
@@ -103,6 +108,30 @@ export const ActionsCell = ({
           >
             <IoMailOutline className="w-[18px] h-[18px] " />
           </button>
+
+                    <span
+                      title="View Comments"
+                      className="flex items-center justify-center gap-1 relative w-full h-full"
+                     onClick={(e) => {
+              setCommentAnchorEl(e.currentTarget);
+              setCommentTaskId(row.original._id);
+              setIsComment(true);
+            }}
+                    >
+                      {" "}
+                      <div className="relative">
+                        {" "}
+                        <span className="text-[1rem] cursor-pointer relative">
+                          {" "}
+                          <MdInsertComment className="h-5 w-5 text-orange-600 " />{" "}
+                        </span>{" "}
+           
+                      </div>{" "}
+                    </span>
+
+
+
+
       <div>
         <span
           title="Create New Ticket"

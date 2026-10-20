@@ -13,6 +13,7 @@ import { getAuthUser } from "../utils/getAuthUser.js";
 import { hasPermission, isAdmin } from "../utils/checkPermission.js";
 import { maskEmail, maskPhone } from "../utils/mask.js";
 import { trackUserUsageByName } from "../services/user.service.js";
+import goalModel from "../models/goalModel.js";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
@@ -4379,3 +4380,643 @@ export const getUniqueClientJobsStats = async (req, res) => {
 
 
  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Raw monthly goal docs -> weekly totals: { "year-Wweek": { [goalType]: amount } }
+export async function getWeeklyGoalTotals(goalMatch) {
+  const goals = await goalModel
+    .find(goalMatch)
+    .select("achievement startDate goalType")
+    .lean();
+
+
+    
+    const totals = {};
+    goals.forEach((goal) => {
+      console.log(distributeMonthlyGoalAcrossWeeks(goal))
+      distributeMonthlyGoalAcrossWeeks(goal).forEach(
+        ({ periodKey, goalType, amount }) => {
+          totals[periodKey] ??= {};
+          totals[periodKey][goalType] = (totals[periodKey][goalType] || 0) + amount;
+        },
+      );
+    });
+    
+    console.log("totals >>>" , totals)
+  return totals;
+}
+
+
+
+
+
+function buildLabels(view, startDate, endDate, tz = "+05:00") {
+  const labels = [];
+  const periodKeys = {};
+  const dayMeta = []; // daily only: used to spread monthly goals across days
+
+  if (view === "daily") {
+    
+    const start = moment.utc(startDate).utcOffset(tz).startOf("day");
+    const end = moment.utc(endDate).utcOffset(tz).endOf("day");
+    const spansYears = start.year() !== end.year();
+    const current = start.clone();
+
+    while (current.isSameOrBefore(end)) {
+      const key = current.format("YYYY-MM-DD");
+      periodKeys[key] = labels.length;
+      labels.push(current.format(spansYears ? "D MMM YYYY" : "D MMM"));
+      dayMeta.push({ monthKey: current.format("YYYY-MM"), daysInMonth: current.daysInMonth() });
+      current.add(1, "day");
+    }
+  } else if (view === "weekly") {
+    const start = startDate ? moment(startDate) : moment().startOf("month");
+    const end = endDate ? moment(endDate) : moment().endOf("month");
+    let current = start.clone().startOf("isoWeek");
+
+    while (current.isSameOrBefore(end)) {
+      const weekYear = current.isoWeekYear();
+      const weekNum = current.isoWeek();
+      const key = `${weekYear}-W${weekNum}`;
+      if (!(key in periodKeys)) {
+        periodKeys[key] = labels.length;
+        labels.push(getWeekRangeLabel(weekYear, weekNum));
+      }
+      current.add(1, "week");
+    }
+  } else {
+    const start = startDate ? moment(startDate).startOf("month") : moment().startOf("year");
+    const end = endDate ? moment(endDate).endOf("month") : moment().endOf("year");
+    let current = start.clone();
+
+    while (current.isSameOrBefore(end)) {
+      const key = `${current.year()}-${current.month() + 1}`;
+      if (!(key in periodKeys)) {
+        periodKeys[key] = labels.length;
+        labels.push(current.format("MMM YYYY"));
+      }
+      current.add(1, "month");
+    }
+  }
+
+  return { labels, periodKeys, dayMeta };
+}
+
+
+
+async function resolveUsers(requestedUsers) {
+  const allTeamLeads = await userModel
+    .find({ isTeamLead: true })
+    .select("name isTeamLead juniors")
+    .populate("juniors", "name")
+    .lean();
+
+  const resolved = await Promise.all(
+    requestedUsers.map(async (name) => {
+      if (name === "All") {
+        const teamLeadNames = allTeamLeads.map((u) => u.name);
+        const juniorNames = allTeamLeads
+          .flatMap((u) => u.juniors || [])
+          .map((j) => j.name);
+
+        return [
+          {
+            label: "All",
+            jobHolderNames: [...teamLeadNames, ...juniorNames],
+            goalJobHolderIds: allTeamLeads.map((u) => u._id),
+            goalTypeSuffix: " (Team Lead)",
+          },
+        ];
+      }
+
+      const fetchedUser = await userModel
+        .findOne({ name })
+        .select("name juniors isTeamLead")
+        .populate("juniors", "name")
+        .lean();
+
+      if (!fetchedUser) return [];
+
+      const juniorNames = fetchedUser.juniors?.map((j) => j.name) || [];
+
+      // If user is a Team Lead, return BOTH team combined and individual series configs
+      if (fetchedUser.isTeamLead) {
+        return [
+          {
+            label: `${fetchedUser.name} & Team`,
+            jobHolderNames: [fetchedUser.name, ...juniorNames],
+            goalJobHolderIds: [fetchedUser._id],
+            goalTypeSuffix: " (Team Lead)",
+          },
+          {
+            label: `${fetchedUser.name} `,
+            jobHolderNames: [fetchedUser.name],
+            goalJobHolderIds: [fetchedUser._id],
+            goalTypeSuffix: "",
+          },
+        ];
+      }
+
+      // Standard user (Junior / Individual)
+      return [
+        {
+          label: fetchedUser.name,
+          jobHolderNames: [fetchedUser.name],
+          goalJobHolderIds: [fetchedUser._id],
+          goalTypeSuffix: "",
+        },
+      ];
+    })
+  );
+
+  return resolved.flat();
+}
+
+
+function parseRequestedUsers(query) {
+  let requested = query.users ?? query.user ?? "All";
+
+  if (typeof requested === "string") {
+    requested = requested
+      .split(",")
+      .map((u) => u.trim())
+      .filter(Boolean);
+  }
+  if (!Array.isArray(requested)) requested = [requested];
+  if (requested.length === 0) requested = ["All"];
+
+  return requested;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const VALID_VIEWS = ["daily", "weekly", "monthly"];
+//const MAX_DAILY_RANGE_DAYS = 366;
+//const DATE_FIELDS = { created: "leadCreatedAt", won: "wonAt" };
+
+
+
+
+
+const JOB_METRICS = {
+  prepared: { nameField: "prepared", stampField: "preparedAt", goalName: "Target Jobs Prepared" },
+  reviewed: { nameField: "review",   stampField: "reviewedAt", goalName: "Target Jobs Reviewed" },
+  filed:    { nameField: "filed",    stampField: "filedAt",    goalName: "Target Jobs Filed" },
+};
+
+// which date puts a job into a chart period
+const JOB_DATE_BASES = {
+  workDeadline: () => "job.workDeadline",
+  jobDeadline:  () => "job.jobDeadline",
+  yearEnd:      () => "job.yearEnd",
+  updated:      () => "updatedAt",
+  event:        (m) => m.stampField,
+};
+
+// names in prepared/review/filed are matched against the same
+// team-lead + juniors name list used for leads
+const jobsPipeline = (ru, nameField, dateField, dateRange) => [
+  {
+    $match: {
+      [nameField]: { $in: ru.jobHolderNames },
+      [dateField]: dateRange,
+      // optionally: isActive: true,
+    },
+  },
+];
+
+
+
+// Same range rules as getWonLeadData (weekly snaps to whole ISO weeks)
+function buildJobDateRange(view, startDate, endDate, tz) {
+  if (!startDate || !endDate) return { $ne: null };
+  if (view === "weekly") {
+    return {
+      $gte: localTz(startDate, tz).startOf("isoWeek").toDate(),
+      $lte: localTz(endDate, tz).endOf("isoWeek").toDate(),
+    };
+  }
+  return { $gte: new Date(startDate), $lte: new Date(endDate) };
+}
+
+// Goal targets aligned to the chart labels (same logic as the lead goals)
+async function getJobGoalTargets({ ru, countType, view, startDate, endDate, tz, labels, periodKeys, dayMeta }) {
+  const targets = new Array(labels.length).fill(0);
+
+  const goalMatch = {
+    goalType: { $in: [countType] },
+    jobHolder: { $in: ru.goalJobHolderIds },
+  };
+
+  if (startDate && endDate) {
+    if (view === "daily") {
+      goalMatch.startDate = {
+        $gte: localTz(startDate, tz).startOf("month").toDate(),
+        $lte: localTz(endDate, tz).endOf("month").toDate(),
+      };
+    } else if (view === "weekly") {
+      goalMatch.startDate = {
+        $gte: localTz(startDate, tz).startOf("isoWeek").startOf("month").toDate(),
+        $lte: localTz(endDate, tz).endOf("isoWeek").endOf("month").toDate(),
+      };
+    } else {
+      goalMatch.startDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
+    }
+  }
+
+  if (view === "daily") {
+    const goalsAgg = await goalModel.aggregate([
+      { $match: goalMatch },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$startDate", timezone: tz } },
+          total: { $sum: { $ifNull: ["$achievement", 0] } },
+        },
+      },
+    ]);
+    const monthly = Object.fromEntries(goalsAgg.map((g) => [g._id, g.total]));
+    dayMeta.forEach(({ monthKey, daysInMonth }, idx) => {
+      if (monthly[monthKey]) targets[idx] = round2(monthly[monthKey] / daysInMonth);
+    });
+  } else if (view === "weekly") {
+    const weeklyTotals = await getWeeklyGoalTotals(goalMatch);
+    Object.entries(weeklyTotals).forEach(([periodKey, byType]) => {
+      const idx = periodKeys[periodKey];
+      if (idx !== undefined && byType[countType]) targets[idx] = byType[countType];
+    });
+  } else {
+    const goalsAgg = await goalModel.aggregate([
+      { $match: goalMatch },
+      {
+        $group: {
+          _id: { year: { $year: "$startDate" }, month: { $month: "$startDate" } },
+          total: { $sum: { $ifNull: ["$achievement", 0] } },
+        },
+      },
+    ]);
+    goalsAgg.forEach((g) => {
+      const idx = periodKeys[`${g._id.year}-${g._id.month}`];
+      if (idx !== undefined) targets[idx] = g.total;
+    });
+  }
+
+  return targets;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getJobsChartData = async (req, res) => {
+  try {
+    const {
+      startDate, endDate, view = "monthly", tz = "+05:00",
+      metric = "prepared", dateBasis = "workDeadline",
+    } = req.query;
+
+    if (!Object.hasOwn(JOB_METRICS, metric)) {
+      return res.status(400).json({ error: `metric must be one of ${Object.keys(JOB_METRICS).join(", ")}` });
+    }
+    if (!Object.hasOwn(JOB_DATE_BASES, dateBasis)) {
+      return res.status(400).json({ error: `dateBasis must be one of ${Object.keys(JOB_DATE_BASES).join(", ")}` });
+    }
+    if (!VALID_VIEWS.includes(view)) {
+      return res.status(400).json({ error: `view must be one of ${VALID_VIEWS.join(", ")}` });
+    }
+    if (!/^[+-]\d{2}:\d{2}$/.test(tz)) {
+      return res.status(400).json({ error: "tz must look like +05:00" });
+    }
+    if (view === "daily") {
+      if (!startDate || !endDate) {
+        return res.status(400).json({ error: "startDate and endDate are required for daily view" });
+      }
+      const days = moment(endDate).diff(moment(startDate), "days") + 1;
+      if (days > MAX_DAILY_RANGE_DAYS) {
+        return res.status(400).json({ error: `Daily view supports at most ${MAX_DAILY_RANGE_DAYS} days` });
+      }
+    }
+
+    const meta = JOB_METRICS[metric];
+    const { nameField, goalName } = meta;
+    const dateField = JOB_DATE_BASES[dateBasis](meta);
+    const dateRef = `$${dateField}`;
+
+    const resolvedUsers = await resolveUsers(parseRequestedUsers(req.query));
+    const { labels, periodKeys, dayMeta } = buildLabels(view, startDate, endDate, tz);
+
+    const withTz = (op) => ({ [op]: { date: dateRef, timezone: tz } });
+
+    const groupId =
+      view === "daily"
+        ? { day: { $dateToString: { format: "%Y-%m-%d", date: dateRef, timezone: tz } } }
+        : view === "weekly"
+          ? { year: withTz("$isoWeekYear"), week: withTz("$isoWeek") }
+          : { year: withTz("$year"), month: withTz("$month") };
+
+    const periodKeyOf = (id) =>
+      view === "daily" ? id.day
+      : view === "weekly" ? `${id.year}-W${id.week}`
+      : `${id.year}-${id.month}`;
+
+    const dateRange = buildJobDateRange(view, startDate, endDate, tz);
+
+    const series = await Promise.all(
+      resolvedUsers.map(async (ru) => {
+        const countType = `${goalName}${ru.goalTypeSuffix}`;
+
+        const [jobsAgg, targetCounts] = await Promise.all([
+          jobsModel.aggregate([
+            ...jobsPipeline(ru, nameField, dateField, dateRange),
+            { $group: { _id: groupId, count: { $sum: 1 } } },
+          ]),
+          getJobGoalTargets({ ru, countType, view, startDate, endDate, tz, labels, periodKeys, dayMeta }),
+        ]);
+
+        const counts = new Array(labels.length).fill(0);
+        jobsAgg.forEach((item) => {
+          const idx = periodKeys[periodKeyOf(item._id)];
+          if (idx !== undefined) counts[idx] = item.count;
+        });
+
+        return { user: ru.label, counts, targetCounts };
+      }),
+    );
+
+    return res.json({ view, metric, dateBasis, labels, series });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getJobsChartStats = async (req, res) => {
+  try {
+    const { startDate, endDate, dateBasis = "workDeadline" } = req.query;
+
+    if (!Object.hasOwn(JOB_DATE_BASES, dateBasis)) {
+      return res.status(400).json({ error: `dateBasis must be one of ${Object.keys(JOB_DATE_BASES).join(", ")}` });
+    }
+
+    const resolvedUsers = await resolveUsers(parseRequestedUsers(req.query));
+    const hasRange = startDate && endDate;
+    const dateRange = hasRange
+      ? { $gte: new Date(startDate), $lte: new Date(endDate) }
+      : { $ne: null };
+
+    const stats = await Promise.all(
+      resolvedUsers.map(async (ru) => {
+        const entries = await Promise.all(
+          Object.entries(JOB_METRICS).map(async ([key, meta]) => {
+            const dateField = JOB_DATE_BASES[dateBasis](meta);
+            const countType = `${meta.goalName}${ru.goalTypeSuffix}`;
+
+            const goalFilters = {
+              goalType: { $in: [countType] },
+              jobHolder: { $in: ru.goalJobHolderIds },
+            };
+            if (hasRange) {
+              goalFilters.startDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
+            }
+
+            const [jobsAgg, goalsAgg] = await Promise.all([
+              jobsModel.aggregate([
+                ...jobsPipeline(ru, meta.nameField, dateField, dateRange),
+                { $count: "total" },
+              ]),
+              goalModel.aggregate([
+                { $match: goalFilters },
+                { $group: { _id: null, total: { $sum: { $ifNull: ["$achievement", 0] } } } },
+              ]),
+            ]);
+
+            return [key, { total: jobsAgg[0]?.total || 0, target: goalsAgg[0]?.total || 0 }];
+          }),
+        );
+
+        return { user: ru.label, ...Object.fromEntries(entries) };
+      }),
+    );
+
+    return res.json({ dateBasis, stats });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server Error" });
+  }
+};

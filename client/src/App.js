@@ -74,6 +74,7 @@ import GooglesheetViewer from "./components/GoogleSheet/GoogleSheetViewer";
 import ManageGooglesheets from "./components/GoogleSheet/ManageGoogleSheets ";
 import { fetchMySheets } from "./redux/slices/googleSheetSlice";
 import KpiTablePage from "./components/KpiTable/KpiTablePage";
+import UserJobsChart from "./pages/Jobs/jobsChart/UserJobsChart";
  
  
  
@@ -236,6 +237,9 @@ function App() {
             <Route path="/timesheet/attendance-chart" element={<EmployeeInOutChart  />} />
 
             <Route path="/leads-targets" element={<UserLeadChart />} />
+
+            <Route path="/jobs-targets" element={<UserJobsChart />} />
+
             <Route path="/google-sheets/manage" element={<ManageGooglesheets />} />
             <Route path="/google-sheets/:sheetId" element={<GooglesheetViewer />} />
 

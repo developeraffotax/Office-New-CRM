@@ -21,6 +21,8 @@ import {
   getClientWithJobs,
   getDashboardClients,
   getInactiveClientJobs,
+  getJobsChartData,
+  getJobsChartStats,
   getJobsStats,
  
   getTicketClients,
@@ -194,6 +196,28 @@ router.post("/jobActivity/:jobId", requiredSignIn, addJobActivity);
 
 //  /api/v1/client/search?companyName=example
 router.get("/search",requiredSignIn, getClientId);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+router.get("/userchart/jobs",       getJobsChartData);   // ?metric=prepared|reviewed|filed
+router.get("/userchart/jobs/stats", getJobsChartStats);  // all three metrics per user
+
+
+
 
 
 export default router;

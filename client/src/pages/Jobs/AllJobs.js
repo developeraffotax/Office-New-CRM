@@ -1491,9 +1491,10 @@ const handleExportData = async () => {
     return {
       auth,
       users,
+      usersData,
       access,
     };
-  }, [auth, users, access]);
+  }, [auth, users, usersData, access]);
 
   // ----------------------------
   // 💬 Comment Context

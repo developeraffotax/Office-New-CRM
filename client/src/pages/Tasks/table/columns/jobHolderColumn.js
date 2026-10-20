@@ -3,7 +3,7 @@ import UserSelect from "../../../../components/UserSelect";
 // Hoisted so the array identity is stable across renders.
 const EMPTY_OPTION = [{ value: "empty", label: "Empty" }];
 
-export const jobHolderColumn2 = (ctx) => {
+export const jobHolderColumn = (ctx) => {
   return {
     accessorKey: "jobHolder",
     header: "Assign",
@@ -98,7 +98,7 @@ export const jobHolderColumn2 = (ctx) => {
 
 
 
-export const jobHolderColumn = (ctx) => {
+export const jobHolderColumn2 = (ctx) => {
   return {
     accessorKey: "jobHolder",
     header: "Assign",

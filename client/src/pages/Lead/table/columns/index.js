@@ -9,6 +9,12 @@ import createWonByColumn from "./wonByColumn";
 import createWonAtColumn from "./wonAtColumn";
 import createLostAtColumn from "./lostAtColumn";
 import createLostByColumn from "./lostByColumn";
+import UserSelect from "../../../../components/UserSelect";
+
+// Put this OUTSIDE the component so the array identity is stable.
+const EMPTY_OPTION = [{ value: "empty", label: "Empty" }];
+
+
 export const getLeadColumns = (ctx) => {
   const {
     setSelectFilter,
@@ -335,9 +341,127 @@ export const getLeadColumns = (ctx) => {
       filterVariant: "select",
     },
 
-    {
+    // {
+    //   accessorKey: "jobHolder",
+    //   header: "Job Holder",
+    //   Header: ({ column }) => {
+    //     const user = auth?.user?.name;
+
+    //     useEffect(() => {
+    //       column.setFilterValue(user);
+    //     }, []);
+
+    //     return (
+    //       <div className=" flex flex-col gap-[2px]">
+    //         <span
+    //           className="ml-1 cursor-pointer"
+    //           title="Clear Filter"
+    //           onClick={() => {
+    //             column.setFilterValue("");
+    //             setSelectFilter("");
+    //           }}
+    //         >
+    //           Job Holder
+    //         </span>
+    //         <select
+    //           value={column.getFilterValue() || ""}
+    //           onChange={(e) => {
+    //             column.setFilterValue(e.target.value);
+    //             setSelectFilter(e.target.value);
+    //           }}
+    //           className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+    //         >
+    //           <option value="">Select</option>
+    //           {users?.map((jobhold, i) => (
+    //             <option key={i} value={jobhold?.name}>
+    //               {jobhold?.name}
+    //             </option>
+    //           ))}
+    //           <option value="empty">Empty</option>
+    //         </select>
+    //       </div>
+    //     );
+    //   },
+    //   Cell: ({ row }) => {
+    //     const jobholder = row.original.jobHolder;
+    //     const [localJobholder, setLocalJobholder] = useState(jobholder || "");
+    //     const [show, setShow] = useState(false);
+
+    //     const handleChange = (e) => {
+    //       const selectedValue = e.target.value;
+    //       setLocalJobholder(selectedValue);
+
+    //       setFormData((prevData) => ({
+    //         ...prevData,
+    //         jobHolder: localJobholder,
+    //       }));
+
+    //       handleUpdateData(row.original._id, {
+    //         jobHolder: selectedValue,
+    //       });
+    //       setShow(false);
+    //     };
+
+    //     return (
+    //       <div className="w-full">
+    //         {show ? (
+    //           <select
+    //             value={localJobholder || ""}
+    //             className="w-full h-[2rem] rounded-md border-none  outline-none"
+    //             onChange={handleChange}
+    //           >
+    //             <option value="empty"></option>
+    //             {users?.map((jobHold, i) => (
+    //               <option value={jobHold?.name} key={i}>
+    //                 {jobHold.name}
+    //               </option>
+    //             ))}
+    //           </select>
+    //         ) : (
+    //           <div
+    //             className="w-full cursor-pointer"
+    //             onDoubleClick={() => setShow(true)}
+    //           >
+    //             {jobholder ? (
+    //               <span>{jobholder}</span>
+    //             ) : (
+    //               <span className="text-white">.</span>
+    //             )}
+    //           </div>
+    //         )}
+    //       </div>
+    //     );
+    //   },
+    //   filterFn: (row, columnId, filterValue) => {
+    //     const cellValue = row.getValue(columnId);
+    //     if (filterValue === "empty") {
+    //       return !cellValue || cellValue === "empty";
+    //     }
+    //     return String(cellValue ?? "") === String(filterValue);
+    //   },
+    //   filterSelectOptions: users.map((jobhold) => jobhold.name),
+    //   filterVariant: "select",
+    //   size: 110,
+    //   minSize: 80,
+    //   maxSize: 130,
+    //   grow: false,
+    // },
+
+
+
+        {
       accessorKey: "jobHolder",
       header: "Job Holder",
+
+      // Let the header content stretch to the full cell width.
+      muiTableHeadCellProps: {
+        sx: {
+          "& .Mui-TableHeadCell-Content, & .Mui-TableHeadCell-Content-Labels, & .Mui-TableHeadCell-Content-Wrapper": {
+            width: "100%",
+          },
+        },
+      },
+
       Header: ({ column }) => {
         const user = auth?.user?.name;
 
@@ -346,7 +470,7 @@ export const getLeadColumns = (ctx) => {
         }, []);
 
         return (
-          <div className=" flex flex-col gap-[2px]">
+          <div className="flex flex-col gap-[2px] w-full min-w-0">
             <span
               className="ml-1 cursor-pointer"
               title="Clear Filter"
@@ -357,75 +481,58 @@ export const getLeadColumns = (ctx) => {
             >
               Job Holder
             </span>
-            <select
-              value={column.getFilterValue() || ""}
-              onChange={(e) => {
-                column.setFilterValue(e.target.value);
-                setSelectFilter(e.target.value);
+
+            <UserSelect
+              users={users}
+              value={column.getFilterValue() ?? ""}
+              onChange={(name) => {
+                column.setFilterValue(name || undefined);
+                setSelectFilter(name || "");
               }}
-              className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-            >
-              <option value="">Select</option>
-              {users?.map((jobhold, i) => (
-                <option key={i} value={jobhold?.name}>
-                  {jobhold?.name}
-                </option>
-              ))}
-              <option value="empty">Empty</option>
-            </select>
+              noneLabel="Select"
+              placeholder="Select"
+              extraOptions={EMPTY_OPTION}
+              variant="outlined"
+              height={28}
+              menuMaxHeight={500}
+              
+              avatarSize={18}
+            />
           </div>
         );
       },
+
       Cell: ({ row }) => {
         const jobholder = row.original.jobHolder;
-        const [localJobholder, setLocalJobholder] = useState(jobholder || "");
-        const [show, setShow] = useState(false);
-
-        const handleChange = (e) => {
-          const selectedValue = e.target.value;
-          setLocalJobholder(selectedValue);
-
-          setFormData((prevData) => ({
-            ...prevData,
-            jobHolder: localJobholder,
-          }));
-
-          handleUpdateData(row.original._id, {
-            jobHolder: selectedValue,
-          });
-          setShow(false);
-        };
 
         return (
-          <div className="w-full">
-            {show ? (
-              <select
-                value={localJobholder || ""}
-                className="w-full h-[2rem] rounded-md border-none  outline-none"
-                onChange={handleChange}
-              >
-                <option value="empty"></option>
-                {users?.map((jobHold, i) => (
-                  <option value={jobHold?.name} key={i}>
-                    {jobHold.name}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <div
-                className="w-full cursor-pointer"
-                onDoubleClick={() => setShow(true)}
-              >
-                {jobholder ? (
-                  <span>{jobholder}</span>
-                ) : (
-                  <span className="text-white">.</span>
-                )}
-              </div>
-            )}
-          </div>
+          <UserSelect
+            users={users}
+            // "empty" is the old blank-option value; treat it as unassigned
+            value={!jobholder || jobholder === "empty" ? "" : jobholder}
+            onChange={(name) => {
+              const selectedValue = name || "empty"; // same value the old blank <option> sent
+
+              setFormData((prevData) => ({
+                ...prevData,
+                jobHolder: selectedValue,
+              }));
+
+              handleUpdateData(row.original._id, {
+                jobHolder: selectedValue,
+              });
+            }}
+            noneLabel="Unassigned"
+            placeholder=""
+            variant="ghost"
+            height={32}
+            menuMaxHeight={500}
+            menuMinWidth={150}
+            searchable={false}
+          />
         );
       },
+
       filterFn: (row, columnId, filterValue) => {
         const cellValue = row.getValue(columnId);
         if (filterValue === "empty") {

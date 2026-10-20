@@ -44,6 +44,7 @@ export const assignColumn = ({
           variant="outlined"
           height={28}
           avatarSize={18}
+          menuMaxHeight={500}
         />
       </div>
     ),
@@ -65,6 +66,7 @@ export const assignColumn = ({
           variant="ghost"
           height={32}
           menuMaxHeight={500}
+          menuMinWidth={150}
           searchable={false}
         />
       );

@@ -216,7 +216,7 @@ export default function UserSelect({
   variant = "outlined",
   height = 32,
   avatarSize = 20,
-  menuMinWidth = 200,
+  menuMinWidth = 150,
   menuMaxHeight = 280,
   fullWidth = true,
   disabled = false,

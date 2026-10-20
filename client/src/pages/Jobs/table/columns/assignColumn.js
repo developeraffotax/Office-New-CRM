@@ -66,7 +66,7 @@ export const assignColumn = ({
           variant="ghost"
           height={32}
           menuMaxHeight={500}
-          menuMinWidth={150}
+ 
           searchable={false}
         />
       );

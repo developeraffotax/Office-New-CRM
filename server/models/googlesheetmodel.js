@@ -10,6 +10,7 @@ const googleSheetSchema = new mongoose.Schema(
     // Inactive sheets are hidden from users (admins still see them)
     isActive: { type: Boolean, default: true },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Users" },
+        order: { type: Number, default: 0 },
   },
   { timestamps: true },
 );

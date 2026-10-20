@@ -9,7 +9,9 @@ import {
   getAssignableUsers,
   getMySheets,
   getSheet,
+  reorderSheets,
 } from "../controllers/googleSheetController.js";
+ 
 
 const router = express.Router();
 
@@ -20,6 +22,8 @@ router.get("/mine", requiredSignIn, getMySheets);
 router.get("/assignable-users", requiredSignIn, isAdmin, getAssignableUsers);
 router.get("/", requiredSignIn, isAdmin, getAllSheets);
 router.post("/", requiredSignIn, isAdmin, createSheet);
+
+router.put("/reorder", requiredSignIn, isAdmin, reorderSheets); // above "/:id"
 
 // Access is checked inside the service (assigned user or admin)
 router.get("/:id", requiredSignIn, getSheet);

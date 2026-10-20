@@ -41,6 +41,17 @@ export const getAssignableUsers = handle(async (req, res) => {
   res.send({ success: true, users });
 });
 
+
+export const reorderSheets = handle(async (req, res) => {
+
+    console.log("REORDER BODY:", req.body);
+  console.log("REORDER IDS:", req.body?.ids);
+
+  
+  await sheetService.reorderSheets(req.body.ids);
+  res.send({ success: true, message: "Order updated" });
+});
+
 /* ---------------- any signed-in user ---------------- */
 
 export const getMySheets = handle(async (req, res) => {

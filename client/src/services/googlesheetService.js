@@ -12,3 +12,5 @@ export const getAssignableUsersApi = () => axios.get(`${BASE}/assignable-users`)
 export const createSheetApi = (payload) => axios.post(BASE, payload);
 export const updateSheetApi = (id, payload) => axios.put(`${BASE}/${id}`, payload);
 export const deleteSheetApi = (id) => axios.delete(`${BASE}/${id}`);
+
+export const reorderSheetsApi = (ids) => axios.put(`${BASE}/reorder`, { ids });

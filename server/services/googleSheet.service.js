@@ -43,17 +43,27 @@ const cleanUserIds = (ids = []) =>
     mongoose.isValidObjectId(id),
   );
 
+
+
+  const cleanObjectIds = (ids = []) => cleanUserIds(ids); // same dedupe + validity check
+
+
 /* ---------------- admin ---------------- */
 
 export const createSheet = async (payload, createdBy) => {
   const { name, embedUrl, users, isActive } = payload;
   if (!name?.trim()) throw httpError(400, "Sheet name is required");
 
+  // new sheets go to the end
+  const last = await GoogleSheet.findOne().sort({ order: -1 }).select("order").lean();
+  const order = (last?.order ?? -1) + 1;
+
   const sheet = await GoogleSheet.create({
     name: name.trim(),
     embedUrl: normalizeEmbedUrl(embedUrl),
     users: cleanUserIds(users),
     isActive: isActive !== false,
+    order,
     createdBy,
   });
   return sheet.populate("users", "name email");
@@ -88,7 +98,7 @@ export const deleteSheet = async (id) => {
 export const listAllSheets = () =>
   GoogleSheet.find()
     .populate("users", "name email")
-    .sort({ name: 1 })
+    .sort({ order: 1, createdAt: 1 })
     .lean();
 
 export const listAssignableUsers = () =>
@@ -99,7 +109,10 @@ export const listAssignableUsers = () =>
 // Sidebar list: admins get every sheet, users only the active ones assigned to them.
 export const listSheetsForUser = (userId, isAdmin) => {
   const filter = isAdmin ? {} : { users: userId, isActive: true };
-  return GoogleSheet.find(filter).select("name isActive").sort({ name: 1 }).lean();
+  return GoogleSheet.find(filter)
+    .select("name isActive")
+    .sort({ order: 1, createdAt: 1 })
+    .lean();
 };
 
 export const getSheetForUser = async (id, userId, isAdmin) => {
@@ -115,4 +128,20 @@ export const getSheetForUser = async (id, userId, isAdmin) => {
     }
   }
   return { _id: sheet._id, name: sheet.name, embedUrl: sheet.embedUrl };
+};
+
+
+
+
+
+
+export const reorderSheets = async (ids) => {
+  const clean = cleanObjectIds(ids);
+  if (!clean.length) throw httpError(400, "No sheet ids provided");
+
+  await GoogleSheet.bulkWrite(
+    clean.map((id, index) => ({
+      updateOne: { filter: { _id: id }, update: { $set: { order: index } } },
+    })),
+  );
 };

@@ -12,7 +12,6 @@ import {
   applyStatusTransition,
   buildBucketKeysAndLabels,
   dateFormatMap,
-  getWeeklyGoalTotals,
   logLeadUpdate,
   resolveGroupBy,
 } from "./leadController.utils.js";
@@ -21,6 +20,7 @@ import {
   snapshotEntities,
 } from "../services/activityLog/bulkActivityService.js";
 import { getAllLeadsService } from "../services/lead/leadService.js";
+import { buildLabels, getWeeklyGoalTotals, parseRequestedUsers, resolveUsers } from "./shared.utils.js";
  
 
 // Create Lead
@@ -2066,67 +2066,6 @@ const getWeekRangeLabel = (year, week) => {
 
 
 
-
-/**
- * Builds the full label list (weekly or monthly) for the requested range,
- * plus a lookup map from "period key" -> label index. This is now the single
- * source of truth for aligning every user's series onto the same x-axis,
- * replacing the old string-based label matching (which was fragile).
- */
-
-
-function buildLabels(view, startDate, endDate, tz = "+05:00") {
-  const labels = [];
-  const periodKeys = {};
-  const dayMeta = []; // daily only: used to spread monthly goals across days
-
-  if (view === "daily") {
-    
-    const start = moment.utc(startDate).utcOffset(tz).startOf("day");
-    const end = moment.utc(endDate).utcOffset(tz).endOf("day");
-    const spansYears = start.year() !== end.year();
-    const current = start.clone();
-
-    while (current.isSameOrBefore(end)) {
-      const key = current.format("YYYY-MM-DD");
-      periodKeys[key] = labels.length;
-      labels.push(current.format(spansYears ? "D MMM YYYY" : "D MMM"));
-      dayMeta.push({ monthKey: current.format("YYYY-MM"), daysInMonth: current.daysInMonth() });
-      current.add(1, "day");
-    }
-  } else if (view === "weekly") {
-    const start = startDate ? moment(startDate) : moment().startOf("month");
-    const end = endDate ? moment(endDate) : moment().endOf("month");
-    let current = start.clone().startOf("isoWeek");
-
-    while (current.isSameOrBefore(end)) {
-      const weekYear = current.isoWeekYear();
-      const weekNum = current.isoWeek();
-      const key = `${weekYear}-W${weekNum}`;
-      if (!(key in periodKeys)) {
-        periodKeys[key] = labels.length;
-        labels.push(getWeekRangeLabel(weekYear, weekNum));
-      }
-      current.add(1, "week");
-    }
-  } else {
-    const start = startDate ? moment(startDate).startOf("month") : moment().startOf("year");
-    const end = endDate ? moment(endDate).endOf("month") : moment().endOf("year");
-    let current = start.clone();
-
-    while (current.isSameOrBefore(end)) {
-      const key = `${current.year()}-${current.month() + 1}`;
-      if (!(key in periodKeys)) {
-        periodKeys[key] = labels.length;
-        labels.push(current.format("MMM YYYY"));
-      }
-      current.add(1, "month");
-    }
-  }
-
-  return { labels, periodKeys, dayMeta };
-}
-
 const VALID_VIEWS = ["daily", "weekly", "monthly"];
 const MAX_DAILY_RANGE_DAYS = 366;
 const DATE_FIELDS = { created: "leadCreatedAt", won: "wonAt" };
@@ -2337,90 +2276,7 @@ if (startDate && endDate) {
   }
 };
 
-async function resolveUsers(requestedUsers) {
-  const allTeamLeads = await userModel
-    .find({ isTeamLead: true })
-    .select("name isTeamLead juniors")
-    .populate("juniors", "name")
-    .lean();
-
-  const resolved = await Promise.all(
-    requestedUsers.map(async (name) => {
-      if (name === "All") {
-        const teamLeadNames = allTeamLeads.map((u) => u.name);
-        const juniorNames = allTeamLeads
-          .flatMap((u) => u.juniors || [])
-          .map((j) => j.name);
-
-        return [
-          {
-            label: "All",
-            jobHolderNames: [...teamLeadNames, ...juniorNames],
-            goalJobHolderIds: allTeamLeads.map((u) => u._id),
-            goalTypeSuffix: " (Team Lead)",
-          },
-        ];
-      }
-
-      const fetchedUser = await userModel
-        .findOne({ name })
-        .select("name juniors isTeamLead")
-        .populate("juniors", "name")
-        .lean();
-
-      if (!fetchedUser) return [];
-
-      const juniorNames = fetchedUser.juniors?.map((j) => j.name) || [];
-
-      // If user is a Team Lead, return BOTH team combined and individual series configs
-      if (fetchedUser.isTeamLead) {
-        return [
-          {
-            label: `${fetchedUser.name} & Team`,
-            jobHolderNames: [fetchedUser.name, ...juniorNames],
-            goalJobHolderIds: [fetchedUser._id],
-            goalTypeSuffix: " (Team Lead)",
-          },
-          {
-            label: `${fetchedUser.name} `,
-            jobHolderNames: [fetchedUser.name],
-            goalJobHolderIds: [fetchedUser._id],
-            goalTypeSuffix: "",
-          },
-        ];
-      }
-
-      // Standard user (Junior / Individual)
-      return [
-        {
-          label: fetchedUser.name,
-          jobHolderNames: [fetchedUser.name],
-          goalJobHolderIds: [fetchedUser._id],
-          goalTypeSuffix: "",
-        },
-      ];
-    })
-  );
-
-  return resolved.flat();
-}
-
-
-function parseRequestedUsers(query) {
-  let requested = query.users ?? query.user ?? "All";
-
-  if (typeof requested === "string") {
-    requested = requested
-      .split(",")
-      .map((u) => u.trim())
-      .filter(Boolean);
-  }
-  if (!Array.isArray(requested)) requested = [requested];
-  if (requested.length === 0) requested = ["All"];
-
-  return requested;
-}
-
+ 
 
 
 

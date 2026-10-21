@@ -111,10 +111,14 @@ export async function getJobGoalTargets({
 }) {
   const targets = new Array(labels.length).fill(0);
 
+
+
   const goalMatch = {
     goalType: { $in: [countType] },
     jobHolder: { $in: ru.goalJobHolderIds },
   };
+
+  // console.log(goalMatch)
 
   if (startDate && endDate) {
     if (view === "daily") {

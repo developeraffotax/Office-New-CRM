@@ -4638,6 +4638,14 @@ export const getJobsChartData = async (req, res) => {
       }),
     );
 
+
+    // console.log("Resolved Users:", resolvedUsers);
+    // console.log("Labels:", labels);
+    // console.log("Period Keys:", periodKeys);
+    // console.log("Day Meta:", dayMeta);
+    // console.log("Series Data:", series);
+    // console.log("Date Basis:", dateBasis);
+
     return res.json({ view, metric, dateBasis, labels, series });
   } catch (error) {
     console.error(error);

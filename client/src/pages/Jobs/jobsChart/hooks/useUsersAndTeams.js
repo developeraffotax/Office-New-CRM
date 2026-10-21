@@ -3,7 +3,7 @@ import axios from "axios";
 
 const API = process.env.REACT_APP_API_URL;
 
-// Loads the active users (with Leads permission) and all teams, and builds a
+// Loads the active users (with Jobs permission) and all teams, and builds a
 // normalized name -> team name lookup for the legend.
 export default function useUsersAndTeams() {
   const [users, setUsers] = useState([]);
@@ -16,7 +16,7 @@ export default function useUsersAndTeams() {
         setUsers(
           data?.users?.filter((user) =>
             user.role?.access?.some((item) =>
-              item?.permission.includes("Leads"),
+              item?.permission.includes("Jobs"),
             ),
           ) || [],
         );

@@ -102,6 +102,12 @@ export default function Goals() {
     goalType: "",
     jobHolder: "",
   });
+
+
+
+  
+ 
+
   const goalTypes = [
     "Target Lead Count (Team Lead)",
     "Target Lead Value (Team Lead)",
@@ -121,9 +127,12 @@ export default function Goals() {
     "Lead Won Manual",
     "Affotax Clicks",
     "Affotax Impressions",
-    "Job Prepared",
-    "Job Review",
-    "Job Filed",
+    "Jobs Prepared (Team Lead)",
+    "Jobs Review (Team Lead)",
+    "Jobs Filed (Team Lead)",
+    "Jobs Prepared",
+    "Jobs Review",
+    "Jobs Filed",
     "Chargeable Time %",
     "Manual Goal",
   ];

@@ -4527,10 +4527,53 @@ export const getUniqueClientJobsStats = async (req, res) => {
 
 
 
+const round2 = (n) => Math.round(n * 100) / 100;
+const localTz = (d, tz) => moment.utc(d).utcOffset(tz);
 
 
 
 
+
+function distributeMonthlyGoalAcrossWeeks(goal) {
+  const monthStart = moment(goal.startDate).startOf("month");
+  const monthEnd = moment(goal.startDate).endOf("month");
+  const totalDays = monthEnd.diff(monthStart, "days") + 1;
+
+  const dayCountByWeek = {};
+  const cursor = monthStart.clone();
+  for (let i = 0; i < totalDays; i++) {
+    const key = `${cursor.isoWeekYear()}-W${cursor.isoWeek()}`;
+    dayCountByWeek[key] = (dayCountByWeek[key] || 0) + 1;
+    cursor.add(1, "day");
+  }
+
+  const achievement = Number(goal.achievement) || 0;
+  const isCount = /count/i.test(goal.goalType);
+  const entries = Object.entries(dayCountByWeek);
+  const raw = entries.map(([, days]) => (achievement * days) / totalDays);
+
+  let amounts;
+  if (isCount) {
+    // whole leads per week, still summing exactly to the monthly target
+    amounts = raw.map(Math.floor);
+    let remaining = Math.round(achievement) - amounts.reduce((a, b) => a + b, 0);
+    raw
+      .map((r, i) => ({ i, frac: r - Math.floor(r) }))
+      .sort((a, b) => b.frac - a.frac)
+      .forEach(({ i }) => {
+        if (remaining-- > 0) amounts[i] += 1;
+      });
+  } else {
+    // values: just round to 2 decimals
+    amounts = raw.map((r) => Math.round(r * 100) / 100);
+  }
+
+  return entries.map(([periodKey], i) => ({
+    periodKey,
+    goalType: goal.goalType,
+    amount: amounts[i],
+  }));
+}
 
 
 // Raw monthly goal docs -> weekly totals: { "year-Wweek": { [goalType]: amount } }
@@ -4556,6 +4599,14 @@ export async function getWeeklyGoalTotals(goalMatch) {
     console.log("totals >>>" , totals)
   return totals;
 }
+
+
+
+const getWeekRangeLabel = (year, week) => {
+  const monday = moment().isoWeekYear(year).isoWeek(week).startOf("isoWeek");
+  const sunday = moment(monday).endOf("isoWeek");
+  return `${monday.format("MMM D")} – ${sunday.format("MMM D")}`;
+};
 
 
 
@@ -4717,19 +4768,18 @@ function parseRequestedUsers(query) {
 
 
 
-
 const VALID_VIEWS = ["daily", "weekly", "monthly"];
-//const MAX_DAILY_RANGE_DAYS = 366;
-//const DATE_FIELDS = { created: "leadCreatedAt", won: "wonAt" };
+ const MAX_DAILY_RANGE_DAYS = 366;
+ 
 
 
 
 
 
 const JOB_METRICS = {
-  prepared: { nameField: "prepared", stampField: "preparedAt", goalName: "Target Jobs Prepared" },
-  reviewed: { nameField: "review",   stampField: "reviewedAt", goalName: "Target Jobs Reviewed" },
-  filed:    { nameField: "filed",    stampField: "filedAt",    goalName: "Target Jobs Filed" },
+  prepared: { nameField: "prepared", stampField: "preparedAt", goalName: "Jobs Prepared" },
+  reviewed: { nameField: "review",   stampField: "reviewedAt", goalName: "Jobs Reviewed" },
+  filed:    { nameField: "filed",    stampField: "filedAt",    goalName: "Jobs Filed" },
 };
 
 // which date puts a job into a chart period
@@ -4893,6 +4943,7 @@ export const getJobsChartData = async (req, res) => {
     const { labels, periodKeys, dayMeta } = buildLabels(view, startDate, endDate, tz);
 
     const withTz = (op) => ({ [op]: { date: dateRef, timezone: tz } });
+    
 
     const groupId =
       view === "daily"

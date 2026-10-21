@@ -19,8 +19,8 @@ export const JOB_METRIC_LABELS = {
 
 // Add { value: "event", ... } once preparedAt / reviewedAt / filedAt are stamped on the backend
 export const JOB_DATE_BASIS_OPTIONS = [
-  { value: "workDeadline", label: "Work Deadline", hint: "Jobs are grouped by their work deadline" },
-  { value: "jobDeadline", label: "Job Deadline", hint: "Jobs are grouped by their job deadline" },
+  { value: "workDeadline", label: "Job Date", hint: "Jobs are grouped by their job date" },
+  { value: "jobDeadline", label: "Deadline", hint: "Jobs are grouped by their deadline" },
   { value: "yearEnd", label: "Year End", hint: "Jobs are grouped by their year end" },
   { value: "updated", label: "Last Updated", hint: "Jobs are grouped by when the client record was last updated (approximate)" },
 ];

@@ -79,6 +79,7 @@ import AnchoredPopover from "../../components/AnchoredPopover";
 import { getSavedColumnOrder, usePersistedColumnOrder } from "../../hooks/usePersistedColumnOrder";
 import { columnOrderingOptions, headCellHoverSx } from "../../utlis/columnOrdering";
 import DraggableDepartmentTabs from "./DraggableDepartmentTabs";
+import JobsChartBtn from "./JobsChartBtn";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -2225,6 +2226,7 @@ const handleExportData = async () => {
           </div>
 
           <div className="flex items-center gap-4">
+            <JobsChartBtn />
             <JobHeaderActions
               auth={auth}
               style={style}

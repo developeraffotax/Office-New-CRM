@@ -131,7 +131,7 @@ export default function ChartHeader({
         </ToggleButtonGroup>
 
         {/* Date basis */}
-        <Tooltip arrow title={dateHint}>
+ 
           <Stack direction="row" spacing={0.75} alignItems="center">
             <Typography
               variant="caption"
@@ -152,7 +152,7 @@ export default function ChartHeader({
               ))}
             </Select>
           </Stack>
-        </Tooltip>
+  
       </Stack>
     </Stack>
   );

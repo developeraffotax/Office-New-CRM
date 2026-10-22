@@ -11,7 +11,7 @@ import AssignCategory from "../shared/ui/AssignCategory.js";
 import { useSelector } from "react-redux";
 import LeadButton from "../shared/ui/LeadButton.jsx";
 import TicketButton from "../shared/ui/TicketButton.jsx";
-import { useMailModalActions } from "../context/MailModalsContext.js";
+// import { useMailModalActions } from "../context/MailModalsContext.js";
 import RefBadge from "../shared/ui/RefBadge.js";
 
 export default function ThreadHeader({
@@ -81,11 +81,23 @@ export default function ThreadHeader({
               </>
             )}
 
-            {assignedUserName && (
+            {/* {assignedUserName && (
               <span className="font-medium text-slate-800">
                 {assignedUserName}
               </span>
-            )}
+            )} */}
+
+            <AssignUser
+              users={users}
+              mongoThreadId={mongoThreadId}
+              currentUserId={userId}
+              handleUpdateThread={handleUpdateThread}
+              showLabel
+              align="left"
+            />
+
+
+
           </div>
         </div>
       </header>

@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 import dayjs from "dayjs";
 import { DATE_FILTER_OPTIONS } from "../constants"; // adjust path
 
-const PAGE = "targets_dashboard";
+const PAGE = "jobs_targets_dashboard";
 const MAX_QUICK = 4;
 
 const getView = (f) => f.filters?.[0]?.value || {};
@@ -67,7 +67,7 @@ export default function SavedViews({ snapshot, onApply, savedFiltersHook }) {
     if (!name.trim()) return toast.error("Enter a view name");
     setSaving(true);
     try {
-      await saveFilter(name.trim(), PAGE, [{ id: "targetsView", value: snapshot }]);
+      await saveFilter(name.trim(), PAGE, [{ id: "jobsTargetsView", value: snapshot }]);
       toast.success("View saved");
       setName("");
     } catch (err) {

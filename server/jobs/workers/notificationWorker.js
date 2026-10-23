@@ -150,7 +150,7 @@ const processNotificationJob = async (job) => {
       const { threadId, senderEmail, subject, companyName, _id } = payload;
 
 
-      const recipientIds = await getRecipientIds("quote");
+      const recipientIds = await getRecipientIds({name: "New Quote", channel: "email"});
 
       const now = new Date();
 
@@ -233,7 +233,7 @@ const processNotificationJob = async (job) => {
 
  
 
-           const recipientIds = await getRecipientIds("whatsapp_lead");
+           const recipientIds = await getRecipientIds({name: "New Lead", channel: "whatsapp"});
 
 
  

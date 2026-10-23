@@ -1,5 +1,5 @@
 import UserSettings from "./UserSettings";
-import AssignmentRules from "./AssignmentRules";
+import AutomationRules from "./AutomationRules";
 
 export default function SettingsPage() {
   return (
@@ -15,7 +15,7 @@ export default function SettingsPage() {
              Settings
             </h1>
             <p className="text-sm text-gray-500">
-              Manage preferences, notifications, and assignment rules.
+              Manage preferences, notifications, and automation rules.
             </p>
           </div>
         </div>
@@ -26,8 +26,8 @@ export default function SettingsPage() {
           <UserSettings />
         </div>
 
-        <div className="w-full flex-1 max-w-4xl bg-white p-8 rounded-sm  border border-gray-100 shadow-lg">
-          <AssignmentRules />
+        <div className="w-full flex-1 max-w-6xl bg-white p-8 rounded-sm  border border-gray-100 shadow-lg">
+          <AutomationRules />
         </div>
       </div>
     </div>

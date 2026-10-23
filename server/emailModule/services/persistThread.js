@@ -1,8 +1,15 @@
 // services/persistThread.js
 import { getAssignedUsers } from "../../utils/getAssignedUsers.js";
 import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
+import { resolveAutomation } from "../../utils/ruleEngine.js";
 import EmailThread from "../models/EmailThread.js";
-import { getHeader, parseEmail, parseEmailList, extractAttachments, addParticipant } from "../utils/utils.js";
+import {
+  getHeader,
+  parseEmail,
+  parseEmailList,
+  extractAttachments,
+  addParticipant,
+} from "../utils/utils.js";
 import { getGmailClient } from "./gmail.service.js";
 import { decode } from "entities";
 
@@ -13,7 +20,7 @@ export async function persistThread({ threadId, companyName, type }) {
       userId: "me",
       id: threadId,
       format: "full",
-      metadataHeaders: ["From", "To", "Subject", "Date"]
+      metadataHeaders: ["From", "To", "Subject", "Date"],
     });
 
     const messages = res.data.messages || [];
@@ -21,12 +28,12 @@ export async function persistThread({ threadId, companyName, type }) {
 
     const participantsMap = new Map();
     let inboxLastMessageAt = null;
- 
+
     let sentLastMessageAt = null;
- 
+
     let lastMessageBy = "client";
     let lastMessageAt = null;
-   let lastMessageSnippet = "";
+    let lastMessageSnippet = "";
 
     let unreadCount = 0;
     let attachments = [];
@@ -42,7 +49,7 @@ export async function persistThread({ threadId, companyName, type }) {
       const isSent = msg.labelIds.includes("SENT");
 
       // Track all labels
-      msg.labelIds.forEach(l => labels.add(l));
+      msg.labelIds.forEach((l) => labels.add(l));
 
       // Participants
       // if (from.email) participantsMap.set(from.email, from);
@@ -50,31 +57,27 @@ export async function persistThread({ threadId, companyName, type }) {
 
       addParticipant(participantsMap, from);
 
-      toList.forEach(t => {
+      toList.forEach((t) => {
         addParticipant(participantsMap, t);
       });
 
-
-            if (!lastMessageAt || date > lastMessageAt) {
+      if (!lastMessageAt || date > lastMessageAt) {
         lastMessageAt = date;
         lastMessageSnippet = msg.snippet ? decode(msg.snippet) : "";
-              
-         // Determine sender
-  if (isSent) {
-    lastMessageBy = "me";
-  } else {
-    lastMessageBy = "client";
-  }
-          
-      }
 
+        // Determine sender
+        if (isSent) {
+          lastMessageBy = "me";
+        } else {
+          lastMessageBy = "client";
+        }
+      }
 
       // ---------------- Folder-based last message logic ----------------
       if (isInbox) {
         // Only consider messages from others for Inbox
         if (!inboxLastMessageAt || date > inboxLastMessageAt) {
           inboxLastMessageAt = date;
-          
         }
         if (isUnread) unreadCount++;
       }
@@ -83,7 +86,6 @@ export async function persistThread({ threadId, companyName, type }) {
         // Only consider messages from self for Sent
         if (!sentLastMessageAt || date > sentLastMessageAt) {
           sentLastMessageAt = date;
-          
         }
       }
 
@@ -95,17 +97,42 @@ export async function persistThread({ threadId, companyName, type }) {
     const subject = getHeader(messages[0].payload.headers, "Subject");
     const labelArray = Array.from(labels);
 
+    // ---------------- Auto-assign user only for new threads ----------------
+    // let autoAssignedUserId;
+
+    // if (type === "quote") {
+    //   const automaticAssignedUsers = await getAssignedUsers("quote");
+    //   autoAssignedUserId = automaticAssignedUsers?.[0];
+    // }
 
 
-     // ---------------- Auto-assign user only for new threads ----------------
-    let autoAssignedUserId;
 
-    if (type === "quote") {
-      const automaticAssignedUsers = await getAssignedUsers("quote");
-      autoAssignedUserId = automaticAssignedUsers?.[0];
+        // ---------------- Rules: only for brand-new inbound threads ----------------
+    const onInsert = {};
+    const isNewThread = !(await EmailThread.exists({ companyName, threadId }));
+
+    // quote emails are self-sent, so don't rely on the INBOX label alone
+    if (isNewThread && (messages[0].labelIds?.includes("INBOX"))) {
+      const firstHeaders = messages[0].payload.headers;
+      const firstFrom = parseEmail(getHeader(firstHeaders, "From"));
+
+      const result = await resolveAutomation("email", {
+        type: type || "",
+        companyName,
+        from: firstFrom.email,
+        fromName: firstFrom.name,
+        to: parseEmailList(getHeader(firstHeaders, "To")).map((t) => t.email).join(", "),
+        subject,
+        snippet: messages[0].snippet ? decode(messages[0].snippet) : "",
+        hasAttachments: attachments.length > 0,
+      });
+
+      if (result.userId) onInsert.userId = result.userId;
+      if (result.category) onInsert.category = result.category;
     }
 
 
+    
 
     // ---------------- Upsert thread ----------------
     const threadDoc = await EmailThread.findOneAndUpdate(
@@ -127,165 +154,26 @@ export async function persistThread({ threadId, companyName, type }) {
         lastMessageAt: lastMessageAt,
         lastMessageSnippet: lastMessageSnippet,
 
-        lastMessageBy: lastMessageBy,   // ✅ NEW
-        ...(autoAssignedUserId && { $setOnInsert: { userId: autoAssignedUserId } }),
+        lastMessageBy: lastMessageBy, // ✅ NEW
+        // ...(autoAssignedUserId && {
+        //   $setOnInsert: { userId: autoAssignedUserId },
+        // }),
+
+         ...(Object.keys(onInsert).length ? { $setOnInsert: onInsert } : {}),
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { upsert: true, new: true, setDefaultsOnInsert: true },
     );
 
     // ---------------- Emit socket update ----------------
     const io = await getSocketEmitter();
     io.emit(`gmail:thread-delta-${companyName}`, {
       action: "updated",
-      thread: threadDoc.toObject()
+      thread: threadDoc.toObject(),
     });
-
   } catch (error) {
-    console.error(`Failed to persist thread ${threadId} for ${companyName}:`, error);
+    console.error(
+      `Failed to persist thread ${threadId} for ${companyName}:`,
+      error,
+    );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // services/persistThread.js
-// import { connectDB } from "../../config/db.js";
-// import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
-// import EmailThread from "../models/EmailThread.js";
- 
-// import {
-//   getHeader,
-//   parseEmail,
-//   parseEmailList,
-//   extractAttachments
-// } from "../utils/utils.js";
-// import { getGmailClient } from "./gmail.service.js";
-// import { decode } from "entities";
-
-
-
-
-// export async function persistThread({ threadId, companyName }) {
-//   try {
-
-//     // Use provided Gmail client or create a new one
-//     const gmail = (await getGmailClient(companyName));
-
-//     const res = await gmail.users.threads.get({
-//       userId: "me",
-//       id: threadId,
-//       format: "full",
-//       metadataHeaders: ["From", "To", "Subject", "Date"]
-//     });
-
-//     const messages = res.data.messages || [];
-//     if (!messages.length) return; // Nothing to persist
-
-//     // Initialize thread data
-//     const participantsMap = new Map(); // key = email, value = { name, email }
-//     let lastMessageAt = null;
-//     let lastMessageSnippet = "";
-//     let unreadCount = 0;
-//     let hasInboxMessage = false;
-//     let hasSentMessage = false;
-//     let attachments = [];
-
-//     for (const msg of messages) {
-//       const headers = msg.payload.headers;
-
-//       const from = parseEmail(getHeader(headers, "From")); // { name, email }
-//       const toList = parseEmailList(getHeader(headers, "To")); // [{ name, email }, ...]
-
-//       const date = new Date(Number(msg.internalDate));
-//       const isUnread = msg.labelIds.includes("UNREAD");
-//       const isInbox = msg.labelIds.includes("INBOX");
-//       const isSent = msg.labelIds.includes("SENT");
-      
-
-//       // Add participants to map (avoids duplicates automatically)
-//       if (from.email) participantsMap.set(from.email, from);
-//       for (const to of toList) {
-//         if (to.email) participantsMap.set(to.email, to);
-//       }
-
-//       // Track last message
-//       if (!lastMessageAt || date > lastMessageAt) {
-//         lastMessageAt = date;
-//         lastMessageSnippet = msg.snippet ? decode(msg.snippet) : "";
-          
-          
-//       }
-
-//       // Track inbox/unread
-//       if (isInbox) {
-//         hasInboxMessage = true;
-//         if (isUnread) unreadCount++;
-//       }
-
-//             // Track inbox/unread
-//       if (isSent) {
-//         hasSentMessage = true;
-//         // if (isUnread) unreadCount++;  
-        
-//       }
-
-      
-
-//       // Extract attachments
-//       const msgAttachments = extractAttachments(msg.payload);
-//       if (msgAttachments.length) attachments.push(...msgAttachments);
-//     }
-
-//     // Convert participants map to array for MongoDB
-//     const participants = Array.from(participantsMap.values());
-
-//     // Subject: use first message's subject
-//     const subject = getHeader(messages[0].payload.headers, "Subject");
-
-//     // Upsert thread in DB
-//     const threadDoc = await EmailThread.updateOne(
-//       { companyName, threadId },
-//       {
-//         companyName,
-//         threadId,
-//         subject,
-//         participants,
-//         lastMessageAt,
-//         lastMessageSnippet,
-//         messageCount: messages.length,
-//         unreadCount,
-//         hasInboxMessage,
-//         hasSentMessage,
-//         attachments
-//       },
-//       { upsert: true }
-//     );
-
-//    const io = await getSocketEmitter();
-
-//     // Emit the full thread for the client to upsert
-//     io.emit("gmail:thread-updated", {
-//       thread: threadDoc
-//     });
-
-//     // gpt emit or boradcast socket event here so i can update all the users realtime
-       
-//     console.log("EMAIL THREAD CREATED❤✔")
-
-//   } catch (error) {
-//     console.error(`Failed to persist thread ${threadId} for ${companyName}:`, error);
-//   }
-// }
-

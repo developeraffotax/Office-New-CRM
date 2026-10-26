@@ -21,8 +21,8 @@ const defaultGetImage = (u) =>
 // ---------- static icons (plain SVG: much cheaper than MUI icons x every table row) ----------
 const CHEVRON = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
-    style={{ flexShrink: 0, opacity: 0.6 }}>
-    <path d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z" />
+    style={{ flexShrink: 0, opacity: 0.8 }}>
+    <path d="M5.5 8 12 14.5 18.5 8 20 9.5 12 17.5 4 9.5z" />
   </svg>
 );
 const CHECK = (
@@ -36,7 +36,7 @@ const Trigger = styled("button")(({ theme }) => ({
   display: "flex",
   alignItems: "center",
   gap: 6,
-  padding: "0 6px",
+  padding: "0 0px",
   minWidth: 0,
   boxSizing: "border-box",
   font: "inherit",
@@ -450,6 +450,7 @@ export default function UserSelect({
           openMenu(e.currentTarget);
         }}
         onKeyDown={onTriggerKeyDown}
+        
         style={{ height, width: fullWidth ? "100%" : "auto" }}
         sx={sx}
       >

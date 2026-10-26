@@ -245,6 +245,26 @@ export default function Row({
                 {thread?.messageCount}
               </span>
             )}
+
+            {/* Search Button */}
+            <button
+              className="p-1 rounded-md text-slate-500/50  hover:bg-blue-100/70 hover:text-blue-600 transition-all duration-150 group"
+              title="Search with Email"
+              onClick={(e) => {
+                setFilters({
+                  search: getOtherParticipantEmail(
+                    thread.participants,
+                    myEmail,
+                  ),
+                  userId: "",
+                  page: 1,
+                });
+              }}
+            >
+              <MdOutlineSearch className="size-4 group-hover:scale-105 transition-transform" />
+            </button>
+
+
           </div>
 
           {/* Sub-labels: Assigned & Category */}
@@ -403,23 +423,7 @@ export default function Row({
 
           {/* More Options */}
           <div className="inline-flex items-center gap-1  ">
-            {/* Search Button */}
-            <button
-              className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-blue-100/70 hover:text-blue-600 transition-all duration-150 group"
-              title="Search with Email"
-              onClick={(e) => {
-                setFilters({
-                  search: getOtherParticipantEmail(
-                    thread.participants,
-                    myEmail,
-                  ),
-                  userId: "",
-                  page: 1,
-                });
-              }}
-            >
-              <MdOutlineSearch className="size-4 group-hover:scale-105 transition-transform" />
-            </button>
+
 
             {/* Reminder Button */}
             <button

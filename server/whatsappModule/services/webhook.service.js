@@ -315,7 +315,7 @@ export const processMessageEcho = async (echo, metadata) => {
 let autoAssignedUserId;
 
 if (!existingConversation) {
-  const automaticAssignedUsers = await getAssignedUsers("whatsapp_lead");
+  const automaticAssignedUsers = await getAssignedUsers({name: "New Lead", channel: "whatsapp"});
   autoAssignedUserId = automaticAssignedUsers?.[0]; // pick first (round_robin/random already return 1)
 }
 

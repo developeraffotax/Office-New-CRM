@@ -713,7 +713,7 @@ export default function HR() {
         id: "department",
         minSize: 100,
         maxSize: 200,
-        size: 170,
+        size: 120,
         grow: false,
         Header: ({ column, table }) => {
           return (
@@ -790,7 +790,7 @@ export default function HR() {
         id: "product",
         minSize: 100,
         maxSize: 200,
-        size: 170,
+        size: 100,
         grow: false,
         Header: ({ column, table }) => {
           const selectedDept = table.getColumn("department")?.getFilterValue();
@@ -939,8 +939,8 @@ export default function HR() {
             row.original[columnId]?.toString().toLowerCase() || "";
           return cellValue.includes(filterValue.toLowerCase());
         },
-        size: 180,
-        minSize: 120,
+        // size: 180,
+        minSize: 100,
         maxSize: 200,
         grow: false,
       },
@@ -1117,7 +1117,7 @@ export default function HR() {
 
           return (
             <div className="flex items-center justify-center gap-2 w-full h-full">
-              <span
+              {/* <span
                 className=""
                 title="Copy URL"
                 onClick={() => {
@@ -1125,7 +1125,7 @@ export default function HR() {
                 }}
               >
                 <LuLink className="h-6 w-6 cursor-pointer text-amber-500 hover:text-amber-600" />
-              </span>
+              </span> */}
 
               <span
                 className=""

@@ -944,9 +944,9 @@ export default function HR() {
             row.original[columnId]?.toString().toLowerCase() || "";
           return cellValue.includes(filterValue.toLowerCase());
         },
-        // size: 180,
+         size: 250,
         minSize: 100,
-        maxSize: 200,
+        maxSize: 400,
         grow: false,
       },
       {
@@ -980,7 +980,7 @@ export default function HR() {
 
           return (
             <div className="w-full h-full ">
-              <div className="w-full h-full flex items-center justify-between ">
+              <div className="w-full h-full flex items-center justify-between  ">
                 {/* <div
                   onClick={() => {
                     setShowDescription(true);
@@ -997,11 +997,11 @@ export default function HR() {
                     target="_blank"
                     className="px-1   text-[14px] text-blue-600 "
                   >
-                    {title.length > 65 ? `${title.slice(0, 65)}...` : title}
+                    {title.length > 60 ? `${title.slice(0, 60)}...` : title}
                   </Link>
                 ) : (
                   <div className="px-1   text-[14px] text-blue-600 cursor-pointer">
-                    {title.length > 65 ? `${title.slice(0, 65)}...` : title}
+                    {title.length > 60 ? `${title.slice(0, 60)}...` : title}
                   </div>
                 )}
 
@@ -1180,7 +1180,7 @@ export default function HR() {
                 </span>
               )}
 
-              <span>
+              {/* <span>
                 {docLink ? (
                   <a
                     href={docLink}
@@ -1200,11 +1200,11 @@ export default function HR() {
                     <FaGoogleDrive className="h-5 w-5" />
                   </span>
                 )}
-              </span>
+              </span> */}
             </div>
           );
         },
-        size: (isAdmin(auth?.user) || hasSubrole(auth?.user, "HR", "Edit") || hasSubrole(auth?.user, "HR", "Delete")) ? 150 : 100,
+        size: (isAdmin(auth?.user) || hasSubrole(auth?.user, "HR", "Edit") || hasSubrole(auth?.user, "HR", "Delete")) ? 120 : 80,
       },
     ],
     // eslint-disable-next-line

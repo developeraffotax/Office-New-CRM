@@ -59,7 +59,7 @@ export default function AIReplySelector({ threadId, onSelect, companyName }) {
     setSelectedIndex(null);
     setReplies([]); // We clear to start fresh suggestions
 
-    const options = [1, 2, 3, 4];
+    const options = [1, 2, 3, ];
     let completedCount = 0;
 
     options.forEach(async (option) => {
@@ -198,34 +198,52 @@ export default function AIReplySelector({ threadId, onSelect, companyName }) {
         <div className="flex-1 overflow-y-auto bg-slate-50/30 p-3">
           <div className="space-y-3">
             {/* Real Replies */}
-            {replies.map((r, i) => (
+         {replies.map((r, i) => {
+            const isSelected = selectedIndex === i;
+            return (
               <div
                 key={i}
                 onClick={() => {
                   setSelectedIndex(i);
                   onSelect(r.content);
                 }}
-                className={`group relative p-4 rounded-lg cursor-pointer transition-all border-2 animate-pop shadow-md shadow-black/50${
-                  selectedIndex === i ? "bg-white border-orange-500 shadow-md" : "bg-white   hover:border-slate-200"
+                className={`group relative p-3 rounded-lg cursor-pointer transition-all border animate-pop shadow-sm ${
+                  isSelected
+                    ? "bg-orange-50/40 border-orange-500 ring-1 ring-orange-500/20 shadow-orange-500/5"
+                    : "bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-md"
                 }`}
               >
-                {selectedIndex === i && (
-                  <div className="absolute top-2 right-2 flex items-center gap-1 bg-orange-100 text-orange-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    <HiCheckCircle className="w-3 h-3" /> Selected
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                      isSelected ? "bg-orange-100 text-orange-700" : "bg-slate-100 text-slate-500"
+                    }`}>
+                      Option {i + 1}
+                    </span>
+                    {isSelected && (
+                      <span className="flex items-center gap-1 text-orange-600 text-[10px] font-semibold">
+                        <HiCheckCircle className="w-3 h-3" /> Selected
+                      </span>
+                    )}
                   </div>
-                )}
-                <div className="flex justify-between mb-1">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase">Option {i + 1}</span>
-                  <button onClick={(e) => copyToClipboard(e, r.content)} className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-orange-500">
-                    <HiOutlineDocumentDuplicate className="w-4 h-4" />
+                  <button
+                    onClick={(e) => copyToClipboard(e, r.content)}
+                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-orange-600 rounded transition-colors"
+                    title="Copy to clipboard"
+                  >
+                    <HiOutlineDocumentDuplicate className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <div className="text-sm text-slate-700 line-clamp-6" dangerouslySetInnerHTML={{ __html: r.content }} />
+                
+                <div 
+                  className="text-xs text-slate-700 line-clamp-3 leading-relaxed" 
+                  dangerouslySetInnerHTML={{ __html: r.content }} 
+                />
               </div>
-            ))}
-
+            );
+          })}
             {/* Skeletons: Show while loading and while we have fewer than 4 replies */}
-            {loading && Array.from({ length: 4 - replies.length }).map((_, idx) => (
+            {loading && Array.from({ length: 3 - replies.length }).map((_, idx) => (
               <SkeletonCard key={`skeleton-${idx}`} />
             ))}
 

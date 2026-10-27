@@ -30,7 +30,7 @@ import HandleHrRoleModal from "../../components/hr/HandleHrRoleModal";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import QuickAccess from "../../utlis/QuickAccess";
 import { useSelector } from "react-redux";
- 
+
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { Link } from "react-router-dom";
 import { FiExternalLink } from "react-icons/fi";
@@ -45,7 +45,11 @@ import {
 } from "@mui/material";
 import HandleHrProductModal from "../../components/hr/HandleHrProductModal";
 import { FaGoogleDrive } from "react-icons/fa";
-import { hasPermission, hasSubrole, isAdmin } from "../../utlis/checkPermission";
+import {
+  hasPermission,
+  hasSubrole,
+  isAdmin,
+} from "../../utlis/checkPermission";
 
 const months = [
   "January",
@@ -88,9 +92,6 @@ const initialColumnVisibility = {
   product: true,
   software: true,
 };
-
-
-
 
 export default function HR() {
   const auth = useSelector((state) => state.auth.auth);
@@ -233,11 +234,11 @@ export default function HR() {
       if (auth?.user?.role?.name === "Admin") {
         setTaskData(rawTasks);
       } else {
-        const filteredTasks = rawTasks?.filter((task) => {
-          return task.department.users.some(
-            (user) => user.user.name === auth.user.name,
-          );
-        });
+        const filteredTasks = rawTasks?.filter((task) =>
+          task?.department?.users?.some(
+            (u) => u?.user?.name === auth?.user?.name,
+          ),
+        );
 
         setTaskData(filteredTasks);
       }
@@ -991,16 +992,17 @@ export default function HR() {
                 </div> */}
 
                 {productLink ? (
-                  <Link to={productLink} target="_blank" className="px-1   text-[14px] text-blue-600 ">
+                  <Link
+                    to={productLink}
+                    target="_blank"
+                    className="px-1   text-[14px] text-blue-600 "
+                  >
                     {title.length > 65 ? `${title.slice(0, 65)}...` : title}
                   </Link>
                 ) : (
-                  <div
-                   
-                  className="px-1   text-[14px] text-blue-600 cursor-pointer"
-                >
-                  {title.length > 65 ? `${title.slice(0, 65)}...` : title}
-                </div>
+                  <div className="px-1   text-[14px] text-blue-600 cursor-pointer">
+                    {title.length > 65 ? `${title.slice(0, 65)}...` : title}
+                  </div>
                 )}
 
                 {productLink && (
@@ -1153,38 +1155,30 @@ export default function HR() {
                 <GrCopy className="h-6 w-6 cursor-pointer text-sky-500 hover:text-sky-600" />
               </span>
 
-              {
-                (isAdmin(auth?.user) || hasSubrole(auth?.user, "HR", "Edit")) && (
-                                  <span
-                className=""
-                title="Edit Task"
-                onClick={() => {
-                  setTaskId(row.original._id);
-                  setShowAddTask(true);
-                }}
-              >
-                <RiEdit2Line className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
-              </span>
-                  
-                )
-              }
+              {(isAdmin(auth?.user) ||
+                hasSubrole(auth?.user, "HR", "Edit")) && (
+                <span
+                  className=""
+                  title="Edit Task"
+                  onClick={() => {
+                    setTaskId(row.original._id);
+                    setShowAddTask(true);
+                  }}
+                >
+                  <RiEdit2Line className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
+                </span>
+              )}
 
-
-              {
-                (isAdmin(auth?.user) || hasSubrole(auth?.user, "HR", "Delete")) && (
-
-                  <span
-                className="text-[1rem] cursor-pointer"
-                onClick={() => handleDeleteTaskConfirmation(row.original._id)}
-                title="Delete Task!"
-              >
-                <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
-              </span>
-
-                )
-              }
-
-              
+              {(isAdmin(auth?.user) ||
+                hasSubrole(auth?.user, "HR", "Delete")) && (
+                <span
+                  className="text-[1rem] cursor-pointer"
+                  onClick={() => handleDeleteTaskConfirmation(row.original._id)}
+                  title="Delete Task!"
+                >
+                  <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
+                </span>
+              )}
 
               <span>
                 {docLink ? (
@@ -1210,7 +1204,7 @@ export default function HR() {
             </div>
           );
         },
-        size: 150,
+        size: (isAdmin(auth?.user) || hasSubrole(auth?.user, "HR", "Edit") || hasSubrole(auth?.user, "HR", "Delete")) ? 150 : 100,
       },
     ],
     // eslint-disable-next-line

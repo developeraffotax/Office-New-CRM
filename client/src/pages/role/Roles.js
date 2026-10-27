@@ -66,6 +66,8 @@ export default function Roles() {
     Templates: ["Template", "FAQ"],
     Subscription: ["Edit", "Copy", "Delete", "Mark Completed", "Mark In-Progress"],
     Timesheet: ["Job-holder", "Edit", "Delete", "Tracker"],
+    HR: [ "Edit", "Delete", ],
+
     Activity: [  "All Users",  ],
     Inbox: [  "Edit", "Delete", "Unassigned"],
     Whatsapp: [  "Edit", "Delete", "Unassigned"],

@@ -30,7 +30,7 @@ import HandleHrRoleModal from "../../components/hr/HandleHrRoleModal";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import QuickAccess from "../../utlis/QuickAccess";
 import { useSelector } from "react-redux";
-import { isAdmin } from "../../utlis/isAdmin";
+ 
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { Link } from "react-router-dom";
 import { FiExternalLink } from "react-icons/fi";
@@ -45,6 +45,7 @@ import {
 } from "@mui/material";
 import HandleHrProductModal from "../../components/hr/HandleHrProductModal";
 import { FaGoogleDrive } from "react-icons/fa";
+import { hasPermission, hasSubrole, isAdmin } from "../../utlis/checkPermission";
 
 const months = [
   "January",
@@ -87,6 +88,9 @@ const initialColumnVisibility = {
   product: true,
   software: true,
 };
+
+
+
 
 export default function HR() {
   const auth = useSelector((state) => state.auth.auth);
@@ -261,7 +265,7 @@ export default function HR() {
 
       let departments = data.departments;
 
-      if (!isAdmin(auth)) {
+      if (!isAdmin(auth?.user)) {
         departments = departments.filter((dpt) =>
           dpt.users.some((user) => user?.user._id === auth?.user?.id),
         );
@@ -327,7 +331,7 @@ export default function HR() {
   const getAllUsers = async () => {
     let URL = `${process.env.REACT_APP_API_URL}/api/v1/user/get/active/team`;
 
-    if (isAdmin(auth)) {
+    if (isAdmin(auth?.user)) {
       URL = `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`;
     }
 
@@ -660,7 +664,7 @@ export default function HR() {
         id: "role",
         minSize: 100,
         maxSize: 200,
-        size: 170,
+        size: 150,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -790,7 +794,7 @@ export default function HR() {
         id: "product",
         minSize: 100,
         maxSize: 200,
-        size: 100,
+        size: 120,
         grow: false,
         Header: ({ column, table }) => {
           const selectedDept = table.getColumn("department")?.getFilterValue();
@@ -976,16 +980,28 @@ export default function HR() {
           return (
             <div className="w-full h-full ">
               <div className="w-full h-full flex items-center justify-between ">
-                <div
+                {/* <div
                   onClick={() => {
                     setShowDescription(true);
-                    //setCopyDescription(row.original?.description);
                     getSingleTask(hrTaskId);
                   }}
                   className="px-1   text-[14px] text-blue-600 cursor-pointer"
                 >
                   {title.length > 65 ? `${title.slice(0, 65)}...` : title}
+                </div> */}
+
+                {productLink ? (
+                  <Link to={productLink} target="_blank" className="px-1   text-[14px] text-blue-600 ">
+                    {title.length > 65 ? `${title.slice(0, 65)}...` : title}
+                  </Link>
+                ) : (
+                  <div
+                   
+                  className="px-1   text-[14px] text-blue-600 cursor-pointer"
+                >
+                  {title.length > 65 ? `${title.slice(0, 65)}...` : title}
                 </div>
+                )}
 
                 {productLink && (
                   <Link to={productLink} target="_blank">
@@ -1136,7 +1152,10 @@ export default function HR() {
               >
                 <GrCopy className="h-6 w-6 cursor-pointer text-sky-500 hover:text-sky-600" />
               </span>
-              <span
+
+              {
+                (isAdmin(auth?.user) || hasSubrole(auth?.user, "HR", "Edit")) && (
+                                  <span
                 className=""
                 title="Edit Task"
                 onClick={() => {
@@ -1146,13 +1165,26 @@ export default function HR() {
               >
                 <RiEdit2Line className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
               </span>
-              <span
+                  
+                )
+              }
+
+
+              {
+                (isAdmin(auth?.user) || hasSubrole(auth?.user, "HR", "Delete")) && (
+
+                  <span
                 className="text-[1rem] cursor-pointer"
                 onClick={() => handleDeleteTaskConfirmation(row.original._id)}
                 title="Delete Task!"
               >
                 <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
               </span>
+
+                )
+              }
+
+              
 
               <span>
                 {docLink ? (
@@ -1420,14 +1452,14 @@ export default function HR() {
             <span className="mt-3">
               <QuickAccess />
             </span>
-            {isAdmin(auth) && (
+            {isAdmin(auth?.user) && (
               <span className=" ">
                 {" "}
                 <OverviewForPages />{" "}
               </span>
             )}
 
-            {isAdmin(auth) && (
+            {isAdmin(auth?.user) && (
               <div className="flex justify-center items-center  gap-2 ">
                 <span
                   className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
@@ -1562,7 +1594,7 @@ export default function HR() {
               )}
             </div>
 
-            {isAdmin(auth) && (
+            {isAdmin(auth?.user) && (
               <div className="flex items-center justify-end gap-2">
                 <form>
                   <input
@@ -1808,7 +1840,7 @@ export default function HR() {
         )}
 
         {/* ----------Job_Holder Summery Filters---------- */}
-        {showJobHolder && isAdmin(auth) && (
+        {showJobHolder && isAdmin(auth?.user) && (
           <>
             <div className="w-full  py-2 ">
               <div className="flex items-center flex-wrap gap-4">

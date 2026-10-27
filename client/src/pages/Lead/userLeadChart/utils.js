@@ -1,8 +1,14 @@
 import dayjs from "dayjs";
 import quarterOfYear from "dayjs/plugin/quarterOfYear";
 import { isAdmin } from "../../../utlis/isAdmin";
+ 
+import isoWeek from "dayjs/plugin/isoWeek";
 
 dayjs.extend(quarterOfYear);
+dayjs.extend(isoWeek);
+
+
+ 
 
 // Compact number formatter: 2300 -> "2.3k", 3450000 -> "3.5m"
 export const formatCompactNumber = (val) => {
@@ -20,10 +26,18 @@ export const formatCompactNumber = (val) => {
   return `${sign}${abs}`;
 };
 
+ 
 // Start and end dates for a named filter
 export const getDateRange = (filter) => {
   const now = dayjs();
   switch (filter) {
+    case "thisWeek":
+      return [now.startOf("isoWeek"), now.endOf("isoWeek")];
+    case "lastWeek":
+      return [
+        now.subtract(1, "week").startOf("isoWeek"),
+        now.subtract(1, "week").endOf("isoWeek"),
+      ];
     case "thisYear":
       return [now.startOf("year"), now.endOf("year")];
     case "lastYear":

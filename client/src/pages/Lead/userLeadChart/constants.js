@@ -36,15 +36,19 @@ export const PALETTE = [
 export const getUserColor = (index) => PALETTE[index % PALETTE.length];
 
 export const QUICK_RANGE_FILTERS = [
+  { code: "W", label: "This Week", filter: "thisWeek" },
   { code: "M", label: "This Month", filter: "thisMonth" },
   { code: "Q", label: "This Quarter", filter: "thisQuarter" },
   { code: "Y", label: "This Year", filter: "thisYear" },
+  { code: "LW", label: "Last Week", filter: "lastWeek" },
   { code: "LM", label: "Last Month", filter: "lastMonth" },
   { code: "LQ", label: "Last Quarter", filter: "lastQuarter" },
   { code: "LY", label: "Last Year", filter: "lastYear" },
 ];
 
 export const DATE_FILTER_OPTIONS = [
+  { value: "thisWeek", label: "This Week" },
+  { value: "lastWeek", label: "Last Week" },
   { value: "thisYear", label: "This Year" },
   { value: "lastYear", label: "Last Year" },
   { value: "thisMonth", label: "This Month" },

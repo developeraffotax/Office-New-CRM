@@ -30,7 +30,7 @@ const [dateBasis, setDateBasis] = useState(DEFAULTS.dateBasis);
 
     const applyFilters = useCallback(({ dateFilter: df, dateRange: dr, users, dateBasis: db }) => {
     if (df) setDateFilter(df);
-    if (db) setDateFilter(db);
+    if (db) setDateBasis(db);
     setDateRange(
       df && df !== DATE_FILTER.CUSTOM
         ? getDateRange(df)

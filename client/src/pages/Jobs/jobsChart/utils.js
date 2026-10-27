@@ -20,10 +20,18 @@ export const formatCompactNumber = (val) => {
   return `${sign}${abs}`;
 };
 
+ 
 // Start and end dates for a named filter
 export const getDateRange = (filter) => {
   const now = dayjs();
   switch (filter) {
+    case "thisWeek":
+      return [now.startOf("isoWeek"), now.endOf("isoWeek")];
+    case "lastWeek":
+      return [
+        now.subtract(1, "week").startOf("isoWeek"),
+        now.subtract(1, "week").endOf("isoWeek"),
+      ];
     case "thisYear":
       return [now.startOf("year"), now.endOf("year")];
     case "lastYear":

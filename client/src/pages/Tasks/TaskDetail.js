@@ -252,6 +252,7 @@ const patchTask = async (patch) => {
         hours: taskDetal.hours,
         startDate: toDay(taskDetal.startDate),
         deadline: toDay(taskDetal.deadline),
+        taskDate: toDay(taskDetal.taskDate),
         lead: taskDetal.lead,
         label: taskDetal.label,
         recurring: taskDetal.recurring,

@@ -1,6 +1,12 @@
 import { memo } from "react";
 import { differenceInCalendarDays, format } from "date-fns";
-import { FiClock, FiMessageSquare, FiMoreVertical, FiCheckSquare } from "react-icons/fi";
+import {
+  FiClock,
+  FiMessageSquare,
+  FiMoreVertical,
+  FiCheckSquare,
+  FiCalendar,
+} from "react-icons/fi";
 
 const STATUS_STYLES = {
   "To do": "bg-slate-100 text-slate-700",
@@ -11,8 +17,14 @@ const STATUS_STYLES = {
 };
 
 const AVATAR_COLORS = [
-  "bg-orange-500", "bg-sky-500", "bg-emerald-500", "bg-violet-500",
-  "bg-rose-500", "bg-teal-500", "bg-indigo-500", "bg-amber-500",
+  "bg-orange-500",
+  "bg-sky-500",
+  "bg-emerald-500",
+  "bg-violet-500",
+  "bg-rose-500",
+  "bg-teal-500",
+  "bg-indigo-500",
+  "bg-amber-500",
 ];
 
 const hash = (s = "") => [...s].reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -20,10 +32,14 @@ const hash = (s = "") => [...s].reduce((a, c) => a + c.charCodeAt(0), 0);
 const getDue = (deadline) => {
   if (!deadline) return null;
   const diff = differenceInCalendarDays(new Date(deadline), new Date());
-  if (diff < 0) return { label: `${Math.abs(diff)}d overdue`, cls: "bg-red-50 text-red-600" };
+  if (diff < 0)
+    return { label: `${Math.abs(diff)}d overdue`, cls: "bg-red-50 text-red-600" };
   if (diff === 0) return { label: "Due today", cls: "bg-amber-50 text-amber-700" };
   if (diff === 1) return { label: "Tomorrow", cls: "bg-slate-100 text-slate-600" };
-  return { label: format(new Date(deadline), "dd MMM"), cls: "bg-slate-100 text-slate-600" };
+  return {
+    label: format(new Date(deadline), "dd MMM"),
+    cls: "bg-slate-100 text-slate-600",
+  };
 };
 
 function MobileTaskCard({
@@ -45,13 +61,21 @@ function MobileTaskCard({
       onClick={() => onOpen(task)}
       className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition-colors active:bg-slate-50"
     >
-      {/* top: project + indicators */}
+      {/* top: project + date + indicators */}
       <div className="flex items-center justify-between gap-2">
-        <span className="max-w-[65%] truncate rounded-md bg-orange-50 px-2 py-0.5 text-[11px] font-medium text-orange-700">
+        <span className="max-w-[55%] truncate rounded-md bg-orange-50 px-2 py-0.5 text-[11px] font-medium text-orange-700">
           {task.project?.projectName || "No department"}
         </span>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
+          {/* Task Date */}
+          {task.taskDate && (
+            <span className="flex items-center gap-1 rounded-md bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+              <FiCalendar className="h-3 w-3" />
+              {format(new Date(task.taskDate), "dd MMM yyyy")}
+            </span>
+          )}
+
           {isTimerRunning && (
             <span className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-medium text-green-700">
               <span className="relative flex h-1.5 w-1.5">
@@ -61,6 +85,7 @@ function MobileTaskCard({
               Running
             </span>
           )}
+
           <button
             aria-label="More actions"
             onClick={(e) => {
@@ -97,7 +122,9 @@ function MobileTaskCard({
           >
             {task.jobHolder?.slice(0, 1) || "?"}
           </span>
-          <span className="truncate capitalize">{task.jobHolder || "Unassigned"}</span>
+          <span className="truncate capitalize">
+            {task.jobHolder || "Unassigned"}
+          </span>
         </span>
 
         {task.hours ? (
@@ -130,14 +157,14 @@ function MobileTaskCard({
           >
             {isCompleted ? "Completed" : task.status || "Set status"}
           </button>
-
           {due && (
-            <span className={`rounded-full px-2.5 py-1 text-[12px] font-medium ${due.cls}`}>
+            <span
+              className={`rounded-full px-2.5 py-1 text-[12px] font-medium ${due.cls}`}
+            >
               {due.label}
             </span>
           )}
         </div>
-
         <button
           aria-label="Comments"
           onClick={(e) => {

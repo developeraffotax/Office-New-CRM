@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { format, isValid } from "date-fns";
+import { addDays, format, isValid } from "date-fns";
 import {
   FiCalendar, FiCheck, FiChevronRight, FiClock, FiEdit3, FiFlag,
   FiFolder, FiLoader, FiSearch, FiUser, FiUserCheck,
@@ -20,6 +20,10 @@ const STATUS_STYLES = {
   Onhold: "bg-amber-50 text-amber-700",
 };
 
+
+const DATE_KEYS = ["startDate", "deadline", "taskDate"];
+
+
 const toInput = (d) => {
   if (!d) return "";
   const x = new Date(d);
@@ -32,11 +36,11 @@ const show = (d) => {
 
 const TITLES = {
   task: "Task", project: "Department", jobHolder: "Job holder", lead: "Lead",
-  status: "Status", hours: "Hours", startDate: "Start date", deadline: "Deadline",
+  status: "Status", hours: "Hours", startDate: "Start date", deadline: "Deadline",    taskDate: "Task date",
 };
 const KINDS = {
   task: "text", hours: "text",
-  startDate: "date", deadline: "date",
+  startDate: "date", deadline: "date", taskDate: "date",
   jobHolder: "user", lead: "user",
   project: "project", status: "status",
 };
@@ -78,7 +82,7 @@ const Row = ({ icon: Icon, label, onClick, busy, wrap, children }) => (
 
 /**
  * onSave(patch) must return a Promise<boolean> (true = saved).
- * patch keys: task | projectId | jobHolder | lead | status | hours | startDate | deadline
+ * patch keys: task | projectId | jobHolder | lead | status | hours | startDate | deadline | taskDate
  */
 export default function MobileTaskFields({ task, users = [], projects = [], onSave }) {
   const [editing, setEditing] = useState(null);
@@ -99,6 +103,7 @@ export default function MobileTaskFields({ task, users = [], projects = [], onSa
       hours: task?.hours,
       startDate: toInput(task?.startDate),
       deadline: toInput(task?.deadline),
+       taskDate: toInput(task?.taskDate),
     }[key];
     setDraft(initial == null ? "" : String(initial));
     setQ("");
@@ -126,10 +131,8 @@ export default function MobileTaskFields({ task, users = [], projects = [], onSa
     const v = draft.trim();
     if (!v) return;
     const current = String(
-      editing === "startDate" || editing === "deadline"
-        ? toInput(task?.[editing])
-        : task?.[editing] ?? "",
-    );
+  DATE_KEYS.includes(editing) ? toInput(task?.[editing]) : task?.[editing] ?? "",
+);
     if (v === current) return setEditing(null);
     commit({ [editing]: v });
   };
@@ -196,6 +199,10 @@ export default function MobileTaskFields({ task, users = [], projects = [], onSa
         <Row icon={FiCalendar} label="Deadline" busy={busy === "deadline"} onClick={() => open("deadline")}>
           {show(task?.deadline)}
         </Row>
+
+        <Row icon={FiCalendar} label="Task date" busy={busy === "taskDate"} onClick={() => open("taskDate")}>
+          {show(task?.taskDate)}
+        </Row>
       </div>
 
       <BottomSheet
@@ -250,15 +257,29 @@ export default function MobileTaskFields({ task, users = [], projects = [], onSa
         )}
 
         {kind === "date" && (
-          <div className="p-4">
-            <input
-              type="date"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-[16px] outline-none focus:border-orange-300"
-            />
-          </div>
-        )}
+            <div className="p-4">
+              {editing === "taskDate" && (
+                <div className="mb-3 flex gap-2">
+                  {[["Today", 0], ["Tomorrow", 1]].map(([label, n]) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => setDraft(format(addDays(new Date(), n), "yyyy-MM-dd"))}
+                      className="h-9 rounded-full border border-slate-200 px-4 text-[13px] font-medium text-slate-700 active:bg-slate-100"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <input
+                type="date"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-[16px] outline-none focus:border-orange-300"
+              />
+            </div>
+          )}
 
         {kind === "user" && (
           <>

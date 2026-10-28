@@ -246,11 +246,16 @@ export default function Row({
               </span>
             )}
 
-            {/* Search Button */}
+ 
+           {/* Search Button */}
             <button
-              className="p-1 rounded-md text-slate-500/50  hover:bg-blue-100/70 hover:text-blue-600 transition-all duration-150 group"
+              className={clsx(
+                "p-1 rounded-md text-slate-500/50 hover:bg-blue-100/70 hover:text-blue-600 transition-all duration-150 group",
+                isRowActive ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+              )}
               title="Search with Email"
               onClick={(e) => {
+                e.stopPropagation(); // optional but recommended
                 setFilters({
                   search: getOtherParticipantEmail(
                     thread.participants,

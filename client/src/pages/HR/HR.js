@@ -119,6 +119,8 @@ export default function HR() {
   const [copyDescription, setCopyDescription] = useState("");
   const [showDescription, setShowDescription] = useState(false);
 
+  const [showManageMenu, setShowManageMenu] = useState(false);
+
   const [showcolumn, setShowColumn] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState({
     ...initialColumnVisibility,
@@ -944,7 +946,7 @@ export default function HR() {
             row.original[columnId]?.toString().toLowerCase() || "";
           return cellValue.includes(filterValue.toLowerCase());
         },
-         size: 250,
+        size: 250,
         minSize: 100,
         maxSize: 400,
         grow: false,
@@ -1204,7 +1206,12 @@ export default function HR() {
             </div>
           );
         },
-        size: (isAdmin(auth?.user) || hasSubrole(auth?.user, "HR", "Edit") || hasSubrole(auth?.user, "HR", "Delete")) ? 120 : 80,
+        size:
+          isAdmin(auth?.user) ||
+          hasSubrole(auth?.user, "HR", "Edit") ||
+          hasSubrole(auth?.user, "HR", "Delete")
+            ? 120
+            : 80,
       },
     ],
     // eslint-disable-next-line
@@ -1338,6 +1345,7 @@ export default function HR() {
       ) {
         setShowDepartment(false);
         setShowHrRoles(false);
+        setShowManageMenu(false); // ← add this
         setShowColumn(false);
       }
     };
@@ -1618,202 +1626,262 @@ export default function HR() {
                   </label>
                 </form>
 
+                {/* ========== GROUPED MANAGE MENU ========== */}
+{/* ========== GROUPED MANAGE MENU ========== */}
+<div className="relative hidden sm:flex">
+  <button
+    onClick={() => {
+      setShowDepartment(false);
+      setShowHrRoles(false);
+      setShowHrProducts(false);
+      setShowManageMenu((prev) => !prev);
+    }}
+    className={`${style.button1} text-[15px] flex items-center gap-1.5`}
+    style={{ padding: ".4rem 1rem" }}
+  >
+    Manage
+    {showManageMenu ? (
+      <IoIosArrowUp className="h-4 w-4" />
+    ) : (
+      <IoIosArrowDown className="h-4 w-4" />
+    )}
+  </button>
+
+  {showManageMenu && (
+    <div
+      ref={closeProject}
+      className="absolute top-11 right-0 z-[99] w-[340px] bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden"
+    >
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-orange-50 to-amber-50">
+        <h3 className="text-sm font-semibold text-gray-800">Manage HR Settings</h3>
+        <p className="text-xs text-gray-500 mt-0.5">Departments, Roles & Products</p>
+      </div>
+
+      {/* ---------- DEPARTMENTS ---------- */}
+      <div className="border-b border-gray-100">
+        <div
+          className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors ${
+            showDepartment ? "bg-orange-50/70" : "hover:bg-gray-50"
+          }`}
+          onClick={() => setShowDepartment((prev) => !prev)}
+        >
+          <div className="flex items-center gap-2.5">
+            <div className={`w-1.5 h-1.5 rounded-full ${showDepartment ? "bg-orange-500" : "bg-gray-300"}`} />
+            <span className={`text-sm font-medium ${showDepartment ? "text-orange-700" : "text-gray-800"}`}>
+              Departments
+            </span>
+            <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
+              {deparmentsData?.length || 0}
+            </span>
+          </div>
+          {showDepartment ? (
+            <IoIosArrowUp className="h-4 w-4 text-orange-600" />
+          ) : (
+            <IoIosArrowDown className="h-4 w-4 text-gray-500" />
+          )}
+        </div>
+
+        {showDepartment && (
+          <div className="px-3 pb-3 space-y-1.5 max-h-[200px] overflow-y-auto">
+            {deparmentsData?.length > 0 ? (
+              deparmentsData.map((department) => (
                 <div
-                  className=" hidden sm:flex items-center justify-between relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2  gap-1"
-                  onClick={() => setShowDepartment(!showDepartment)}
+                  key={department._id}
+                  className="group flex items-center justify-between gap-2 rounded-lg border border-gray-100 bg-white px-3 py-2 hover:border-orange-200 hover:bg-orange-50/40 transition-all"
                 >
-                  <span className="text-[15px] text-gray-900 cursor-pointer">
-                    Departments
-                  </span>
-                  <span
-                    onClick={() => setShowDepartment(!showDepartment)}
-                    className="cursor-pointer"
-                  >
-                    {!showDepartment ? (
-                      <IoIosArrowDown className="h-5 w-5 text-black cursor-pointer" />
-                    ) : (
-                      <IoIosArrowUp className="h-5 w-5 text-black cursor-pointer" />
-                    )}
-                  </span>
-                  {/* -----------Projects------- */}
-                  {showDepartment && (
-                    <div
-                      ref={closeProject}
-                      className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]"
+                  <p className="text-[13px] text-gray-700 truncate flex-1">
+                    {department?.departmentName}
+                  </p>
+                  <div className="flex items-center gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => {
+                        setDepartmentId(department._id);
+                        setIshandleDepartment(true);
+                        setShowManageMenu(false);
+                      }}
+                      title="Edit Department"
+                      className="p-1 rounded-md hover:bg-sky-100 text-sky-600"
                     >
-                      {deparmentsData &&
-                        deparmentsData?.map((deprtment) => (
-                          <div
-                            key={deprtment._id}
-                            className="w-full flex items-center justify-between gap-1 rounded-md bg-white border py-1 px-1 hover:bg-gray-100"
-                          >
-                            <p className="text-[13px] w-[8rem] ">
-                              {deprtment?.departmentName}
-                            </p>
-                            <div className="flex items-center gap-1">
-                              <span
-                                onClick={() => {
-                                  setDepartmentId(deprtment._id);
-                                  setIshandleDepartment(true);
-                                }}
-                                title="Edit Department"
-                              >
-                                <MdOutlineEdit className="h-5 w-5 cursor-pointer hover:text-sky-500 transition-all duration-200" />
-                              </span>
-                              <span
-                                title="Delete Delete"
-                                onClick={() =>
-                                  handleDeleteConfirmation(deprtment._id)
-                                }
-                              >
-                                <AiTwotoneDelete className="h-5 w-5 cursor-pointer hover:text-red-500 transition-all duration-200" />
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
+                      <MdOutlineEdit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteConfirmation(department._id)}
+                      title="Delete Department"
+                      className="p-1 rounded-md hover:bg-red-100 text-red-500"
+                    >
+                      <AiTwotoneDelete className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <p className="text-xs text-gray-400 text-center py-3">No departments yet</p>
+            )}
 
-                <button
-                  className={`${style.button1} text-[15px] `}
-                  onClick={() => setIshandleDepartment(true)}
-                  style={{ padding: ".4rem 1rem" }}
-                >
-                  Add Department
-                </button>
+            <button
+              onClick={() => {
+                setIshandleDepartment(true);
+                setShowManageMenu(false);
+              }}
+              className="w-full mt-1.5 flex items-center justify-center gap-1.5 text-sm py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 font-medium transition-colors shadow-sm"
+            >
+              + Add Department
+            </button>
+          </div>
+        )}
+      </div>
 
+      {/* ---------- ROLES ---------- */}
+      <div className="border-b border-gray-100">
+        <div
+          className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors ${
+            showHrRoles ? "bg-orange-50/70" : "hover:bg-gray-50"
+          }`}
+          onClick={() => setShowHrRoles((prev) => !prev)}
+        >
+          <div className="flex items-center gap-2.5">
+            <div className={`w-1.5 h-1.5 rounded-full ${showHrRoles ? "bg-orange-500" : "bg-gray-300"}`} />
+            <span className={`text-sm font-medium ${showHrRoles ? "text-orange-700" : "text-gray-800"}`}>
+              Roles
+            </span>
+            <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
+              {hrRoleData?.length || 0}
+            </span>
+          </div>
+          {showHrRoles ? (
+            <IoIosArrowUp className="h-4 w-4 text-orange-600" />
+          ) : (
+            <IoIosArrowDown className="h-4 w-4 text-gray-500" />
+          )}
+        </div>
+
+        {showHrRoles && (
+          <div className="px-3 pb-3 space-y-1.5 max-h-[200px] overflow-y-auto">
+            {hrRoleData?.length > 0 ? (
+              hrRoleData.map((role) => (
                 <div
-                  className="ml-5 hidden sm:flex items-center justify-between relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2  gap-1"
-                  onClick={() => setShowHrRoles(!showHrRoles)}
+                  key={role._id}
+                  className="group flex items-center justify-between gap-2 rounded-lg border border-gray-100 bg-white px-3 py-2 hover:border-orange-200 hover:bg-orange-50/40 transition-all"
                 >
-                  <span className="text-[15px] text-gray-900 cursor-pointer">
-                    Roles
-                  </span>
-                  <span
-                    onClick={() => setShowHrRoles(!showHrRoles)}
-                    className="cursor-pointer"
-                  >
-                    {!showHrRoles ? (
-                      <IoIosArrowDown className="h-5 w-5 text-black cursor-pointer" />
-                    ) : (
-                      <IoIosArrowUp className="h-5 w-5 text-black cursor-pointer" />
-                    )}
-                  </span>
-                  {/* -----------Roles------- */}
-                  {showHrRoles && (
-                    <div
-                      ref={closeProject}
-                      className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]"
+                  <p className="text-[13px] text-gray-700 truncate flex-1">
+                    {role?.roleName}
+                  </p>
+                  <div className="flex items-center gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => {
+                        setHrRole(role);
+                        setIsHandleHrRole(true);
+                        setShowManageMenu(false);
+                      }}
+                      title="Edit Role"
+                      className="p-1 rounded-md hover:bg-sky-100 text-sky-600"
                     >
-                      {hrRoleData &&
-                        hrRoleData?.map((role) => (
-                          <div
-                            key={role._id}
-                            className="w-full flex items-center justify-between gap-1 rounded-md bg-white border py-1 px-1 hover:bg-gray-100"
-                          >
-                            <p className="text-[13px] w-[8rem] ">
-                              {role?.roleName}
-                            </p>
-                            <div className="flex items-center gap-1">
-                              <span
-                                onClick={() => {
-                                  setHrRole(role);
-
-                                  setIsHandleHrRole(true);
-                                }}
-                                title="Edit Role"
-                              >
-                                <MdOutlineEdit className="h-5 w-5 cursor-pointer hover:text-sky-500 transition-all duration-200" />
-                              </span>
-                              <span
-                                title="Delete Role"
-                                onClick={() =>
-                                  handleDeleteRoleConfirmation(role._id)
-                                }
-                              >
-                                <AiTwotoneDelete className="h-5 w-5 cursor-pointer hover:text-red-500 transition-all duration-200" />
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
+                      <MdOutlineEdit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRoleConfirmation(role._id)}
+                      title="Delete Role"
+                      className="p-1 rounded-md hover:bg-red-100 text-red-500"
+                    >
+                      <AiTwotoneDelete className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <p className="text-xs text-gray-400 text-center py-3">No roles yet</p>
+            )}
 
-                <button
-                  className={`${style.button1} text-[15px] `}
-                  onClick={() => setIsHandleHrRole(true)}
-                  style={{ padding: ".4rem 1rem" }}
-                >
-                  Add Role
-                </button>
+            <button
+              onClick={() => {
+                setIsHandleHrRole(true);
+                setShowManageMenu(false);
+              }}
+              className="w-full mt-1.5 flex items-center justify-center gap-1.5 text-sm py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 font-medium transition-colors shadow-sm"
+            >
+              + Add Role
+            </button>
+          </div>
+        )}
+      </div>
 
+      {/* ---------- PRODUCTS ---------- */}
+      <div>
+        <div
+          className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors ${
+            showHrProducts ? "bg-orange-50/70" : "hover:bg-gray-50"
+          }`}
+          onClick={() => setShowHrProducts((prev) => !prev)}
+        >
+          <div className="flex items-center gap-2.5">
+            <div className={`w-1.5 h-1.5 rounded-full ${showHrProducts ? "bg-orange-500" : "bg-gray-300"}`} />
+            <span className={`text-sm font-medium ${showHrProducts ? "text-orange-700" : "text-gray-800"}`}>
+              Products
+            </span>
+            <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
+              {hrProductData?.length || 0}
+            </span>
+          </div>
+          {showHrProducts ? (
+            <IoIosArrowUp className="h-4 w-4 text-orange-600" />
+          ) : (
+            <IoIosArrowDown className="h-4 w-4 text-gray-500" />
+          )}
+        </div>
+
+        {showHrProducts && (
+          <div className="px-3 pb-3 space-y-1.5 max-h-[200px] overflow-y-auto">
+            {hrProductData?.length > 0 ? (
+              hrProductData.map((product) => (
                 <div
-                  className="ml-5 hidden sm:flex items-center justify-between relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2  gap-1"
-                  onClick={() => setShowHrProducts(!showHrProducts)}
+                  key={product._id}
+                  className="group flex items-center justify-between gap-2 rounded-lg border border-gray-100 bg-white px-3 py-2 hover:border-orange-200 hover:bg-orange-50/40 transition-all"
                 >
-                  <span className="text-[15px] text-gray-900 cursor-pointer">
-                    Products
-                  </span>
-                  <span
-                    onClick={() => setShowHrProducts(!showHrProducts)}
-                    className="cursor-pointer"
-                  >
-                    {!showHrProducts ? (
-                      <IoIosArrowDown className="h-5 w-5 text-black cursor-pointer" />
-                    ) : (
-                      <IoIosArrowUp className="h-5 w-5 text-black cursor-pointer" />
-                    )}
-                  </span>
-                  {/* -----------Products------- */}
-                  {showHrProducts && (
-                    <div
-                      ref={closeProject}
-                      className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]"
+                  <p className="text-[13px] text-gray-700 truncate flex-1">
+                    {product?.name}
+                  </p>
+                  <div className="flex items-center gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => {
+                        setHrProduct(product);
+                        setIsHandleHrProduct(true);
+                        setShowManageMenu(false);
+                      }}
+                      title="Edit Product"
+                      className="p-1 rounded-md hover:bg-sky-100 text-sky-600"
                     >
-                      {hrProductData &&
-                        hrProductData?.map((product) => (
-                          <div
-                            key={product._id}
-                            className="w-full flex items-center justify-between gap-1 rounded-md bg-white border py-1 px-1 hover:bg-gray-100"
-                          >
-                            <p className="text-[13px] w-[8rem] ">
-                              {product?.name}
-                            </p>
-                            <div className="flex items-center gap-1">
-                              <span
-                                onClick={() => {
-                                  setHrProduct(product);
-
-                                  setIsHandleHrProduct(true);
-                                }}
-                                title="Edit Product"
-                              >
-                                <MdOutlineEdit className="h-5 w-5 cursor-pointer hover:text-sky-500 transition-all duration-200" />
-                              </span>
-                              <span
-                                title="Delete Product"
-                                onClick={() =>
-                                  handleDeleteProductConfirmation(product._id)
-                                }
-                              >
-                                <AiTwotoneDelete className="h-5 w-5 cursor-pointer hover:text-red-500 transition-all duration-200" />
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
+                      <MdOutlineEdit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProductConfirmation(product._id)}
+                      title="Delete Product"
+                      className="p-1 rounded-md hover:bg-red-100 text-red-500"
+                    >
+                      <AiTwotoneDelete className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <p className="text-xs text-gray-400 text-center py-3">No products yet</p>
+            )}
 
-                <button
-                  className={`${style.button1} text-[15px] `}
-                  onClick={() => setIsHandleHrProduct(true)}
-                  style={{ padding: ".4rem 1rem" }}
-                >
-                  Add Product
-                </button>
+            <button
+              onClick={() => {
+                setIsHandleHrProduct(true);
+                setShowManageMenu(false);
+              }}
+              className="w-full mt-1.5 flex items-center justify-center gap-1.5 text-sm py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 font-medium transition-colors shadow-sm"
+            >
+              + Add Product
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )}
+</div>
               </div>
             )}
 

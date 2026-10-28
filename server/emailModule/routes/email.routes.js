@@ -6,6 +6,8 @@ import {    bulkUpdateThreadMetadata, deleteThread, getMailbox, getMailboxUserCo
 import { reply } from "../controllers/reply.controller.js";
 import { forward } from "../controllers/forward.controller.js";
 import { sendEmail } from "../controllers/send.controller.js";
+
+import followUpRoutes from "./followup.routes.js";
  
  
  
@@ -58,6 +60,11 @@ router.get("/mailbox-user-counts", requiredSignIn, getMailboxUserCounts);
 
 
 router.get("/thread-message-users", requiredSignIn, getThreadMessageUsers);
+
+
+
+
+router.use("/followups", requiredSignIn, followUpRoutes);
 
 
 export default router;

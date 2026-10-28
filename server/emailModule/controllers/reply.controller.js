@@ -1,31 +1,7 @@
-import {
-  buildGmailReply,
-  updateTicketAfterEmail,
-} from "../utils/buildGmailReply.js";
-import { getGmailClient } from "../services/gmail.service.js";
+import { updateTicketAfterEmail } from "../utils/buildGmailReply.js";
 import ticketActivityModel from "../../models/ticketActivityModel.js";
-import { saveEmailMessage } from "../utils/saveEmailMessage.js";
-import EmailThread from "../models/EmailThread.js";
-
-
-
-function extractParticipants(to) {
-  // normalize: array of addresses (frontend) OR comma-separated header string (legacy) OR single string
-  const addresses = Array.isArray(to)
-    ? to
-    : String(to || "").split(",");
-
-  return addresses
-    .map((addr) => {
-      const match = String(addr).match(/(.*)<(.+)>/);
-      const name = match ? match[1].trim().replace(/^"|"$/g, "") : "";
-      const email = (match ? match[2] : addr).trim().toLowerCase();
-      return { name, email };
-    })
-    .filter((p) => p.email);
-}
-
-
+import { sendThreadEmail } from "../services/sendThreadEmail.service.js";
+import { restartFollowUpTimer } from "../services/followUp.service.js";
 
 export async function reply(req, res) {
   try {
@@ -42,76 +18,25 @@ export async function reply(req, res) {
       attachments,
       ticketId,
       jobHolder,
-       
     } = req.body;
 
     const userName = req.user.user.name;
+    const sentFrom = ticketId ? "CRM-Tickets" : "CRM-Inbox";
 
-
-
- 
-
-     // --- Determine interactionType from the thread's existing participants ---
-    const emailThread = await EmailThread.findOne({ companyName, threadId })
-      .select("participants")
-      .lean();
-
-    const existingParticipantEmails = new Set(
-      (emailThread?.participants || [])
-        .map((p) => p.email?.toLowerCase())
-        .filter(Boolean),
-    );
-
-    const recipients = extractParticipants(to);
-    const recipientEmails = recipients.map((r) => r.email);
-
-    // "initial" only if NONE of these recipients have ever been part of this thread before
-    const isInitial = recipientEmails.every(
-      (email) => !existingParticipantEmails.has(email),
-    );
-    const interactionType = isInitial ? "initial" : "reply";
-
-
-
-
-
-
-
-    // Get Gmail client
-    const gmail = await getGmailClient(companyName);
-
-    // Build raw email
-    const raw = buildGmailReply({
+    // Interaction type, Gmail send and saveEmailMessage all happen in the service
+    const { gmailMessageId } = await sendThreadEmail({
+      companyName,
+      threadId,
       to,
       cc,
       bcc,
       replyTo,
-      subject: headers.Subject,
       html,
       quotedHtml,
       headers,
       attachments,
-    });
-
-    // Send email
-    const response = await gmail.users.messages.send({
-      userId: "me",
-      requestBody: {
-        raw,
-        threadId,
-      },
-    });
-
-    const sentFrom = ticketId ? "CRM-Tickets" : "CRM-Inbox";
-
-    // Save message reference
-    await saveEmailMessage({
-      gmailThreadId: threadId,
-      gmailMessageId: response?.data?.id,
       userName,
-      companyName,
-      sentFrom: sentFrom,
-      interactionType: interactionType,
+      sentFrom,
     });
 
     // If linked to ticket → update ticket
@@ -133,25 +58,26 @@ export async function reply(req, res) {
         ticketId: ticketId,
         userId: req.user.user._id,
         action: "replied",
-        gmailMessageId: response?.data?.id || "",
+        gmailMessageId: gmailMessageId || "",
         details: `
-          "${req.user.user.name}" replied to this ticket.
-          ${
-            jobHolder
-              ? `And updated the job holder to ${jobHolder}`
-              : ""
-          }
+          "${userName}" replied to this ticket.
+          ${jobHolder ? `And updated the job holder to ${jobHolder}` : ""}
           -- Company: ${companyName}
           -- Email: ${to}
         `,
       });
     }
 
+    // A manual reply restarts the follow-up timer, so a human reply and an
+    // automated follow-up never land on the same day.
+    // Wrapped separately: the email is already sent, so this must never fail the request.
+    // ...after the ticket update, replacing the old try/catch block:
+      await restartFollowUpTimer({ companyName, threadId });
+
     res.status(200).json({
       success: true,
       message: "Reply sent successfully",
     });
-
   } catch (error) {
     console.error("Reply Controller Error:", error);
 

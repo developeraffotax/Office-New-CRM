@@ -105,8 +105,11 @@ export const fetchThreadMessages = async (threadId, companyName) => {
       id: msg.id,
       from: headers["from"] || "",
       to: headers["to"] || "",
+      cc: headers["cc"] || "",
       subject: headers["subject"] || "",
       date: headers["date"] || "",
+      messageId: headers["message-id"] || "",   // new
+      references: headers["references"] || "",  // new
       labelIds: msg.labelIds || [],
       body,
       // attachments: attachmentText,

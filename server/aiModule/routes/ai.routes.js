@@ -1,7 +1,7 @@
 
 
 import express from "express";
-import AiProjectRoutes from "./aiProject.routes.js"
+import AiProjectRoutes from "./aiProject.routes.js" 
 import { requiredSignIn } from "../../middlewares/authMiddleware.js";
 import { generateEmailReplies, generateEmailSummary,  } from "../controllers/ai.controller.js";
 import { aiPerMinuteLimiter } from "../../utils/rateLimiter.js";
@@ -20,6 +20,6 @@ router.get("/generate-email-summary", aiPerMinuteLimiter, requiredSignIn,  gener
 
 
 
-router.use("/project", requiredSignIn, AiProjectRoutes);
+router.use("/project", requiredSignIn, AiProjectRoutes); 
 
 export default router;

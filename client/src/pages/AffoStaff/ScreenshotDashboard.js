@@ -107,6 +107,8 @@ export default function ScreenshotDashboard() {
         { params },
       );
 
+      console.log("THE SCREEN DATA >>>>>>>>>>>>>>>", data)
+
       setScreenshots(data);
     } catch (err) {
       console.error("❌ Failed to load screenshots:", err);

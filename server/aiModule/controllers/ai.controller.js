@@ -10,6 +10,7 @@ import { createUserPrompt } from "./prompts2/userPrompt/createUserPrompt.js";
 import aiProject from "../models/aiProject.js";
 import { buildProjectContext } from "../utils/buildProjectContext.js";
 import colors from "colors";
+import { generateEmailDraft } from "../services/aiEmail.service.js";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -34,81 +35,31 @@ export const generateEmailReplies = async (req, res) => {
         message: "No messages found",
       });
     }
+ 
 
-    const contextMessages = buildEmailContext(messages);
-    const actionType = getActionType(messages);
-
-    let project;
-
-    if (projectId) {
-      project = await aiProject.findById(projectId).lean();
-    } else {
-      project = {
-        companyName,
-        aiConfig: {
-          tone: "professional",
-          instructions: "",
-          signature: "",
-          language: "English",
-        },
-      };
-    }
-
-    const projectContext = buildProjectContext(project);
-
-    const systemPrompt = createSystemPrompt(
-        actionType,
-        projectContext,
-        !!customInstructions?.trim()
-      );
-
-      const userPrompt = createUserPrompt(
-        contextMessages,
-        actionType,
-        optionNumber,
-        customInstructions
-      );
-
-  // ---------------- PERFORMANCE HOOK START ----------------
+    
+    
+    // ---------------- PERFORMANCE HOOK START ----------------
     const startTime = performance.now();
+    
+    
+    const emailDraft = await generateEmailDraft({ messages, companyName, projectId, customInstructions, optionNumber, });
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-5.6-luna",
-      max_completion_tokens: 800,
-      // temperature: 0.5,
-      // max_tokens: 800,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-    });
+
+
+
+    
 
     const endTime = performance.now();
     console.log(
       `OpenAI API for Option ${optionNumber || 1} completed in ${(endTime - startTime).toFixed(0)} ms`.bgMagenta.white
     );
     // ---------------- PERFORMANCE HOOK END ----------------
+ 
 
+    res.status(200).json({ success: true, reply: emailDraft, });
 
-    const aiResponse = completion.choices[0].message.content;
-
-    let parsed;
-
-    try {
-      parsed = JSON.parse(aiResponse);
-    } catch (err) {
-      console.error("AI raw response:", aiResponse);
-
-      return res.status(500).json({
-        success: false,
-        message: "AI response parse failed",
-      });
-    }
-
-    res.json({
-      success: true,
-      reply: parsed,
-    });
+    
   } catch (err) {
     console.error(err);
 

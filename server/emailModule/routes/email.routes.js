@@ -6,8 +6,8 @@ import {    bulkUpdateThreadMetadata, deleteThread, getMailbox, getMailboxUserCo
 import { reply } from "../controllers/reply.controller.js";
 import { forward } from "../controllers/forward.controller.js";
 import { sendEmail } from "../controllers/send.controller.js";
-
-import followUpRoutes from "./followup.routes.js";
+import { getFollowUp, setFollowUpStatus, upsertFollowUp } from "../controllers/followUp.controller.js";
+import { approvePending, listPending, rejectPending } from "../controllers/autoEmailApproval.controller.js";
  
  
  
@@ -64,7 +64,16 @@ router.get("/thread-message-users", requiredSignIn, getThreadMessageUsers);
 
 
 
-router.use("/followups", requiredSignIn, followUpRoutes);
+
+
+
+router.get("/followups", requiredSignIn, getFollowUp);
+router.post("/followups", requiredSignIn, upsertFollowUp);
+router.post("/followups/status", requiredSignIn, setFollowUpStatus);
+
+router.get("/auto-emails/pending", requiredSignIn, listPending);
+router.post("/auto-emails/:id/approve", requiredSignIn, approvePending);
+router.post("/auto-emails/:id/reject", requiredSignIn, rejectPending);
 
 
 export default router;

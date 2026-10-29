@@ -145,7 +145,7 @@ export default function ThreadHeader({
         />
 
 
-        {/* <FollowUpControl companyName={company} threadId={threadId} canEnable={thread?.lastMessageBy === "me"} /> */}
+        <FollowUpControl companyName={company} threadId={threadId} canEnable={thread?.lastMessageBy === "me"} />
 
 
 

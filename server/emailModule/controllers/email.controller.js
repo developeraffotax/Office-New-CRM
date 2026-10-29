@@ -13,6 +13,7 @@ import Comment from "../models/Comment.js";
 import EmailMessage from "../models/EmailMessage.js";
 import { trackUserUsageById } from "../../services/user.service.js";
 import { logThreadActivity } from "../services/threadActivity.service.js";
+import { attachAutomation } from "../utils/attachAutomation.js";
 
 /**
  * GET /api/email/inbox
@@ -87,9 +88,12 @@ export const getMailbox = async (req, res) => {
     //   unreadComments: unreadMap[thread._id.toString()] || 0, // default 0 if no unread comments
     // }));
 
+
+    const threadsWithAutomation = await attachAutomation(threads);
+
     res.json({
       success: true,
-      threads: threads,
+      threads: threadsWithAutomation,
       pagination: {
         page: pageNumber,
         limit: pageSize,

@@ -75,6 +75,7 @@ import ManageGooglesheets from "./components/GoogleSheet/ManageGoogleSheets ";
 import { fetchMySheets } from "./redux/slices/googleSheetSlice";
 import KpiTablePage from "./components/KpiTable/KpiTablePage";
 import UserJobsChart from "./pages/Jobs/jobsChart/UserJobsChart";
+import PendingApprovals from "./components/gmail/approvals/PendingApprovals";
  
  
  
@@ -246,6 +247,9 @@ function App() {
 
 
             <Route path="/kpi-table" element={<KpiTablePage /> } />
+
+
+            <Route path="/pending-approvals" element={<PendingApprovals /> } />
             
             
             

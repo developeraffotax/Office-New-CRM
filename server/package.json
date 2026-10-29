@@ -9,6 +9,7 @@
     "screenshotWorker": "node worker.js",
     "notificationWorker": "node jobs/workers/notificationWorker.js",
     "gmailWorker": "node emailModule/jobs/workers/historySync.worker.js",
+    "followUpWorker": "node emailModule/jobs/workers/index.js",
     "whatsappWorker": "node whatsappModule/jobs/workers/whatsappWorker.js"
   },
   "keywords": [],
@@ -46,6 +47,7 @@
     "googleapis": "^105.0.0",
     "ioredis": "^5.8.2",
     "jsonwebtoken": "^9.0.2",
+    "luxon": "^3.7.2",
     "moment": "^2.30.1",
     "mongoose": "^8.4.1",
     "morgan": "^1.10.0",

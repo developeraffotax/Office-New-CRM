@@ -12,7 +12,7 @@ const EmailMessageSchema = new mongoose.Schema(
 
     sentFrom: {
       type: String,
-      enum: ["CRM-Tickets", "CRM-Inbox"]
+      enum: ["CRM-Tickets", "CRM-Inbox", "CRM-AutoFollowUp", "CRM-AutoReply"]
     },
 
 

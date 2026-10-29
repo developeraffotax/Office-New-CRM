@@ -41,5 +41,7 @@ export async function generateEmailDraft({
     ],
   });
 
+  // console.log("OpenAI response:", completion.choices[0].message.content);
+
   return JSON.parse(completion.choices[0].message.content); // throws on bad JSON
 }

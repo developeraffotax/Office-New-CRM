@@ -20,6 +20,7 @@ import LeadButton from "./ui/LeadButton";
 import TicketButton from "./ui/TicketButton";
 import { useMailModalActions } from "../context/MailModalsContext";
 import { getOtherParticipantEmail } from "../utils/utils";
+import AutomationBadge from "./ui/AutomationBadge";
 
 function highlightText(text = "", search = "") {
   if (!search) return text;
@@ -287,6 +288,9 @@ export default function Row({
                 {displayCategory}
               </span>
             )}
+
+
+              <AutomationBadge automation={thread?.automation} />
           </div>
         </div>
 

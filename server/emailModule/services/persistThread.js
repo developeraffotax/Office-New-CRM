@@ -12,6 +12,7 @@ import {
 } from "../utils/utils.js";
 import { getGmailClient } from "./gmail.service.js";
 import { decode } from "entities";
+import { handleInboundMessage } from "./followUp.service.js";  
 
 export async function persistThread({ threadId, companyName, type }) {
   try {
@@ -34,6 +35,12 @@ export async function persistThread({ threadId, companyName, type }) {
     let lastMessageBy = "client";
     let lastMessageAt = null;
     let lastMessageSnippet = "";
+
+    // NEW: details of the newest message, used by the auto-reply automation
+    let lastMessageId = "";
+    let lastMessageHeaders = [];
+    let lastFromEmail = "";
+    let lastMessageIsInbox = false;
 
     let unreadCount = 0;
     let attachments = [];
@@ -64,6 +71,12 @@ export async function persistThread({ threadId, companyName, type }) {
       if (!lastMessageAt || date > lastMessageAt) {
         lastMessageAt = date;
         lastMessageSnippet = msg.snippet ? decode(msg.snippet) : "";
+
+        // NEW
+        lastMessageId = msg.id;
+        lastMessageHeaders = headers;
+        lastFromEmail = from.email || "";
+        lastMessageIsInbox = isInbox;
 
         // Determine sender
         if (isSent) {
@@ -170,6 +183,19 @@ export async function persistThread({ threadId, companyName, type }) {
       action: "updated",
       thread: threadDoc.toObject(),
     });
+
+    // ---------------- Automation: the client just wrote to us ---------------- // NEW
+    // lastMessageIsInbox filters out drafts, which also aren't labelled SENT
+    if (lastMessageBy === "client" && lastMessageIsInbox) {
+      await handleInboundMessage({
+        companyName,
+        threadId,
+        messageId: lastMessageId,
+        messageDate: lastMessageAt,
+        fromEmail: lastFromEmail,
+        headers: lastMessageHeaders,
+      });
+    }
   } catch (error) {
     console.error(
       `Failed to persist thread ${threadId} for ${companyName}:`,

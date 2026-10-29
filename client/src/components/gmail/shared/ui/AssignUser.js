@@ -126,7 +126,7 @@ export default function AssignUser({
 
   return (
     <div
-      className="relative flex items-center gap-2 "
+      className="relative flex items-center gap-2 font-inter"
       ref={ref}
       tabIndex={0}
       onKeyDown={handleKeyDown}
@@ -194,17 +194,17 @@ export default function AssignUser({
                     "text-gray-700",
 
                     // Hover
-                    !isSelected &&
+                    !isSelected && !isHighlighted &&
                       "hover:bg-gray-100",
 
                     // Highlighted
                     isHighlighted &&
                       !isSelected &&
-                      "bg-blue-100",
+                      "bg-blue-600 text-white font-medium",
 
                     // Selected
                     isSelected &&
-                      "bg-blue-600 text-white font-medium",
+                      "bg-blue-100 ",
                   )}
                 >
                   <span className="truncate">
@@ -212,7 +212,7 @@ export default function AssignUser({
                   </span>
 
                   {isSelected && (
-                    <span className="ml-2 text-white text-xs font-semibold">
+                    <span className="ml-2 text-blue-500 text-xs font-semibold">
                       ✓
                     </span>
                   )}

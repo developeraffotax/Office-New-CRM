@@ -14,6 +14,7 @@ import TicketButton from "../shared/ui/TicketButton.jsx";
 // import { useMailModalActions } from "../context/MailModalsContext.js";
 import RefBadge from "../shared/ui/RefBadge.js";
 import FollowUpControl from "./FollowUpControl.js";
+import { isAdmin } from "../../../utlis/checkPermission.js";
 
 export default function ThreadHeader({
   variant = "full", // "full" (Inbox) | "compact" (Ticket/Lead sidebar)
@@ -144,8 +145,9 @@ export default function ThreadHeader({
           showLabel
         />
 
-
-        <FollowUpControl companyName={company} threadId={threadId} canEnable={thread?.lastMessageBy === "me"} />
+          {
+            isAdmin(user) && ( <FollowUpControl companyName={company} threadId={threadId} /> )
+          }
 
 
 

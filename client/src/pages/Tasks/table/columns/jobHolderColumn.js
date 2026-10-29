@@ -58,9 +58,9 @@ export const jobHolderColumn = (ctx) => {
       />
     ),
 
-    size: 100,
+    size: 105,
     minSize: 80,
-    maxSize: 130,
+    maxSize: 150,
     grow: false,
   };
 };

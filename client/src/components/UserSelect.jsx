@@ -7,6 +7,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { getUserColor } from "./KpiDashboard/utils/userColors";
 
 const BLUE = "#1461de";
+const CHECK_BLUE = "#3b82f6"; // blue-500, same as your text-blue-500 check
 const NO_EXTRAS = [];
 
 const initials = (name = "") =>
@@ -26,7 +27,7 @@ const CHEVRON = (
   </svg>
 );
 const CHECK = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill={BLUE} aria-hidden="true" style={{ flexShrink: 0 }}>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill={CHECK_BLUE} aria-hidden="true" style={{ flexShrink: 0 }}>
     <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
   </svg>
 );
@@ -36,7 +37,7 @@ const Trigger = styled("button")(({ theme }) => ({
   display: "flex",
   alignItems: "center",
   gap: 6,
-  padding: "0 0px",
+  padding: "0 2px",
   minWidth: 0,
   boxSizing: "border-box",
   font: "inherit",
@@ -93,7 +94,7 @@ const ListBox = styled("div")({
   padding: "4px 0",
 });
 
-const Row = styled("div")(({ theme }) => ({
+const Row = styled("div")({
   display: "flex",
   alignItems: "center",
   gap: 8,
@@ -103,12 +104,19 @@ const Row = styled("div")(({ theme }) => ({
   borderRadius: 4,
   cursor: "pointer",
   fontSize: 13,
-  '&[data-highlighted="true"]': { background: "rgba(20,97,222,0.08)" },
   "& .us-name": { flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
-  '&[data-type="user"] .us-name': { color: theme.palette.text.primary },
-  '&:not([data-type="user"]) .us-name': { color: theme.palette.text.secondary, fontStyle: "italic" },
-  '&[data-selected="true"] .us-name': { fontWeight: 600 },
-}));
+
+  // Default: text-gray-700
+  '&[data-type="user"] .us-name': { color: "#374151" },
+  '&:not([data-type="user"]) .us-name': { color: "#6b7280", fontStyle: "italic" },
+
+  // Selected: bg-blue-100
+  '&[data-selected="true"]': { background: "#dbeafe" },
+
+  // Highlighted (hover / arrows / typing): bg-blue-600 text-white font-medium
+  '&[data-highlighted="true"]:not([data-selected="true"])': { background: "#2563eb" },
+  '&[data-highlighted="true"]:not([data-selected="true"]) .us-name': { color: "#fff", fontWeight: 500 },
+});
 
 const UserAvatar = memo(function UserAvatar({ name, src, size }) {
   return (

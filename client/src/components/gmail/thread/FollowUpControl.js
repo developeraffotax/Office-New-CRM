@@ -83,6 +83,7 @@ export default function FollowUpControl({ companyName, threadId }) {
   }, [companyName, threadId]);
 
   const save = async () => {
+    return;
     setSaving(true);
     try {
       const { data } = await axios.post(API, { companyName, threadId, ...form });

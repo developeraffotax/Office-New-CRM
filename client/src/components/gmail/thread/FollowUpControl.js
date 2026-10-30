@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 import { useClickOutside } from "../../../utlis/useClickOutside";
 
 const API = `${process.env.REACT_APP_API_URL}/api/v1/gmail/followups`;
-const FREQS = [1, 2, 3, 5, 7, 10, 14];
+const FREQS = [1, 2, 3, 5, 7, 10, 14, 30];
 
 const BROWSER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 const TZS = typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
@@ -38,6 +38,8 @@ const savedProject = (companyName = "") => {
   }
 };
 
+
+
 const DEFAULT_FORM = {
   autoReply: false,
   autoFollowUp: true,
@@ -46,7 +48,7 @@ const DEFAULT_FORM = {
   maxFollowUps: 3,
   startDate: "",
   sendTime: "09:00",
-  timezone: BROWSER_TZ,
+  timezone: "Asia/Karachi",
   customInstructions: "",
   project: null, // { _id, name, companyName }
 };
@@ -124,7 +126,7 @@ export default function FollowUpControl({ companyName, threadId }) {
           maxFollowUps: s.maxFollowUps ?? 3,
           startDate: s.startDate || "",
           sendTime: s.sendTime || "09:00",
-          timezone: s.timezone || BROWSER_TZ,
+          timezone: s.timezone || DEFAULT_FORM.timezone,
           customInstructions: s.customInstructions || "",
           project: data.project
             ? { _id: data.project._id, name: data.project.name, companyName: data.project.companyName }

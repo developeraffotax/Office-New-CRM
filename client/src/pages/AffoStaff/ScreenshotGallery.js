@@ -3,6 +3,8 @@ import React, { useState, useMemo } from "react";
 import { FaRegImages, FaKeyboard, FaMouse } from "react-icons/fa";
 import { ImageModal } from "./ImageModal";
 import { ScreenshotThumbnail } from "./ScreenshotThumbnail";
+import { useSelector } from "react-redux";
+import { isAdmin } from "../../utlis/checkPermission";
 
 // Same thresholds as before (>50 green, >20 amber, else red),
 // kept as full class names so Tailwind can pick them up.
@@ -27,7 +29,7 @@ const getAverageActivity = (shots) => {
 export default function ScreenshotGallery({ screenshots, loading }) {
   const [modalIndex, setModalIndex] = useState(null);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
-
+    const { auth: { user }, } = useSelector((state) => state.auth);
   // -----------------------------
   // 1️⃣ SORT SCREENSHOTS
   // -----------------------------
@@ -221,7 +223,10 @@ export default function ScreenshotGallery({ screenshots, loading }) {
                         </div>
 
                         {/* Keyboard | Mouse inline */}
-                        <div className="mt-3 flex items-stretch rounded-md bg-gray-50 border border-gray-100 text-xs">
+                            
+                        {
+                          isAdmin(user) && (
+                            <div className="mt-3 flex items-stretch rounded-md bg-gray-50 border border-gray-100 text-xs">
                           <div
                             className="flex-1 min-w-0 px-2.5 py-2"
                             title="Keyboard"
@@ -261,6 +266,11 @@ export default function ScreenshotGallery({ screenshots, loading }) {
                             </p>
                           </div>
                         </div>
+
+                          )
+                        }
+
+                        
                       </div>
 
                       {/* Window title */}

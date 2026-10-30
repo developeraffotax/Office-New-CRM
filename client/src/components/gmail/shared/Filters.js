@@ -695,9 +695,7 @@ useEffect(() => {
 
           <Stack direction="row" spacing={1} alignItems="center">
 
-            {
-              isAdmin && <PendingApprovalsButton />
-            }
+            
 
              
 
@@ -721,6 +719,11 @@ useEffect(() => {
                   Compose
                 </span>
               </button>
+
+
+              {
+              isAdmin && <PendingApprovalsButton />
+            }
 
             <ContextMenu
               trigger={

@@ -89,6 +89,7 @@ async function sendFollowUp({ scheduleId }) {
       companyName: schedule.companyName,
       projectId: schedule.projectId,
       customInstructions: hint + (schedule.customInstructions || ""),
+      optionNumber: 3,
     });
 
     if (schedule.requireApproval) {
@@ -150,6 +151,7 @@ async function sendAutoReply({ scheduleId, messageId }) {
       companyName: schedule.companyName,
       projectId: schedule.projectId,
       customInstructions: REPLY_HINT + (schedule.customInstructions || ""),
+      optionNumber: 3
     });
 
     if (schedule.requireApproval) {

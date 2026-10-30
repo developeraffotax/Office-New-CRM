@@ -50,6 +50,7 @@ import ContextMenu from "./ui/ContextMenu";
 import UnifiedThreadFilters from "./ui/LastMessageByDropdown";
 import { hasSubrole } from "../../../utlis/checkPermission";
 import { MdOutlineCreate } from "react-icons/md";
+import PendingApprovalsButton from "../approvals/PendingApprovalsButton";
 
 export default function Filters({
   filters,
@@ -693,6 +694,14 @@ useEffect(() => {
           </Stack>
 
           <Stack direction="row" spacing={1} alignItems="center">
+
+            {
+              isAdmin && <PendingApprovalsButton />
+            }
+
+             
+
+
              <button
                 onClick={() =>  setIsComposeOpen(true)}
                 className="

@@ -4,6 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FiCheckSquare } from "react-icons/fi";
 import IconButtonWithBadge from "../shared/ui/IconButtonWithBadge"; // adjust path if needed
+import { useSelector } from "react-redux";
 
 const API = `${process.env.REACT_APP_API_URL}/api/v1/gmail/auto-emails`;
 const CHANGED_EVENT = "autoemail:changed";
@@ -41,6 +42,9 @@ export function usePendingApprovalsCount({ pollMs = 60_000 } = {}) {
 export default function PendingApprovalsButton() {
   const navigate = useNavigate();
   const { count, canApprove } = usePendingApprovalsCount();
+  
+
+
 
   if (!canApprove) return null; // only approvers see it
 

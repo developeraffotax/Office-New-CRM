@@ -811,7 +811,7 @@ export default function HR() {
               )
             : hrProductData;
           return (
-            <div className="flex flex-col gap-[2px] w-[120px]">
+            <div className="flex flex-col gap-[2px] w-full">
               <span
                 className="ml-1 cursor-pointer"
                 title="Clear Filter"

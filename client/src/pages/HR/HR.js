@@ -730,7 +730,6 @@ export default function HR() {
                 title="Clear Filter"
                 onClick={() => {
                   column.setFilterValue("");
-                  table.getColumn("product")?.setFilterValue("");
                 }}
               >
                 Department
@@ -741,19 +740,7 @@ export default function HR() {
                   const deptName = e.target.value;
                   column.setFilterValue(deptName);
 
-                  const productCol = table.getColumn("product");
-
-                  if (!deptName) {
-                    productCol?.setFilterValue("");
-                    return;
-                  }
-
-                  // first product (alphabetical, since the API sorts by name) in this department
-                  const firstProduct = hrProductData.find((p) =>
-                    p.departments?.some((d) => d.departmentName === deptName),
-                  );
-
-                  productCol?.setFilterValue(firstProduct?.name || "");
+ 
                 }}
                 className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >

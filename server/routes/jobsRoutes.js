@@ -96,7 +96,7 @@ router.patch("/update/jobholder/:id", requiredSignIn, updateJobHolder);
 router.get("/single/client/:id", requiredSignIn, singleClientJob);
 
 // Delete Client
-router.delete("/delete/job/:id", requiredSignIn, deleteClientJob);
+router.delete("/delete/job/:id", requiredSignIn, isAdmin, deleteClientJob);
 
 // Get Client with all jobs
 router.get("/jobs", requiredSignIn, getClientWithJobs);

@@ -490,6 +490,19 @@ export const updateStatus = async (req, res) => {
       });
     }
 
+    // ───────────────────────────────────────────────
+    // Only admin is allowed to set status to "inactive"
+    // ───────────────────────────────────────────────
+    if (status?.toLowerCase() === "inactive") {
+    
+      if (!isAdmin(req)) {
+        return res.status(403).send({
+          success: false,
+          message: "Only admin can update the status to inactive.",
+        });
+      }
+    }
+
 
      // Fetch the job first to get the old fee
     const clientJobBeforeUpdate = await jobsModel.findById(jobId);
@@ -1144,7 +1157,7 @@ export const getClientWithJobs = async (req, res) => {
 };
 
 // Update Client Jobs
-export const updateClientJob = async (req, res) => {
+export const updateClientJob2 = async (req, res) => {
   try {
     const {
       clientName,
@@ -1300,6 +1313,20 @@ export const updateClientJob = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
 
 // Update Jobs Year_end || jobDeadline || currentDate Date
 export const updateDates = async (req, res) => {
@@ -4734,5 +4761,261 @@ export const getJobsChartStats = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server Error" });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ---------- helpers (put above the controller) ----------
+
+// Top-level client fields to track (label shown in the activity text).
+// "fee" is skipped because it mirrors job.fee and would be logged twice.
+const CLIENT_FIELDS = {
+  clientName: "Client name",
+  regNumber: "Reg number",
+  companyName: "Company name",
+  email: "Email",
+  phone: "Phone",
+  totalHours: "Total hours",
+  currentDate: "Current date",
+  source: "Source",
+  clientType: "Client type",
+  partner: "Partner",
+  country: "Country",
+  ctLogin: "CT login",
+  ctPassword: "CT password",
+  pyeLogin: "PYE login",
+  pyePassword: "PYE password",
+  trLogin: "TR login",
+  trPassword: "TR password",
+  vatLogin: "VAT login",
+  vatPassword: "VAT password",
+  authCode: "Auth code",
+  utr: "UTR",
+  personalCode: "Personal code",
+  isActive: "Active status",
+  clientPaidFee: "Client paid fee",
+};
+
+// Fields inside the nested `job` object
+const JOB_FIELDS = {
+  jobName: "Job name",
+  yearEnd: "Year end",
+  jobDeadline: "Job deadline",
+  workDeadline: "Work deadline",
+  hours: "Hours",
+  fee: "Fee",
+  jobStatus: "Job status",
+  notes: "Notes",
+  subscription: "Subscription",
+  lead: "Lead",
+  leadUser: "Lead user",
+  jobHolder: "Job holder",
+  docLink: "Doc link",
+};
+
+// Normalise values so "", null, undefined, Date vs ISO string compare correctly
+const normalize = (v) => {
+  if (v === undefined || v === null) return "";
+  if (v instanceof Date) return isNaN(v) ? "" : v.toISOString().slice(0, 10);
+  if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}T/.test(v)) return v.slice(0, 10);
+  return String(v).trim();
+};
+
+// Returns an array of readable change strings
+const diffFields = (oldObj = {}, newObj = {}, fields, prefix = "") => {
+  const changes = [];
+  for (const [key, label] of Object.entries(fields)) {
+    // Skip keys that weren't sent at all, so we don't log noise
+    if (newObj[key] === undefined) continue;
+
+    const oldVal = normalize(oldObj?.[key]);
+    const newVal = normalize(newObj[key]);
+
+    if (oldVal !== newVal) {
+      changes.push(
+        `${prefix}${label} changed from "${oldVal || "empty"}" to "${newVal || "empty"}"`
+      );
+    }
+  }
+  return changes;
+};
+
+// ---------- controller ----------
+
+export const updateClientJob = async (req, res) => {
+  try {
+    const {
+      clientName, regNumber, companyName, email, phone, totalHours,
+      currentDate, source, clientType, partner, country, fee,
+      ctLogin, pyeLogin, trLogin, vatLogin, authCode,
+      ctPassword, pyePassword, trPassword, vatPassword,
+      utr, personalCode, isActive, clientPaidFee, jobs,
+    } = req.body;
+
+    // Validation
+    if (!clientName) {
+      return res.status(400).send({ success: false, message: "Client name is required!" });
+    }
+    if (!companyName) {
+      return res.status(400).send({ success: false, message: "Company name is required!" });
+    }
+    if (!jobs || jobs.length === 0) {
+      return res.status(400).send({ success: false, message: "At least one job is required!" });
+    }
+
+    const currentUser = req.user.user;
+    const userName = currentUser?.name?.trim() || "A user";
+
+    const toActivities = (texts) =>
+      texts.map((text) => ({
+        user: currentUser._id,
+        activity: `${userName} ${text}.`,
+      }));
+
+    for (const jobData of jobs) {
+      // Values that are the same for every job in this request
+      const clientValues = {
+        clientName, regNumber, companyName, email, phone, totalHours,
+        currentDate, source, clientType, partner, country,
+        fee: jobData?.fee || "",
+        ctLogin, pyeLogin, trLogin, vatLogin,
+        ctPassword, pyePassword, trPassword, vatPassword,
+        authCode, utr, personalCode, isActive,
+        clientPaidFee: clientPaidFee || "0",
+      };
+
+      if (jobData.clientId) {
+        // 1) Load the current version so we can compare
+        const existing = await jobsModel.findById(jobData.clientId).lean();
+        if (!existing) continue; // or return a 404 if you prefer
+
+        // 2) Build the list of changes
+        const changes = [
+          ...diffFields(existing, clientValues, CLIENT_FIELDS),
+          ...diffFields(existing.job, jobData, JOB_FIELDS, "updated this Job: "),
+        ];
+
+        // 3) Update + push activities in one atomic call
+        const update = { $set: { ...clientValues, job: jobData } };
+        if (changes.length) {
+          update.$push = { activities: { $each: toActivities(changes) } };
+        }
+
+        await jobsModel.findByIdAndUpdate(jobData.clientId, update, { new: true });
+      } else {
+        await jobsModel.create({
+          ...clientValues,
+          job: jobData,
+          activities: toActivities([
+            `created this job${jobData?.jobName ? ` "${jobData.jobName}"` : ""}`,
+          ]),
+        });
+      }
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Client job(s) updated successfully!",
+    });
+
+    // Add Activity Log (global)
+    activityModel.create({
+      user: currentUser._id,
+      action: `${userName} update a job.`,
+      entity: "Jobs",
+      details: `Job Details:
+              - Company Name: ${companyName || "No company provided"}
+              - Job Client: ${clientName || "No client provided"}
+              - Updated At: ${new Date().toISOString()}`,
+    });
+  } catch (error) {
+    console.log(error);
+    if (!res.headersSent) {
+      res.status(500).send({
+        success: false,
+        message: "Error in updating client job(s)!",
+        error: error.message,
+      });
+    }
   }
 };

@@ -22,6 +22,7 @@ import { useMailModalActions } from "../context/MailModalsContext";
 import { getOtherParticipantEmail } from "../utils/utils";
 import AutomationBadge from "./ui/AutomationBadge";
 
+
 function highlightText(text = "", search = "") {
   if (!search) return text;
 

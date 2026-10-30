@@ -3,6 +3,8 @@ import EmailThread from "../models/EmailThread.js";
 import FollowUpSchedule from "../models/FollowUpSchedule.js";
 import PendingAutoEmail from "../models/PendingAutoEmail.js";
 import { computeFirstRun, isValidZone } from "../utils/followUpTime.js";
+import mongoose from "mongoose"; // add if missing
+import AiProject from "../../aiModule/models/aiProject.js"; // adjust path
 
 
 const addDays = (d) => new Date(Date.now() + d * 86400000);
@@ -48,6 +50,18 @@ export async function upsertFollowUp(req, res) {
       if (cfg.startDate && !DATE_RE.test(cfg.startDate)) return bad(res, "startDate must be YYYY-MM-DD");
     }
 
+        const cleanProjectId = projectId || null;
+    if (cleanProjectId) {
+      if (!mongoose.isValidObjectId(cleanProjectId)) return bad(res, "Invalid project");
+
+      const project = await AiProject.findById(cleanProjectId).select("companyName").lean();
+      if (!project) return bad(res, "Project not found");
+      // stops an Affotax project's knowledge/signature from being used on Outsource emails
+      if ((project.companyName || "").toLowerCase() !== String(companyName).toLowerCase()) {
+        return bad(res, "Project belongs to a different company");
+      }
+    }
+
     const thread = await EmailThread.findOne({ companyName, threadId })
       .select("_id lastMessageBy")
       .lean();
@@ -77,7 +91,7 @@ export async function upsertFollowUp(req, res) {
       ...(autoFollowUp ? cfg : {}),
       nextRunAt,
       customInstructions: String(customInstructions).slice(0, 800),
-      projectId,
+      projectId: cleanProjectId,
       createdBy: req.user.user._id,
       createdByName: req.user.user.name,
     };
@@ -100,12 +114,24 @@ export async function upsertFollowUp(req, res) {
 export async function getFollowUp(req, res) {
   const { companyName, threadId } = req.query;
   const schedule = await FollowUpSchedule.findOne({ companyName, threadId }).lean();
-  const pending = schedule
-    ? await PendingAutoEmail.countDocuments({ scheduleId: schedule._id, status: "pending" })
-    : 0;
-  res.json({ success: true, schedule, pending });
-}
 
+  let pending = 0;
+  let project = null;
+  if (schedule) {
+    pending = await PendingAutoEmail.countDocuments({ scheduleId: schedule._id, status: "pending" });
+    if (schedule.projectId) {
+      project = await AiProject.findById(schedule.projectId).select("name companyName").lean();
+    }
+  }
+
+  res.json({
+    success: true,
+    schedule,
+    pending,
+    project,
+    projectMissing: !!schedule?.projectId && !project, // linked project was deleted
+  });
+}
 
 
 

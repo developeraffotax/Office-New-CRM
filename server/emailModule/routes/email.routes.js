@@ -7,7 +7,7 @@ import { reply } from "../controllers/reply.controller.js";
 import { forward } from "../controllers/forward.controller.js";
 import { sendEmail } from "../controllers/send.controller.js";
 import { getFollowUp, setFollowUpStatus, upsertFollowUp } from "../controllers/followUp.controller.js";
-import { approvePending, listPending, rejectPending } from "../controllers/autoEmailApproval.controller.js";
+import { approvePending, listPending, pendingCount, rejectPending,  } from "../controllers/autoEmailApproval.controller.js";
  
  
  
@@ -74,6 +74,7 @@ router.post("/followups/status", requiredSignIn, setFollowUpStatus);
 router.get("/auto-emails/pending", requiredSignIn, listPending);
 router.post("/auto-emails/:id/approve", requiredSignIn, approvePending);
 router.post("/auto-emails/:id/reject", requiredSignIn, rejectPending);
+router.get("/auto-emails/pending-count", requiredSignIn, pendingCount);
 
 
 export default router;

@@ -21,6 +21,16 @@ export async function listPending(req, res) {
   res.json({ success: true, items });
 }
 
+
+// Non-approvers get 200 + canApprove:false, so the frontend can just hide the button
+export async function pendingCount(req, res) {
+  if (!isAdmin(req)) return res.json({ success: true, canApprove: false, count: 0 });
+  const count = await PendingAutoEmail.countDocuments({ status: "pending" });
+  res.json({ success: true, canApprove: true, count });
+}
+
+
+
 export async function approvePending(req, res) {
   const user = req.user.user;
   if (!isAdmin(req)) return forbid(res);

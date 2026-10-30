@@ -1,8 +1,12 @@
-// mail/thread/FollowUpControl.js (replace)
+// mail/thread/FollowUpControl.js
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom"; // NEW
 import axios from "axios";
 import toast from "react-hot-toast";
 import { FiRepeat } from "react-icons/fi";
+import { HiXMark } from "react-icons/hi2"; // NEW
+import { IoBookmarkOutline } from "react-icons/io5"; // NEW
+import AiProjectManager from "../../ai/AiProjects/AiProjectManager"; // NEW (adjust path)
 
 const API = `${process.env.REACT_APP_API_URL}/api/v1/gmail/followups`;
 const FREQS = [1, 2, 3, 5, 7, 10, 14];
@@ -10,6 +14,18 @@ const FREQS = [1, 2, 3, 5, 7, 10, 14];
 const BROWSER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 const TZS = typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
 if (!TZS.includes(BROWSER_TZ)) TZS.unshift(BROWSER_TZ);
+
+// NEW: same key the reply selector uses, so a new schedule starts with the project you already picked there
+const PROJECT_KEY = "ai_selected_project";
+const savedProject = (companyName = "") => {
+  try {
+    const saved = localStorage.getItem(`${PROJECT_KEY}-${companyName.toLowerCase()}`);
+    const p = saved ? JSON.parse(saved) : null;
+    return p?._id ? p : null;
+  } catch {
+    return null;
+  }
+};
 
 const DEFAULT_FORM = {
   autoReply: false,
@@ -21,6 +37,7 @@ const DEFAULT_FORM = {
   sendTime: "09:00",
   timezone: BROWSER_TZ,
   customInstructions: "",
+  project: null, // NEW: { _id, name, companyName }
 };
 
 const fmt = (d) => new Date(d).toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
@@ -49,6 +66,8 @@ export default function FollowUpControl({ companyName, threadId }) {
   const [pending, setPending] = useState(0);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(DEFAULT_FORM);
+  const [showProjects, setShowProjects] = useState(false); // NEW
+  const [projectMissing, setProjectMissing] = useState(false); // NEW
 
   const set = (patch) => setForm((f) => ({ ...f, ...patch }));
 
@@ -57,6 +76,7 @@ export default function FollowUpControl({ companyName, threadId }) {
       const { data } = await axios.get(API, { params: { companyName, threadId } });
       setSchedule(data.schedule);
       setPending(data.pending || 0);
+      setProjectMissing(!!data.projectMissing); // NEW
       if (data.schedule) {
         const s = data.schedule;
         setForm({
@@ -69,9 +89,12 @@ export default function FollowUpControl({ companyName, threadId }) {
           sendTime: s.sendTime || "09:00",
           timezone: s.timezone || BROWSER_TZ,
           customInstructions: s.customInstructions || "",
+          project: data.project // NEW
+            ? { _id: data.project._id, name: data.project.name, companyName: data.project.companyName }
+            : null,
         });
       } else {
-        setForm(DEFAULT_FORM);
+        setForm({ ...DEFAULT_FORM, project: savedProject(companyName) }); // NEW
       }
     } catch (e) {
       console.error(e);
@@ -83,11 +106,17 @@ export default function FollowUpControl({ companyName, threadId }) {
   }, [companyName, threadId]);
 
   const save = async () => {
-    return;
     setSaving(true);
     try {
-      const { data } = await axios.post(API, { companyName, threadId, ...form });
+      const { project, ...rest } = form; // NEW: send the id, not the whole object
+      const { data } = await axios.post(API, {
+        companyName,
+        threadId,
+        ...rest,
+        projectId: project?._id || null,
+      });
       setSchedule(data.schedule);
+      setProjectMissing(false); // NEW
       toast.success("Automation saved");
       setOpen(false);
     } catch (e) {
@@ -212,6 +241,38 @@ export default function FollowUpControl({ companyName, threadId }) {
             />
           </div>
 
+          {/* NEW: AI project */}
+          <label className="text-xs font-semibold text-gray-600">AI project</label>
+          <div className="mb-3 mt-1 flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setShowProjects(true)}
+              className={`flex min-w-0 flex-1 items-center gap-1.5 rounded-lg border px-2 py-1.5 text-left text-sm transition ${
+                form.project
+                  ? "border-orange-200 bg-orange-50 text-orange-700"
+                  : "border-gray-300 text-gray-500 hover:bg-gray-50"
+              }`}
+            >
+              <IoBookmarkOutline className="shrink-0" />
+              <span className="truncate">{form.project?.name || "No project (default tone)"}</span>
+            </button>
+            {form.project && (
+              <button
+                type="button"
+                onClick={() => set({ project: null })}
+                title="Unlink project"
+                className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
+              >
+                <HiXMark className="size-4" />
+              </button>
+            )}
+          </div>
+          {projectMissing && !form.project && (
+            <p className="-mt-2 mb-3 text-xs text-amber-600">
+              The linked project was deleted, so default settings are used. Pick another and save.
+            </p>
+          )}
+
           <label className="text-xs font-semibold text-gray-600">Instructions (optional)</label>
           <textarea
             rows={3}
@@ -266,6 +327,21 @@ export default function FollowUpControl({ companyName, threadId }) {
           </div>
         </div>
       )}
+
+      {/* NEW: same project picker as the reply selector. Portal avoids being clipped by the popover. */}
+      {showProjects &&
+        createPortal(
+          <AiProjectManager
+            companyName={(companyName || "").toLowerCase()}
+            project={form.project || { _id: "", name: "", companyName: "" }}
+            onClose={() => setShowProjects(false)}
+            onSelect={(p) => {
+              set({ project: { _id: p._id, name: p.name, companyName: p.companyName } });
+              setShowProjects(false);
+            }}
+          />,
+          document.body,
+        )}
     </div>
   );
 }

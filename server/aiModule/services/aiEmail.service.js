@@ -18,12 +18,11 @@ export async function generateEmailDraft({
   const contextMessages = buildEmailContext(messages);
   const actionType = getActionType(messages);
 
-  const project = projectId
-    ? await aiProject.findById(projectId).lean()
-    : {
-        companyName,
-        aiConfig: { tone: "professional", instructions: "", signature: "", language: "English" },
-      };
+    const project =
+    (projectId && (await aiProject.findById(projectId).lean())) || {
+      companyName,
+      aiConfig: { tone: "professional", instructions: "", signature: "", language: "English" },
+    };
 
   const systemPrompt = createSystemPrompt(
     actionType,

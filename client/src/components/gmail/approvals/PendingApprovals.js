@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { FiCheck, FiEdit3, FiExternalLink, FiRefreshCw, FiX } from "react-icons/fi";
 import CustomEditorVeryNew from "../../../utlis/CustomEditorVeryNew";  
+import { notifyApprovalsChanged } from "./PendingApprovalsButton";
 
 const API = `${process.env.REACT_APP_API_URL}/api/v1/gmail/auto-emails`;
 
@@ -41,6 +42,7 @@ export default function PendingApprovals() {
     try {
       const { data } = await axios.get(`${API}/pending`);
       setItems(data.items || []);
+            notifyApprovalsChanged();
     } catch (e) {
       toast.error(e.response?.data?.message || "Failed to load");
     } finally {
@@ -62,6 +64,7 @@ export default function PendingApprovals() {
       toast.success(action === "approve" ? "Sent" : "Rejected");
       setItems((prev) => prev.filter((i) => i._id !== item._id));
       setEditingId((cur) => (cur === item._id ? null : cur));
+            notifyApprovalsChanged();
     } catch (e) {
       toast.error(e.response?.data?.message || "Failed");
       if (e.response?.status === 409) load(); // someone else handled it, or the thread changed
@@ -123,7 +126,7 @@ export default function PendingApprovals() {
 
               {/* adjust to your thread route */}
               <Link
-                to={`/mail/thread/${item.threadId}?companyName=${item.companyName}`}
+                to={`/mail/${item.threadId}?companyName=${encodeURIComponent(item.companyName || "affotax")}`}
                 className="inline-flex shrink-0 items-center gap-1 text-xs text-orange-600 hover:underline"
               >
                 Open thread <FiExternalLink className="size-3" />

@@ -111,7 +111,7 @@ export const ActionsCell = ({
 
                     <span
                       title="View Comments"
-                      className="flex items-center justify-center gap-1 relative w-full h-full"
+                      className="flex items-center justify-center relative w-full h-full"
                      onClick={(e) => {
               setCommentAnchorEl(e.currentTarget);
               setCommentTaskId(row.original._id);
@@ -132,7 +132,7 @@ export const ActionsCell = ({
 
 
 
-      <div>
+      {/* <div>
         <span
           title="Create New Ticket"
           onClick={handleCreateTicket}
@@ -144,7 +144,7 @@ export const ActionsCell = ({
             <FiPlusSquare />
           )}
         </span>
-      </div>
+      </div> */}
       <div>
         <div className="relative">
           <span

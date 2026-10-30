@@ -2193,7 +2193,7 @@ export const getLeadColumns = (ctx) => {
       
         />
       ),
-      size: 240,
+      size: 220,
     },
 
     {

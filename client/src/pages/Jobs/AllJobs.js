@@ -97,6 +97,18 @@ const csvConfig = mkConfig({
 
 
 const COLUMN_ORDER_KEY = "jobs:column_order";
+const PAGE_SIZE_KEY = "jobs:page_size";
+const PAGE_SIZE_OPTIONS = [10, 20, 25, 50, 100];
+const DEFAULT_PAGE_SIZE = 20;
+
+const getSavedPageSize = () => {
+  try {
+    const saved = Number(localStorage.getItem(PAGE_SIZE_KEY));
+    return PAGE_SIZE_OPTIONS.includes(saved) ? saved : DEFAULT_PAGE_SIZE;
+  } catch {
+    return DEFAULT_PAGE_SIZE;
+  }
+};
 
 export default function AllJobs() {
   const dispatch = useDispatch();
@@ -284,8 +296,16 @@ export default function AllJobs() {
   // Pagination
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 20,
+    pageSize: getSavedPageSize(),
   });
+
+
+  // Persist whenever the user changes rows-per-page
+useEffect(() => {
+  try {
+    localStorage.setItem(PAGE_SIZE_KEY, String(pagination.pageSize));
+  } catch {}
+}, [pagination.pageSize]);
 
   // Sorting
   const [sorting, setSorting] = useState([]);
@@ -1558,6 +1578,8 @@ const handleExportData = async () => {
     columnFilters,
     searchValue,
     status,
+    pagination.pageIndex,
+  pagination.pageSize,
   ]);
 
   // ----------------------------
@@ -1622,6 +1644,9 @@ const handleExportData = async () => {
     manualPagination: true,
     manualFiltering: true,
     // manualSorting: true,
+     muiPaginationProps: {
+    rowsPerPageOptions: PAGE_SIZE_OPTIONS,
+  },
 
     // Total rows from backend
     rowCount: rowCount,
@@ -1655,6 +1680,7 @@ const handleExportData = async () => {
         _id: false,
       },
        columnOrder: getSavedColumnOrder(COLUMN_ORDER_KEY),   // 👈 restore saved order
+       pagination: { pageIndex: 0, pageSize: getSavedPageSize() }, // 👈 add
     },
 
 

@@ -5,6 +5,7 @@ import {
   buildFilterQuery,
   getOtherParticipantEmail,
   isSelfAssignment,
+  tagSearchMatches,
 } from "../utils/utils.js";
 import { scheduleNotification } from "../../utils/customFns/scheduleNotification.js";
 import { createNotification } from "../utils/createNotification.js";
@@ -14,6 +15,7 @@ import EmailMessage from "../models/EmailMessage.js";
 import { trackUserUsageById } from "../../services/user.service.js";
 import { logThreadActivity } from "../services/threadActivity.service.js";
 import { attachAutomation } from "../utils/attachAutomation.js";
+import { getGmailSearchIds } from "../services/gmailSearch.js";
 
 /**
  * GET /api/email/inbox
@@ -30,8 +32,12 @@ import { attachAutomation } from "../utils/attachAutomation.js";
 
 export const getMailbox = async (req, res) => {
   try {
-    const query = buildFilterQuery(req);
-    // console.log("Mongo Query:", JSON.stringify(query, null, 2));
+
+      
+    const gmailThreadIds = await getGmailSearchIds(req);
+    const query = buildFilterQuery(req, { gmailThreadIds });
+
+     // console.log("Mongo Query:", JSON.stringify(query, null, 2));
 
     const pageNumber = Math.max(parseInt(req.query.page) || 1, 1);
     const pageSize = Math.min(parseInt(req.query.limit) || 20, 100);
@@ -91,9 +97,14 @@ export const getMailbox = async (req, res) => {
 
     const threadsWithAutomation = await attachAutomation(threads);
 
+
+    const threadsOut = tagSearchMatches(threadsWithAutomation, req?.query?.search, gmailThreadIds);
+
+
+
     res.json({
       success: true,
-      threads: threadsWithAutomation,
+      threads: threadsOut,
       pagination: {
         page: pageNumber,
         limit: pageSize,
@@ -1300,7 +1311,11 @@ export const toggleStarredThread = async (req, res) => {
 
 export const getMailboxUserCounts = async (req, res) => {
   try {
-    const query = buildFilterQuery(req);
+    const gmailThreadIds = await getGmailSearchIds(req);
+    const query = buildFilterQuery(req, { gmailThreadIds });
+
+
+    // const query = buildFilterQuery(req);
 
     // 🔥 Deep clone to avoid mutation
     const countQuery = structuredClone(query);

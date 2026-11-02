@@ -161,11 +161,46 @@ const applyDateFilter = (filters) => {
   return { [dateField]: dateQuery };
 };
 
-const applySearchFilter = (filters) => {
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+ 
+
+export const tagSearchMatches = (threads, search, gmailThreadIds = []) => {
+  const term = search?.trim();
+  if (!term) return threads;
+
+  const re = new RegExp(escapeRegex(term), "i");
+  const bodyHits = new Set(gmailThreadIds);
+
+  // same ref logic as applySearchFilter
+  const refMatch = term.match(/^[a-zA-Z]*-?(\d+)$/);
+  const refNumber = refMatch ? Number(refMatch[1]) : null;
+
+  return threads.map((t) => {
+    const inDetails =
+      re.test(t.subject || "") ||
+      t.participants?.some((p) => re.test(p.email || "") || re.test(p.name || "")) ||
+      (refNumber !== null && t.ref === refNumber);
+
+    const inMessages = bodyHits.has(t.threadId);
+
+    return {
+      ...t,
+      matchedIn:
+        inDetails && inMessages ? "both" : inMessages ? "messages" : inDetails ? "details" : null,
+    };
+  });
+};
+
+
+
+
+
+const applySearchFilter = (filters, gmailThreadIds = []) => {
   if (!filters.search?.trim()) return null;
 
   const trimmedSearch = filters.search.trim();
-  const searchRegex = new RegExp(trimmedSearch, "i");
+  const searchRegex = new RegExp(escapeRegex(trimmedSearch), "i");
 
   const orClauses = [
     { subject: searchRegex },
@@ -173,13 +208,15 @@ const applySearchFilter = (filters) => {
     { "participants.name": searchRegex },
   ];
 
-  // Match ref-style searches: "E-19266", "E19266", "e-19266", or plain "19266"
   const refMatch = trimmedSearch.match(/^[a-zA-Z]*-?(\d+)$/);
   if (refMatch) {
     const refNumber = Number(refMatch[1]);
-    if (!Number.isNaN(refNumber)) {
-      orClauses.push({ ref: refNumber });
-    }
+    if (!Number.isNaN(refNumber)) orClauses.push({ ref: refNumber });
+  }
+
+  // NEW: threads whose message bodies matched in Gmail
+  if (gmailThreadIds.length) {
+    orClauses.push({ threadId: { $in: gmailThreadIds } });
   }
 
   return { $or: orClauses };
@@ -235,7 +272,7 @@ const applyUserAssignmentFilter = (filters, { isAdmin, isTeamLead, user, hasUnas
 
 // ─── Main export ──────────────────────────────────────────────────────────
 
-export const buildFilterQuery = (req) => {
+export const buildFilterQuery = (req, { gmailThreadIds = []}) => {
   const user = req?.user?.user;
   const filters = req.query;
 
@@ -263,7 +300,7 @@ export const buildFilterQuery = (req) => {
     applyFolderFilter(filters),
     applyUnreadFilter(filters, user._id),
     applyDateFilter(filters),
-    applySearchFilter(filters),
+    applySearchFilter(filters, gmailThreadIds),
   ].filter(Boolean);
 
   if (andFilters.length === 0) return {};

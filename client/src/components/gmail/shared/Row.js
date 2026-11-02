@@ -21,6 +21,7 @@ import TicketButton from "./ui/TicketButton";
 import { useMailModalActions } from "../context/MailModalsContext";
 import { getOtherParticipantEmail } from "../utils/utils";
 import AutomationBadge from "./ui/AutomationBadge";
+import MatchBadge from "./ui/MatchBadge";
 
 
 function highlightText(text = "", search = "") {
@@ -292,6 +293,10 @@ export default function Row({
 
 
               <AutomationBadge automation={thread?.automation} />
+
+              {/* {filters.search && <MatchBadge matchedIn={thread.matchedIn} />} */}
+
+
           </div>
         </div>
 
@@ -316,6 +321,8 @@ export default function Row({
                 __html: highlightText(thread.subject, filters.search),
               }}
             ></span>
+
+             {filters.search && <MatchBadge matchedIn={thread.matchedIn} />}
           </div>
           <span className="text-sm text-gray-500 truncate font-normal  font-google ">
             {thread.lastMessageSnippet}

@@ -130,6 +130,12 @@ const subScriptionSchema = new mongoose.Schema(
     },
 
 
+    paymentDate: {
+      type: Date,
+       
+    },
+
+
     completedAt: { type: Date },
     completedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 

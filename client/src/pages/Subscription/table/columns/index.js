@@ -17,6 +17,7 @@ import createActionsColumn from "./ActionsColumn";
 import createSourceColumn from "./SourceColumn";
 import createCompletedAtColumn from "./CompletedAtColumn";
 import createCompletedByColumn from "./CompletedByColumn";
+import createPaymentDateColumn from "./PaymentDateColumn";
 
 export const getSubscriptionColumns = (ctx) => {
   const columns = [
@@ -27,6 +28,8 @@ export const getSubscriptionColumns = (ctx) => {
     createBillingStartColumn(ctx),
     createBillingEndColumn(ctx),
     createDeadlineColumn(ctx),
+
+    createPaymentDateColumn(ctx),
     createTimeColumn(),
     createStatusColumn(ctx),
     createFeeColumn(ctx),

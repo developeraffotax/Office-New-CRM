@@ -13,6 +13,7 @@ export const createSubscription = async (req, res) => {
       email,
       totalHours,
       currentDate,
+              paymentDate,
       source,
       clientType,
       partner,
@@ -51,6 +52,7 @@ export const createSubscription = async (req, res) => {
       email,
       totalHours,
       currentDate,
+              paymentDate,
       source,
       clientType,
       partner,
@@ -95,6 +97,7 @@ export const updateSubscription = async (req, res) => {
       email,
       totalHours,
       currentDate,
+      paymentDate,
       source,
       clientType,
       partner,
@@ -145,6 +148,7 @@ export const updateSubscription = async (req, res) => {
         email,
         totalHours,
         currentDate,
+        paymentDate,
         source,
         clientType,
         partner,
@@ -203,6 +207,7 @@ export const updateSingleField = async (req, res) => {
   subscription: "subscription",
   source: "source",
   completedAt: "completedAt",
+  paymentDate: "paymentDate",
 };
 
 

@@ -322,7 +322,7 @@ export default function Row({
               }}
             ></span>
 
-             {filters.search && <MatchBadge matchedIn={thread.matchedIn} />}
+             {/* {filters.search && <MatchBadge matchedIn={thread.matchedIn} />} */}
           </div>
           <span className="text-sm text-gray-500 truncate font-normal  font-google ">
             {thread.lastMessageSnippet}

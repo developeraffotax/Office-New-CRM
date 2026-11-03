@@ -47,7 +47,7 @@ import { scheduleNotification } from "../utils/customFns/scheduleNotification.js
 // Create Comment
 export const createComment = async (req, res) => {
   const senderId = req.user.user._id;
-  // console.log("senderId:", senderId);
+ console.log("senderId:", senderId);
   try {
     const { comment, jobId, type, mentionUser } = req.body;
 
@@ -206,14 +206,8 @@ export const createComment = async (req, res) => {
       // Create Notification
       const user = await userModel.findOne({ name: mentionUser ? mentionUser.trim() : leadJobHolder });
 
-      if (!user) {
-        //console.log("Task User: null");
-        return res.status(404).json({ error: "Lead Assignee not found" });
-      }
- 
-
-
-      const payload ={
+      if (user) {
+           const payload ={
         title: "New comment received!",
         redirectLink:`/leads?leadId=${lead?._id.toString()}&tab=${lead?.status || "progress"}`,
         description: `${req.user.user.name} add a new comment for Lead. ${comment}`,
@@ -224,18 +218,15 @@ export const createComment = async (req, res) => {
       
         scheduleNotification(req.user?.user?.name !== user.name, payload);
 
-     
-
-      //  if (mentionUser && (user.name !== mentionUser?.trim())) {
-      //     await notifyMentionedUser(req, mentionUser, task, comment, jobId);
-      // }
-        
+      }
+ 
+ 
 
       res.status(200).send({
         success: true,
         message: "Comment Posted!",
         job: lead,
-        notification: payload,
+        // notification: payload,
       });
     } else if (type === "Goals") {
       const goal = await goalModel.findById({ _id: jobId });

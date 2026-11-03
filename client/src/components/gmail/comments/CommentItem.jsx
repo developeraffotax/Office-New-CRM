@@ -63,10 +63,10 @@ const renderContent = (text) => {
       {/* Bubble */}
       <div className={`flex flex-col ${isMe ? "items-end" : "items-start"} max-w-[85%]`}>
         <div
-          className={`px-3 py-2 text-[13px] leading-snug rounded-md ${
+          className={`px-3 py-2 text-[13px] leading-snug rounded-md  ${
             isMe
-              ? "bg-slate-800 text-white rounded-br-sm"
-              : "bg-slate-100 text-slate-800 rounded-bl-sm"
+              ? "bg-slate-100 text-slate-900 rounded-br-sm"
+              : "bg-slate-100 text-slate-900 rounded-bl-sm"
           }`}
         >
           <p className="whitespace-pre-wrap break-words">{renderContent(comment.content)}</p>

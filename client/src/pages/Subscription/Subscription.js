@@ -45,7 +45,11 @@ export default function Subscription() {
   const [totalFee, setTotalFee] = useState(0);
   //
   const subscriptions = ["Weekly", "Monthly", "Quarterly", "Yearly"];
-  const states = ["Paid", "Unpaid", "On Hold", "Not Due", "Not Invoiced", "Invoice Sent", "Invoice Follow-up"];
+  const states = [ "Invoice Sent", "Not Invoiced", "Invoice Follow-up",  "Paid", "Unpaid", "On Hold", "Not Due" ];
+
+  const statesQuickFilters = [ "Invoice Sent", "Not Invoiced", "Invoice Follow-up" ];
+
+
   const [showDataLabel, setShowDataLable] = useState(false);
   const [dataLable, setDataLabel] = useState([]);
   const [rowSelection, setRowSelection] = useState({});
@@ -685,6 +689,39 @@ const handleCopySubscription = async (id) => {
                 ))}
               </ul>
             </div>
+
+            <span>|</span>
+
+
+            <div className="flex items-center gap-2">
+              {/* <span className="text-sm font-semibold text-gray-700">
+                  Job Holder
+                </span> */}
+              <ul className="flex items-center gap-2 list-none  ">
+                {statesQuickFilters.map((jobStatus, i) => (
+                  <li
+                    key={i}
+                    className={`${
+                      filter1 === jobStatus
+                        ? "bg-orange-500 text-white"
+                        : "bg-gray-200 text-gray-700"
+                    } px-2 py-1 rounded-md cursor-pointer   m-0`}
+                    onClick={() => {
+                      setFilter1((prev) => {
+                        const isSame = prev === jobStatus;
+                        const newValue = isSame ? "" : jobStatus;
+
+                        setColumnFromOutsideTable("status", newValue);
+                        return newValue;
+                      });
+                    }}
+                  >
+                    {jobStatus}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
 
             <span>|</span>
 

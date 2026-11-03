@@ -27,6 +27,7 @@ import getSubscriptionColumns from "./table/columns";
 import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { LEADS_SOURCES } from "../../constants/constants";
+import SendEmailModal from "../../components/Tickets/SendEmailModal";
 
 export default function Subscription() {
   const auth = useSelector((state) => state.auth.auth);
@@ -69,6 +70,7 @@ export default function Subscription() {
 
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
   const [clientCompanyName, setClientCompanyName] = useState("");
+    const [clientCompanyId, setClientCompanyId] = useState("");
 
   const [showExternalFilters, setShowExternalFilters] = useState(true);
   const [filter1, setFilter1] = useState("");
@@ -371,6 +373,7 @@ const handleCopySubscription = async (id) => {
         handleMarkInProgress,
         handleMarkCompleted,
         handleCopySubscription,
+        setClientCompanyId
       }),
     [auth, users, subscriptions, userName, totalFee, states, dataLable, status],
   );
@@ -888,14 +891,35 @@ const handleCopySubscription = async (id) => {
         )}
 
         {/* ---------------New Ticket Modal------------- */}
-        {showNewTicketModal && (
+        {/* {showNewTicketModal && (
           <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
             <NewTicketModal
               setShowSendModal={setShowNewTicketModal}
               clientCompanyName={clientCompanyName}
             />
           </div>
-        )}
+        )} */}
+
+         {/* ---------------New Ticket Modal------------- */}
+              {showNewTicketModal && (
+                <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
+                   
+        
+                  <SendEmailModal
+                    onClose={() => setShowNewTicketModal(false)}
+                    onSuccess={() => setShowNewTicketModal(false)}
+                    defaults={{
+                      clientId: clientCompanyId,
+                    }}
+                  />
+                </div>
+              )}
+
+
+
+
+
+
       </div>
     </>
   );

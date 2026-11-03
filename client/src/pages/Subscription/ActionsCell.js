@@ -14,6 +14,8 @@ import { useMemo } from "react";
 import { hasSubrole } from "../../utlis/checkPermission";
 import { FaUndo } from "react-icons/fa";
 import { FaRegCircleCheck } from "react-icons/fa6";
+import { TbLoader2 } from "react-icons/tb";
+import { getClientIdFromCompanyName } from "../../utlis/apiGetters/apiGetters";
 
 const ActionsCell = ({
   auth,
@@ -26,10 +28,13 @@ const ActionsCell = ({
   handleMarkInProgress,
   handleMarkCompleted,
   handleCopySubscription,
+  setClientCompanyId,
 }) => {
   const subId = row.original._id;
   const progressStatus = row.original.progressStatus;
   const [anchorEl, setAnchorEl] = useState(null);
+      const [creatingTicket, setCreatingTicket] = useState(false);
+
 
   const scope = useMemo(() => {
     return {
@@ -51,11 +56,52 @@ const ActionsCell = ({
     setAnchorEl(null);
   };
 
+
+        const handleCreateTicket = async () => {
+          try {
+            setCreatingTicket(true);
+  
+            const clientId = await getClientIdFromCompanyName(
+              row?.original?.companyName,
+            );
+  
+            if (clientId) {
+              setClientCompanyId(clientId);
+              setShowNewTicketModal(true);
+            }
+          } catch (error) {
+            console.log(error);
+          } finally {
+            setCreatingTicket(false);
+          }
+        };
+
+
+
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
 
   return (
     <div className="flex items-center justify-center gap-2 w-full h-full">
+
+      <div>
+                    <span
+                      title="Create New Ticket"
+                     
+                      onClick={handleCreateTicket}
+                      className="text-xl text-orange-500 cursor-pointer"
+                    >
+                      {creatingTicket ? (
+                        <TbLoader2 className="animate-spin" />
+                      ) : (
+                        <FiPlusSquare />
+                      )}
+                    </span>
+                  </div>
+
+
+
+
       {/* Copy Subscription */}
       {scope.copy && (
         <span
@@ -68,7 +114,7 @@ const ActionsCell = ({
       )}
 
       {/* Create New Ticket */}
-      <span
+      {/* <span
         title="Create New Ticket"
         onClick={() => {
           setClientCompanyName(row?.original?.companyName);
@@ -77,7 +123,7 @@ const ActionsCell = ({
         className="text-xl text-orange-500 cursor-pointer"
       >
         <FiPlusSquare />
-      </span>
+      </span> */}
 
       {/* Ticket Popover */}
       <div>

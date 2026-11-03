@@ -29,7 +29,6 @@ export const getSubscriptionColumns = (ctx) => {
     createBillingEndColumn(ctx),
     createDeadlineColumn(ctx),
 
-    createPaymentDateColumn(ctx),
     createTimeColumn(),
     createStatusColumn(ctx),
     createFeeColumn(ctx),
@@ -38,6 +37,7 @@ export const getSubscriptionColumns = (ctx) => {
     createSubscriptionTypeColumn(ctx),
     createDataLabelColumn(ctx),
     createSourceColumn(ctx),
+    createPaymentDateColumn(ctx),
     createActionsColumn(ctx),
     createNoteColumn(ctx),
 

@@ -29,6 +29,7 @@ import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { LEADS_SOURCES } from "../../constants/constants";
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import Reminder from "../../utlis/Reminder";
+import { useSearchParams } from "react-router-dom";
 
 export default function Subscription() {
   const auth = useSelector((state) => state.auth.auth);
@@ -66,6 +67,8 @@ export default function Subscription() {
   const [source, setSource] = useState("");
   const [fee, setFee] = useState("");
 
+  const [searchParams, setSearchParams] = useSearchParams();
+const commentTaskId = searchParams.get("comment_taskId");
 
 
     const [reminder, setReminder] = useState({
@@ -91,38 +94,98 @@ export default function Subscription() {
   const [filter3, setFilter3] = useState("");
 
   // -------Get Subscription Data-------
-  const getAllSubscriptions = async () => {
-    setLoading(true);
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/fetch/all?progressStatus=${status}`,
-      );
-      if (data) {
-        setSubscriptionData(data.subscriptions);
-        setLoading(false);
-      }
-    } catch (error) {
-      console.log(error);
-      setLoading(false);
-    }
-  };
+  // const getAllSubscriptions = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const { data } = await axios.get(
+  //       `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/fetch/all?progressStatus=${status}`,
+  //     );
+  //     if (data) {
+  //       setSubscriptionData(data.subscriptions);
+  //       setLoading(false);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     setLoading(false);
+  //   }
+  // };
 
-  useEffect(() => {
-    getAllSubscriptions();
-  }, [status]);
+  // useEffect(() => {
+  //   getAllSubscriptions();
+  // }, [status]);
 
-  const fetchSubscriptions = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/fetch/all?progressStatus=${status}`,
-      );
-      if (data) {
-        setSubscriptionData(data.subscriptions);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // const fetchSubscriptions = async () => {
+  //   try {
+  //     const { data } = await axios.get(
+  //       `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/fetch/all?progressStatus=${status}`,
+  //     );
+  //     if (data) {
+  //       setSubscriptionData(data.subscriptions);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
+
+
+
+
+
+  // Shared loader: honours ?comment_taskId=...
+const loadSubscriptions = async () => {
+  const base = `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/fetch/all`;
+
+  if (commentTaskId) {
+    const [inProgress, completed] = await Promise.all([
+      axios.get(`${base}?progressStatus=in_progress`),
+      axios.get(`${base}?progressStatus=completed`),
+    ]);
+
+    const all = [
+      ...(inProgress.data?.subscriptions || []),
+      ...(completed.data?.subscriptions || []),
+    ];
+
+    return all.filter((sub) => sub._id === commentTaskId);
+  }
+
+  const { data } = await axios.get(`${base}?progressStatus=${status}`);
+  return data?.subscriptions || [];
+};
+
+// -------Get Subscription Data-------
+const getAllSubscriptions = async () => {
+  setLoading(true);
+  try {
+    setSubscriptionData(await loadSubscriptions());
+  } catch (error) {
+    console.log(error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  getAllSubscriptions();
+  // eslint-disable-next-line
+}, [status, commentTaskId]);
+
+// Silent refresh (no loader) used after updates
+const fetchSubscriptions = async () => {
+  try {
+    setSubscriptionData(await loadSubscriptions());
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+
+
+
+
+
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -626,6 +689,22 @@ const handleCopySubscription = async (id) => {
             </button>
           </div>
         </div>
+
+        {commentTaskId && (
+  <div className="w-full mt-4 flex items-center justify-between gap-3 rounded-md border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-gray-700">
+    <span>Showing a single subscription.</span>
+    <button
+      className="rounded-md bg-orange-500 px-3 py-1 text-white hover:bg-orange-600"
+      onClick={() => {
+        const next = new URLSearchParams(searchParams);
+        next.delete("comment_taskId");
+        setSearchParams(next);
+      }}
+    >
+      Show all
+    </button>
+  </div>
+)}
 
         {/* --------------External Filter---------------- */}
         {showExternalFilters && (

@@ -6,7 +6,7 @@ import {
   IoCheckmarkDoneOutline,
   IoPlayOutline,
   IoCopyOutline,
-  IoArrowUndoCircle
+  IoArrowUndoCircle,
 } from "react-icons/io5";
 import { Popover, Typography } from "@mui/material";
 import TicketsPopUp from "../../components/shared/TicketsPopUp";
@@ -16,6 +16,7 @@ import { FaUndo } from "react-icons/fa";
 import { FaRegCircleCheck } from "react-icons/fa6";
 import { TbLoader2 } from "react-icons/tb";
 import { getClientIdFromCompanyName } from "../../utlis/apiGetters/apiGetters";
+import { BiBellPlus, BiSolidBellPlus } from "react-icons/bi";
 
 const ActionsCell = ({
   auth,
@@ -29,12 +30,12 @@ const ActionsCell = ({
   handleMarkCompleted,
   handleCopySubscription,
   setClientCompanyId,
+  setReminder,
 }) => {
   const subId = row.original._id;
   const progressStatus = row.original.progressStatus;
   const [anchorEl, setAnchorEl] = useState(null);
-      const [creatingTicket, setCreatingTicket] = useState(false);
-
+  const [creatingTicket, setCreatingTicket] = useState(false);
 
   const scope = useMemo(() => {
     return {
@@ -56,27 +57,24 @@ const ActionsCell = ({
     setAnchorEl(null);
   };
 
+  const handleCreateTicket = async () => {
+    try {
+      setCreatingTicket(true);
 
-        const handleCreateTicket = async () => {
-          try {
-            setCreatingTicket(true);
-  
-            const clientId = await getClientIdFromCompanyName(
-              row?.original?.companyName,
-            );
-  
-            if (clientId) {
-              setClientCompanyId(clientId);
-              setShowNewTicketModal(true);
-            }
-          } catch (error) {
-            console.log(error);
-          } finally {
-            setCreatingTicket(false);
-          }
-        };
+      const clientId = await getClientIdFromCompanyName(
+        row?.original?.companyName,
+      );
 
-
+      if (clientId) {
+        setClientCompanyId(clientId);
+        setShowNewTicketModal(true);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setCreatingTicket(false);
+    }
+  };
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
@@ -84,25 +82,7 @@ const ActionsCell = ({
   return (
     <div className="flex items-center justify-center gap-2 w-full h-full">
 
-      <div>
-                    <span
-                      title="Create New Ticket"
-                     
-                      onClick={handleCreateTicket}
-                      className="text-xl text-orange-500 cursor-pointer"
-                    >
-                      {creatingTicket ? (
-                        <TbLoader2 className="animate-spin" />
-                      ) : (
-                        <FiPlusSquare />
-                      )}
-                    </span>
-                  </div>
-
-
-
-
-      {/* Copy Subscription */}
+       {/* Copy Subscription */}
       {scope.copy && (
         <span
           className="text-[1rem] cursor-pointer"
@@ -113,18 +93,24 @@ const ActionsCell = ({
         </span>
       )}
 
-      {/* Create New Ticket */}
-      {/* <span
-        title="Create New Ticket"
-        onClick={() => {
-          setClientCompanyName(row?.original?.companyName);
-          setShowNewTicketModal(true);
-        }}
-        className="text-xl text-orange-500 cursor-pointer"
-      >
-        <FiPlusSquare />
-      </span> */}
+      
+      <div>
+        <span
+          title="Create New Ticket"
+          onClick={handleCreateTicket}
+          className="text-xl text-orange-500 cursor-pointer"
+        >
+          {creatingTicket ? (
+            <TbLoader2 className="animate-spin" />
+          ) : (
+            <FiPlusSquare />
+          )}
+        </span>
+      </div>
 
+     
+
+      
       {/* Ticket Popover */}
       <div>
         <span
@@ -167,6 +153,23 @@ const ActionsCell = ({
             />
           </div>
         </Popover>
+      </div>
+
+      {/* Reminder */}
+      <div className="flex items-center">
+        
+        <span
+          onClick={() =>
+            setReminder((prev) => ({
+              ...prev,
+              show: true,
+              entity_id: row?.original?._id,
+            }))
+          }
+          className=" text-pink-500 hover:text-pink-600"
+        >
+          <BiSolidBellPlus className="h-6 w-6 cursor-pointer " />
+        </span>
       </div>
 
       {/* Edit */}

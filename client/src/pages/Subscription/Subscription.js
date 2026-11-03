@@ -28,6 +28,7 @@ import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { LEADS_SOURCES } from "../../constants/constants";
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
+import Reminder from "../../utlis/Reminder";
 
 export default function Subscription() {
   const auth = useSelector((state) => state.auth.auth);
@@ -60,6 +61,14 @@ export default function Subscription() {
   const [dataLabelId, setDataLabelId] = useState("");
   const [source, setSource] = useState("");
   const [fee, setFee] = useState("");
+
+
+
+    const [reminder, setReminder] = useState({
+
+      show: false,
+      entity_id: "",
+    });
 
 
  // const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
@@ -373,7 +382,8 @@ const handleCopySubscription = async (id) => {
         handleMarkInProgress,
         handleMarkCompleted,
         handleCopySubscription,
-        setClientCompanyId
+        setClientCompanyId,
+        setReminder
       }),
     [auth, users, subscriptions, userName, totalFee, states, dataLable, status],
   );
@@ -914,6 +924,20 @@ const handleCopySubscription = async (id) => {
                   />
                 </div>
               )}
+
+
+
+               {/* Add Reminder */}
+                      {reminder.show && (
+                        <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/80 flex items-center justify-center">
+                          <Reminder
+                            setShowReminder={() => setReminder(prev => ({...prev, show: false}))}
+                            taskId={reminder.entity_id}
+                            link={"/subscriptions"}
+                            // onReminderAdded={() => setReminderRefreshKey(prev => prev + 1)}
+                          />
+                        </div>
+                      )}
 
 
 

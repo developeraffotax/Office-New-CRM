@@ -532,15 +532,16 @@ export default function HR() {
   };
 
   // Update User Status
-  const updateUserStatus = async (taskId, statusId, status) => {
+  const updateUserStatus = async (taskId, statusId, newStatus) => {
     try {
-      const { data } = await axios.put(
+      const { data, status  } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/hr/update/status/${taskId}`,
-        { statusId, status },
+        { statusId, status: newStatus },
       );
       if (data) {
         getAllTasks();
       }
+      return status
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message);
@@ -1048,51 +1049,62 @@ export default function HR() {
             </div>
           );
         },
-        Cell: ({ row }) => {
-          const matchedUser = row.original.users?.find(
-            (u) => u?.user?.name === name,
-          );
+Cell: ({ row }) => {
+  const matchedUser = row.original.users?.find(
+    (u) => u?.user?.name === name,
+  );
 
-          const [isShow, setIsShow] = useState(false);
-          const [status, setStatus] = useState(matchedUser?.status || "");
+  const [status, setStatus] = useState(matchedUser?.status || "");
+  const [isUpdating, setIsUpdating] = useState(false);
 
-          const handleStatus = (value, statusId) => {
-            setStatus(value);
-            updateUserStatus(row.original._id, statusId, value);
-            setIsShow(false);
-          };
-          return (
-            <div className="w-full h-full">
-              {!isShow ? (
-                <div
-                  className={`text-center w-full h-full cursor-pointer ${
-                    matchedUser?.status === "Yes"
-                      ? "text-green-500"
-                      : matchedUser?.status === "No"
-                      ? "text-red-500"
-                      : "text-white"
-                  }`}
-                  onDoubleClick={() => setIsShow(true)}
-                >
-                  {matchedUser?.status || ""}
-                </div>
-              ) : (
-                <select
-                  value={status}
-                  onChange={(e) =>
-                    handleStatus(e.target.value, matchedUser?._id)
-                  }
-                  onBlur={() => setIsShow(false)}
-                  className="font-normal w-full h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-                >
-                  <option value="."></option>
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              )}
-            </div>
-          );
-        },
+  const handleStatus = async () => {
+    if (isUpdating) return;
+
+    const newStatus = status === "Yes" ? "No" : "Yes";
+
+    setIsUpdating(true);
+
+    try {
+      const status = await updateUserStatus(row.original._id, matchedUser?._id, newStatus);
+
+      if (status === 200) {
+         setStatus(newStatus);
+
+      }
+    } catch (error) {
+      console.error("Failed to update status:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+{ status && 
+        <button
+        type="button"
+        disabled={isUpdating}
+        onClick={handleStatus}
+        className={`min-w-[55px] px-3 py-1 font-semibold rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+          status === "Yes"
+            ? "  text-green-500 hover:bg-green-100"
+            : status === "No"
+            ? "  text-red-500 hover:bg-red-100"
+            : ""
+        }`}
+      >
+        {isUpdating ? (
+          <span className="flex items-center justify-center gap-1">
+            <span className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" />
+          </span>
+        ) : (
+          status || " "
+        )}
+      </button>
+}
+    </div>
+  );
+},
         size: 100,
         minSize: 80,
         maxSize: 160,

@@ -8,53 +8,59 @@ export const createNoteColumn = ({ handleUpdateSubscription }) => ({
   grow: false,
   Header: ({ column }) => {
     return (
-      <div className=" flex flex-col gap-[2px]">
+      <div className="w-full flex flex-col gap-[2px]">
         <span
           className="ml-1 cursor-pointer"
           title="Clear Filter"
-          onClick={() => {
-            column.setFilterValue("");
-          }}
+          onClick={() => column.setFilterValue("")}
         >
           Note
         </span>
         <input
           type="search"
           value={column.getFilterValue() || ""}
-          onChange={(e) => {
-            column.setFilterValue(e.target.value);
-          }}
-          className="font-normal h-[1.8rem] w-[200px] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+          onChange={(e) => column.setFilterValue(e.target.value)}
+          className="font-normal h-[1.8rem] w-full px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
         />
       </div>
     );
   },
   Cell: ({ row }) => {
-    const note = row.original.note;
+    const note = row.original.note || "";
     const [show, setShow] = useState(false);
     const [localNote, setLocalNote] = useState(note);
 
-    const handleNote = () => {
+    const handleNote = (e) => {
+      e.preventDefault();
       handleUpdateSubscription(row.original._id, localNote, "note");
       setShow(false);
     };
 
     return (
-      <div className="w-full px-1">
+      <div className="w-full h-full px-1 flex items-center">
         {show ? (
-          <form onSubmit={handleNote}>
+          <form onSubmit={handleNote} className="w-full">
             <input
               type="text"
               value={localNote}
               autoFocus
               onChange={(e) => setLocalNote(e.target.value)}
+              onBlur={handleNote}
               className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
             />
           </form>
         ) : (
-          <div onDoubleClick={() => setShow(true)} className="cursor-pointer w-full">
-            {note ? (note.length > 32 ? note.slice(0, 32) + " ..." : note) : (
-              <div className="text-white w-full h-full">.</div>
+          <div
+            onDoubleClick={() => setShow(true)}
+            className="cursor-pointer w-full min-w-0 overflow-hidden"
+            title={note || "Double-click to add note"}
+          >
+            {note ? (
+              <span className="block truncate text-sm text-gray-800">
+                {note}
+              </span>
+            ) : (
+              <span className="text-gray-300 select-none">.</span>
             )}
           </div>
         )}
@@ -69,5 +75,3 @@ export const createNoteColumn = ({ handleUpdateSubscription }) => ({
 });
 
 export default createNoteColumn;
-
-

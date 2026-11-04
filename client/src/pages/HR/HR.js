@@ -964,48 +964,47 @@ export default function HR() {
             </div>
           );
         },
-        Cell: ({ cell, row }) => {
-          const title = row.original.title || "";
-          const hrTaskId = row.original?._id || "";
+Cell: ({ cell, row }) => {
+  const title = row.original.title || "";
+  const productLink = row.original?.productLink || "";
 
-          const productLink = row.original?.productLink || "";
+  return (
+    <div className="w-full h-full flex items-center gap-4">
+      {/* Title – takes ~90% and shows as much text as possible */}
+      <div className="flex-1 min-w-0 overflow-hidden">
+        {productLink ? (
+          <Link
+            to={productLink}
+            target="_blank"
+            className="block text-[14px] text-blue-600 hover:underline truncate"
+            title={title}                 // full text on hover
+          >
+            {title}
+          </Link>
+        ) : (
+          <div
+            className="text-[14px] text-blue-600 truncate cursor-default"
+            title={title}
+          >
+            {title}
+          </div>
+        )}
+      </div>
 
-          return (
-            <div className="w-full h-full ">
-              <div className="w-full h-full flex items-center justify-between  ">
-                {/* <div
-                  onClick={() => {
-                    setShowDescription(true);
-                    getSingleTask(hrTaskId);
-                  }}
-                  className="px-1   text-[14px] text-blue-600 cursor-pointer"
-                >
-                  {title.length > 65 ? `${title.slice(0, 65)}...` : title}
-                </div> */}
-
-                {productLink ? (
-                  <Link
-                    to={productLink}
-                    target="_blank"
-                    className="px-1   text-[14px] text-blue-600 "
-                  >
-                    {title.length > 60 ? `${title.slice(0, 60)}...` : title}
-                  </Link>
-                ) : (
-                  <div className="px-1   text-[14px] text-blue-600 cursor-pointer">
-                    {title.length > 60 ? `${title.slice(0, 60)}...` : title}
-                  </div>
-                )}
-
-                {productLink && (
-                  <Link to={productLink} target="_blank">
-                    <FiExternalLink className="w-5 h-5 text-gray-700 transition-all duration-200 hover:text-blue-600" />
-                  </Link>
-                )}
-              </div>
-            </div>
-          );
-        },
+      {/* External link icon – fixed small width (~10%) */}
+      {productLink && (
+        <Link
+          to={productLink}
+          target="_blank"
+          className="flex-none"
+          title="Open link"
+        >
+          <FiExternalLink className="w-5 h-5 text-gray-700 hover:text-blue-600 transition-colors" />
+        </Link>
+      )}
+    </div>
+  );
+},
         filterFn: (row, columnId, filterValue) => {
           if (!filterValue) return true;
 

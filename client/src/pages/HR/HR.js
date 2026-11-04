@@ -128,6 +128,8 @@ export default function HR() {
 
   const [enableRowOrdering, setEnableRowOrdering] = useState(true);
 
+  const [departmentFilter, setDepartmentFilter] = useState("");
+
   const [copyLoad, setCopyLoad] = useState(false);
   const currentMonthIndex = new Date().getMonth();
   const [month, setMonth] = useState(currentMonthIndex);
@@ -1218,12 +1220,12 @@ Cell: ({ row }) => {
   );
 
   // Clear table Filter
-  const handleClearFilters = () => {
-    table.setColumnFilters([]);
-
-    table.setGlobalFilter("");
-    // table.resetColumnFilters();
-  };
+const handleClearFilters = () => {
+  table.setColumnFilters([]);
+  table.setGlobalFilter("");
+  setDepartmentFilter("");          // ← add this
+  setActive1("");                   // if you want
+};
 
   const table = useMaterialReactTable({
     columns,
@@ -1427,10 +1429,12 @@ Cell: ({ row }) => {
     return yesCount;
   };
 
-  const setColumnFromOutsideTable = (colKey, filterVal) => {
-    const col = table.getColumn(colKey);
-    return col.setFilterValue(filterVal);
-  };
+const setColumnFromOutsideTable = (colKey, filterVal) => {
+  const col = table.getColumn(colKey);
+  if (col) {
+    col.setFilterValue(filterVal || undefined);
+  }
+};
 
   return (
     <>
@@ -1900,80 +1904,133 @@ Cell: ({ row }) => {
           </div>
         )}
 
+
+
+
+
+
+
         {/* ----------Job_Holder Summery Filters---------- */}
-        {showJobHolder && isAdmin(auth?.user) && (
-          <>
-            <div className="w-full  py-2 ">
-              <div className="flex items-center flex-wrap gap-4">
-                <DragDropContext onDragEnd={handleUserOnDragEnd}>
-                  <Droppable droppableId="users0" direction="horizontal">
-                    {(provided) => (
-                      <div
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                        className="flex items-center gap-3 overflow-x-auto hidden1"
-                      >
+{showJobHolder && isAdmin(auth?.user) && (
+  <>
+    <div className="w-full py-2 flex items-center gap-3">
+      {/* ── Users (only as wide as needed) ── */}
+      <div className="flex-none max-w-[80%] overflow-x-auto hidden1">
+        <DragDropContext onDragEnd={handleUserOnDragEnd}>
+          <Droppable droppableId="users0" direction="horizontal">
+            {(provided) => (
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className="flex items-center gap-3 whitespace-nowrap"
+              >
+                <div
+                  className={`py-1 rounded-tl-md w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                    active1 === "All" &&
+                    "border-b-2 text-orange-600 border-orange-600"
+                  }`}
+                  onClick={() => {
+                    setActive1("All");
+                    userName.forEach((u) => setColumnFromOutsideTable(u, ""));
+                  }}
+                >
+                  All
+                </div>
+
+                {userName
+                  .filter((user) => getJobHolderCount(user) !== 0)
+                  .map((user, index) => (
+                    <Draggable key={user} draggableId={user} index={index}>
+                      {(provided) => (
                         <div
-                          className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                            active1 === "All" &&
-                            "  border-b-2 text-orange-600 border-orange-600"
+                          className={`py-1 rounded-tl-md w-fit rounded-tr-md px-1 !cursor-pointer font-[500] text-[14px] ${
+                            active1 === user &&
+                            "border-b-2 text-orange-600 border-orange-600"
                           }`}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
                           onClick={() => {
-                            setActive1("All");
+                            setActive1(user);
                             userName.forEach((u) =>
                               setColumnFromOutsideTable(u, ""),
                             );
+                            setColumnFromOutsideTable(user, "Yes");
                           }}
                         >
-                          All
+                          {user} ({getJobHolderCount(user)})
                         </div>
-
-                        {userName
-                          .filter((user) => getJobHolderCount(user) !== 0)
-                          .map((user, index) => {
-                            return (
-                              <Draggable
-                                key={user}
-                                draggableId={user}
-                                index={index}
-                              >
-                                {(provided) => (
-                                  <div
-                                    className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 !cursor-pointer font-[500] text-[14px] ${
-                                      active1 === user &&
-                                      "  border-b-2 text-orange-600 border-orange-600"
-                                    }`}
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    onClick={() => {
-                                      setActive1(user);
-                                      userName.forEach((u) =>
-                                        setColumnFromOutsideTable(u, ""),
-                                      );
-
-                                      setColumnFromOutsideTable(user, "Yes");
-                                    }}
-                                  >
-                                    {user} ({getJobHolderCount(user)})
-                                  </div>
-                                )}
-                              </Draggable>
-                            );
-                          })}
-                        {/* {provided.placeholder} */}
-                      </div>
-                    )}
-                  </Droppable>
-                </DragDropContext>
+                      )}
+                    </Draggable>
+                  ))}
+                {provided.placeholder}
               </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </div>
+
+      {/* Separator */}
+      <span className="flex-none text-gray-300 select-none">|</span>
+
+      {/* ── Departments (takes the remaining space) ── */}
+      {deparmentsData?.length > 0 && (
+        <div className="flex-1 min-w-0 overflow-x-auto hidden1">
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            {/* All */}
+            <div
+              className={`px-2.5 py-1 rounded-md cursor-pointer text-[13px] font-medium transition-colors flex-none
+                ${
+                  !departmentFilter
+                    ? "bg-orange-500 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              onClick={() => {
+                setDepartmentFilter("");
+                setColumnFromOutsideTable("department", "");
+                table.getColumn("product")?.setFilterValue("");
+              }}
+            >
+              All
             </div>
-            <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
-          </>
-        )}
+
+            {deparmentsData.map((dep) => {
+              const name = dep.departmentName;
+              const isActive = departmentFilter === name;
+
+              return (
+                <div
+                  key={dep._id}
+                  className={`px-2.5 py-1 rounded-md cursor-pointer text-[13px] font-medium transition-colors flex-none
+                    ${
+                      isActive
+                        ? "bg-orange-500 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  onClick={() => {
+                    setDepartmentFilter((prev) => {
+                      const isSame = prev === name;
+                      const newValue = isSame ? "" : name;
+
+                      setColumnFromOutsideTable("department", newValue);
+                      table.getColumn("product")?.setFilterValue("");
+
+                      return newValue;
+                    });
+                  }}
+                >
+                  {name}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+
+    <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
+  </>
+)}
 
         {/* Update Bulk Jobs */}
         {showEdit && (

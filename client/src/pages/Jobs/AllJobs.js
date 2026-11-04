@@ -300,6 +300,48 @@ export default function AllJobs() {
   });
 
 
+
+
+  // After columnVisibility state
+
+const STATUS_VISIBILITY_KEY = "jobs:status_visibility";
+
+const [statusVisibility, setStatusVisibility] = useState(() => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STATUS_VISIBILITY_KEY));
+    if (saved && typeof saved === "object") {
+      // ensure every current statusInit key exists
+      return statusInit.reduce((acc, stat) => {
+        acc[stat] = saved[stat] !== false; // default true if missing
+        return acc;
+      }, {});
+    }
+  } catch {}
+  // default: all visible
+  return statusInit.reduce((acc, stat) => {
+    acc[stat] = true;
+    return acc;
+  }, {});
+});
+
+const toggleStatusVisibility = (stat) => {
+  const updated = {
+    ...statusVisibility,
+    [stat]: !statusVisibility[stat],
+  };
+  setStatusVisibility(updated);
+  localStorage.setItem(STATUS_VISIBILITY_KEY, JSON.stringify(updated));
+};
+
+
+
+
+
+
+
+
+
+
   // Persist whenever the user changes rows-per-page
 useEffect(() => {
   try {
@@ -1881,60 +1923,87 @@ const handleExportData = async () => {
   //   );
   // }, [users, active, getuserJobCounts]);
 
-  const renderColumnControls = () => (
-    <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
-      {/* Header */}
-      <header className="px-5 py-3 border-b">
-        <h3 className="text-sm font-semibold text-slate-800">View settings</h3>
-      </header>
+const renderColumnControls = () => (
+  <section className="w-[720px] rounded-lg bg-white border border-slate-200 shadow-sm">
+    {/* Header */}
+    <header className="px-5 py-3 border-b">
+      <h3 className="text-sm font-semibold text-slate-800">View settings</h3>
+    </header>
 
-      {/* Content */}
-      <div className="grid grid-cols-2 divide-x">
-        {/* LEFT — Columns */}
-        <section className="px-5 py-4">
-          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-            Columns
-          </h4>
+    {/* Content */}
+    <div className="grid grid-cols-3 divide-x">
+      {/* LEFT — Columns */}
+      <section className="px-5 py-4">
+        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+          Columns
+        </h4>
 
-          <ul className="space-y-1 list-decimal">
-            {Object.keys(columnVisibility)?.map((column) => (
-              <li key={column}>
-                <label
-                  className="flex items-center justify-between rounded-md px-2 py-1.5
-                           text-sm text-slate-700 cursor-pointer
-                           hover:bg-slate-50 transition"
-                >
-                  <span className="capitalize">{column}</span>
-                  <input
-                    type="checkbox"
-                    checked={columnVisibility[column]}
-                    onChange={() => toggleColumnVisibility(column)}
-                    className="h-4 w-4 accent-orange-600"
-                  />
-                </label>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <ul className="space-y-1 list-decimal">
+          {Object.keys(columnVisibility)?.map((column) => (
+            <li key={column}>
+              <label
+                className="flex items-center justify-between rounded-md px-2 py-1.5
+                         text-sm text-slate-700 cursor-pointer
+                         hover:bg-slate-50 transition"
+              >
+                <span className="capitalize">{column}</span>
+                <input
+                  type="checkbox"
+                  checked={columnVisibility[column]}
+                  onChange={() => toggleColumnVisibility(column)}
+                  className="h-4 w-4 accent-orange-600"
+                />
+              </label>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-        {/* RIGHT — Users */}
-        <section className="px-5 py-4">
-          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-            Users
-          </h4>
+      {/* MIDDLE — Users */}
+      <section className="px-5 py-4">
+        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+          Users
+        </h4>
 
-          <div className="h-full overflow-y-auto space-y-1 pr-1">
-            <SelectedUsersNew
-              selectedUsers={selectedUsers}
-              setSelectedUsers={setSelectedUsers}
-              users={usersData}
-              current_user={auth?.user}
-            />
-          </div>
-        </section>
-      </div>
-    </section>
-  );
+        <div className="h-full overflow-y-auto space-y-1 pr-1">
+          <SelectedUsersNew
+            selectedUsers={selectedUsers}
+            setSelectedUsers={setSelectedUsers}
+            users={usersData}
+            current_user={auth?.user}
+          />
+        </div>
+      </section>
+
+      {/* RIGHT — Statuses */}
+      <section className="px-5 py-4">
+        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+          Statuses
+        </h4>
+
+        <ul className="space-y-1">
+          {statusInit.map((stat) => (
+            <li key={stat} className="capitalize list-none m-0 ">
+              <label
+                className="flex items-center justify-between rounded-md px-2 py-1.5
+                         text-sm text-slate-700 cursor-pointer
+                         hover:bg-slate-50 transition"
+              >
+                <span>{stat}</span>
+                <input
+                  type="checkbox"
+                  checked={statusVisibility[stat] !== false}
+                  onChange={() => toggleStatusVisibility(stat)}
+                  className="h-4 w-4 accent-orange-600"
+                />
+              </label>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  </section>
+);
 
   // a little function to help us with reordering the result
   const reorder = (list, startIndex, endIndex) => {
@@ -2669,35 +2738,37 @@ const handleExportData = async () => {
                 </div>
 
                 {status !== "inactive" && (
-                  <div className="flex items-center gap-2 border-l px-4">
-                    {statusInit?.map((stat, i) => (
-                      <div
-                        key={i}
-                        className={`
-                      py-1 px-3 rounded-full cursor-pointer
-                      font-[400] text-[14px] text-gray-900 font-google
-                      border-2 shadow-sm transition-all duration-150
+  <div className="flex items-center gap-2 border-l px-4">
+    {statusInit
+      ?.filter((stat) => statusVisibility[stat] !== false)
+      .map((stat, i) => (
+        <div
+          key={stat}
+          className={`
+            py-1 px-3 rounded-full cursor-pointer
+            font-[400] text-[14px] text-gray-900 font-google
+            border-2 shadow-sm transition-all duration-150
 
-                      ${
-                        jobStatusFilter === stat
-                          ? "text-orange-600 border-orange-500  bg-orange-50 "
-                          : "hover:bg-gray-100"
-                      }
-                    `}
-                        onClick={() => {
-                          // Toggle behavior (Enterprise UX)
-                          if (jobStatusFilter === stat) {
-                            setColumnFromOutsideTable("Job_Status", undefined);
-                          } else {
-                            setColumnFromOutsideTable("Job_Status", stat);
-                          }
-                        }}
-                      >
-                        {stat} ({getjobStatusJobCounts(stat)})
-                      </div>
-                    ))}
-                  </div>
-                )}
+            ${
+              jobStatusFilter === stat
+                ? "text-orange-600 border-orange-500  bg-orange-50 "
+                : "hover:bg-gray-100"
+            }
+          `}
+          onClick={() => {
+            // Toggle behavior (Enterprise UX)
+            if (jobStatusFilter === stat) {
+              setColumnFromOutsideTable("Job_Status", undefined);
+            } else {
+              setColumnFromOutsideTable("Job_Status", stat);
+            }
+          }}
+        >
+          {stat} ({getjobStatusJobCounts(stat)})
+        </div>
+      ))}
+  </div>
+)}
               </div>
             </div>
 

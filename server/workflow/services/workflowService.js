@@ -5,7 +5,7 @@ import { cleanRichText } from "../utils/sanitizeRichText.js";
 
 /* ---- adjust if your model names / user fields differ ---- */
 const CLIENT_MODEL = "Client"; // mongoose.model("Client", clientSchema)
-const USER_MODEL = "User"; // use "Users" if that's how your user model is registered
+const USER_MODEL = "Users"; // use "Users" if that's how your user model is registered
 const USER_FIELDS = "name email avatar"; // fields returned for assignee display
 /* --------------------------------------------------------- */
 

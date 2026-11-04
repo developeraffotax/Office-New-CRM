@@ -27,7 +27,7 @@ import { IoBriefcaseOutline } from "react-icons/io5";
 
 import JobCommentModal from "./JobCommentModal";
 
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { Box, Button, LinearProgress } from "@mui/material";
 import { MdOutlineModeEdit } from "react-icons/md";
@@ -2348,11 +2348,14 @@ const renderColumnControls = () => (
   <TbChecklist className="h-6 w-6" />
 </button>
 {isAdmin(auth) && (
-  <button type="button" title="Workflow templates" aria-label="Workflow templates"
-    onClick={() => setShowWorkflowTemplates(true)}
-    className="p-1 rounded-md hover:shadow-md cursor-pointer border">
+  <Link
+    to="/jobs/manage-workflow"
+    title="Workflow templates"
+    aria-label="Workflow templates"
+    className="p-1 rounded-md hover:shadow-md cursor-pointer border inline-flex"
+  >
     <TbListDetails className="h-6 w-6" />
-  </button>
+  </Link>
 )}
 {isAdmin(auth) && <JobsChartBtn />}
 
@@ -3074,12 +3077,7 @@ const renderColumnControls = () => (
   onClose={() => setShowMySteps(false)}
   onOpenJob={openJobWorkflowTab}
 />
-<WorkflowTemplatesOverlay
-  open={showWorkflowTemplates}
-  onClose={() => setShowWorkflowTemplates(false)}
-  users={usersData}
-  jobTypes={departments.filter((d) => d !== "All")}
-/>
+ 
     </>
   );
 }

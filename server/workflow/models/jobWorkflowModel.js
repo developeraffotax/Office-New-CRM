@@ -8,11 +8,11 @@ const stepSchema = new mongoose.Schema(
     order: { type: Number, default: 0 },
     title: { type: String, required: true, trim: true },
     description: { type: String, default: "" }, // sanitized HTML
-    assignee: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    assignee: { type: mongoose.Schema.Types.ObjectId, ref: "Users", default: null },
     status: { type: String, enum: STEP_STATUSES, default: "pending" },
     dueDate: { type: Date, default: null },
     completedAt: { type: Date, default: null },
-    completedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    completedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Users", default: null },
     note: { type: String, default: "", trim: true, maxlength: 1000 },
     // true once someone edits title/description on this job, so a template sync won't overwrite it
     customized: { type: Boolean, default: false },
@@ -32,7 +32,7 @@ const jobWorkflowSchema = new mongoose.Schema(
     templateName: { type: String, default: "" },
     templateVersion: { type: Number, default: 0 },
     steps: { type: [stepSchema], default: [] },
-    appliedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    appliedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Users" },
   },
   { timestamps: true }
 );
@@ -40,4 +40,4 @@ const jobWorkflowSchema = new mongoose.Schema(
 // "my open steps" and bulk reassign
 jobWorkflowSchema.index({ "steps.assignee": 1, "steps.status": 1 });
 
-export default mongoose.models.JobWorkflow || mongoose.model("JobWorkflow", jobWorkflowSchema);
+export default mongoose.model("JobWorkflow", jobWorkflowSchema);

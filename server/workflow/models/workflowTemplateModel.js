@@ -10,7 +10,7 @@ const templateStepSchema = new mongoose.Schema({
   // jobHolder  -> whoever is job.jobHolder on the job it is applied to
   // leadUser   -> whoever is job.leadUser on the job it is applied to
   assigneeMode: { type: String, enum: ASSIGNEE_MODES, default: "unassigned" },
-  assignee: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+  assignee: { type: mongoose.Schema.Types.ObjectId, ref: "Users", default: null },
   dueOffsetDays: { type: Number, default: null, min: 0 }, // days after the workflow is applied
 });
 
@@ -22,8 +22,8 @@ const workflowTemplateSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true },
     version: { type: Number, default: 1 }, // bumped on every edit
     steps: { type: [templateStepSchema], default: [] },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Users" },
+    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Users" },
   },
   { timestamps: true }
 );
@@ -40,5 +40,4 @@ workflowTemplateSchema.pre("validate", function (next) {
   next();
 });
 
-export default mongoose.models.WorkflowTemplate ||
-  mongoose.model("WorkflowTemplate", workflowTemplateSchema);
+export default mongoose.model("WorkflowTemplate", workflowTemplateSchema);

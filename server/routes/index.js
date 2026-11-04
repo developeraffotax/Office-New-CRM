@@ -65,6 +65,9 @@ import dashboardRoutes from "../dashboardModule/routes/dashboard.routes.js";
 import tableRoutes from "../kpiTableModule/routes/table.routes.js";
 
 
+import workflowRoutes from "../workflow/routes/workflowRoutes.js";
+
+
 
 export const registerRoutes = (app) => {
   
@@ -161,6 +164,19 @@ export const registerRoutes = (app) => {
 
 
    app.use("/api/v1/google-sheets", googleSheetRoutes);
+
+
+
+
+
+
+
+
+
+
+
+
+      app.use("/api/v1/workflow", workflowRoutes);
 
 
 

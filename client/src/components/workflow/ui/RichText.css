@@ -1,0 +1,16 @@
+/* Tailwind's preflight removes list bullets, so restore them for rich text. */
+.rt-content ul { list-style: disc; padding-left: 1.25rem; margin: 0.25rem 0; }
+.rt-content ol { list-style: decimal; padding-left: 1.25rem; margin: 0.25rem 0; }
+.rt-content li > p { margin: 0; }
+.rt-content p { margin: 0.25rem 0; }
+.rt-content h2 { font-size: 1rem; font-weight: 600; margin: 0.6rem 0 0.25rem; }
+.rt-content h3 { font-size: 0.9rem; font-weight: 600; margin: 0.5rem 0 0.2rem; }
+.rt-content a { color: #c2410c; text-decoration: underline; }
+.rt-content blockquote { border-left: 3px solid #fed7aa; padding-left: 0.75rem; color: #57534e; margin: 0.4rem 0; }
+.rt-content code { background: #f5f5f4; padding: 0 0.25rem; border-radius: 0.25rem; font-size: 0.85em; }
+
+/* react-quill: let the wrapper draw the border */
+.rt-editor .ql-toolbar.ql-snow { border: 0; border-bottom: 1px solid #e7e5e4; }
+.rt-editor .ql-container.ql-snow { border: 0; font-family: inherit; font-size: 0.875rem; }
+.rt-editor .ql-editor { min-height: 96px; color: #292524; }
+.rt-editor .ql-editor.ql-blank::before { color: #a8a29e; font-style: normal; }

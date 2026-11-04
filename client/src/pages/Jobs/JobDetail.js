@@ -37,6 +37,8 @@ import { DepartmentTab } from "./detailComponents/DepartmentTab";
 import DetailComments from "../Tasks/TaskDetailComments";
 import { useEscapeKey } from "../../utlis/useEscapeKey";
 import TaskReminders from "../../utlis/TaskReminders";
+import JobWorkflowPanel from "../../components/workflow/JobWorkflowPanel";
+import { isAdmin } from "../../utlis/isAdmin";
  
 
 export default function JobDetail({
@@ -47,11 +49,17 @@ export default function JobDetail({
   users,
   allClientData,
   setCompanyName,
-  setShowDetail
+  setShowDetail,
+  initialTab,
+  usersData,
 }) {
   const [clientDetail, setClientDetail] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("subtasks");
+  // const [activeTab, setActiveTab] = useState("subtasks");
+
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+
 
   const auth = useSelector((state) => state.auth.auth);
   const anyTimerRunning = useSelector((state) => state.auth.anyTimerRunning);
@@ -542,6 +550,19 @@ export default function JobDetail({
             {activeTab === "departmentInfo" && (
               <DepartmentTab clientDetail={clientDetail} />
             )}
+
+
+
+            {activeTab === "workflow" && (
+  <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+    <JobWorkflowPanel
+      clientId={clientId}
+      users={usersData}
+      canManage={isAdmin(auth)}
+      onChanged={getClient}
+    />
+  </div>
+)}
           </div>
 
           <div className="w-full flex flex-col gap-3">

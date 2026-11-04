@@ -76,6 +76,9 @@ import { fetchMySheets } from "./redux/slices/googleSheetSlice";
 import KpiTablePage from "./components/KpiTable/KpiTablePage";
 import UserJobsChart from "./pages/Jobs/jobsChart/UserJobsChart";
 import PendingApprovals from "./components/gmail/approvals/PendingApprovals";
+import JobWorkflowPanel from "./components/workflow/JobWorkflowPanel";
+import WorkflowTemplatesPage from "./components/workflow/WorkflowTemplatesPage";
+import MyWorkflowSteps from "./components/workflow/MyWorkflowSteps";
  
  
  
@@ -250,6 +253,12 @@ function App() {
 
 
             <Route path="/pending-approvals" element={<PendingApprovals /> } />
+
+
+
+            <Route path="/jobs/workflow" element={<JobWorkflowPanel /> } />
+            <Route path="/jobs/manage-workflow" element={<WorkflowTemplatesPage /> } />
+            <Route path="/jobs/my-workflow" element={<MyWorkflowSteps /> } />
             
             
             

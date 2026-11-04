@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 import { PiSpinnerGap } from "react-icons/pi";
 import { hasSubrole } from "../../../../utlis/checkPermission";
 import { getClientIdFromCompanyName } from "../../../../utlis/apiGetters/apiGetters";
-import { TbLoader2 } from "react-icons/tb";
+import { TbLoader2, TbRoute } from "react-icons/tb";
 import { FaGoogleDrive } from "react-icons/fa";
 
 export const actionsColumn = ({
@@ -26,6 +26,7 @@ export const actionsColumn = ({
   handleUpdateClientStatus,
   auth,
   status,
+  setWorkflowJob
 }) => {
   const isProgress = status === "progress";
   const isCompleted = status === "completed";
@@ -250,6 +251,13 @@ export const actionsColumn = ({
               <MdErrorOutline className="h-5 w-5 text-red-500 hover:text-red-600" />{" "}
             </button>
           )}
+
+
+          <button type="button" title="Workflow"
+  onClick={() => setWorkflowJob(row.original)}
+  className="text-orange-600 hover:text-orange-700">
+  <TbRoute className="h-5 w-5" />
+</button>
 
            <div>
             {docLink ? (

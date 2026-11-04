@@ -1,0 +1,9 @@
+/* Drawer entrance: answers a click, and is skipped for reduced-motion users. */
+.wf-slide { animation: wf-slide-in 160ms ease-out; }
+@keyframes wf-slide-in {
+  from { transform: translateX(24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wf-slide { animation: none; }
+}

@@ -20,7 +20,7 @@ import { format, formatISO } from "date-fns";
 
 import toast from "react-hot-toast";
 
-import { TbCheck, TbLoader2 } from "react-icons/tb";
+import { TbCheck, TbChecklist, TbListDetails, TbLoader2 } from "react-icons/tb";
 import { IoClose } from "react-icons/io5";
 import JobDetail from "./JobDetail";
 import { IoBriefcaseOutline } from "react-icons/io5";
@@ -80,6 +80,7 @@ import { getSavedColumnOrder, usePersistedColumnOrder } from "../../hooks/usePer
 import { columnOrderingOptions, headCellHoverSx } from "../../utlis/columnOrdering";
 import DraggableDepartmentTabs from "./DraggableDepartmentTabs";
 import JobsChartBtn from "./JobsChartBtn";
+import { JobWorkflowDrawer, MyStepsDrawer, WorkflowTemplatesOverlay } from "../../components/workflow/WorkflowOverlays";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -135,6 +136,13 @@ export default function AllJobs() {
   const [companyName, setCompanyName] = useState("");
   const [isComment, setIsComment] = useState(false);
     const [commentAnchorEl, setCommentAnchorEl] = useState(null);
+
+    const [workflowJob, setWorkflowJob] = useState(null);
+const [showMySteps, setShowMySteps] = useState(false);
+const [showWorkflowTemplates, setShowWorkflowTemplates] = useState(false);
+const [detailTab, setDetailTab] = useState("subtasks");
+
+
   
   const closeComment = () => {
     setIsComment(false);
@@ -1182,10 +1190,21 @@ useEffect(() => {
   };
 
   // -------------------Open Detail Modal------->
-  const getSingleJobDetail = (id) => {
-    setClientId(id);
-    setShowDetail(true);
-  };
+const getSingleJobDetail = (id) => {
+  setClientId(id);
+  setDetailTab("subtasks");
+  setShowDetail(true);
+};
+
+
+// "My steps" opens the job detail straight on the Workflow tab
+const openJobWorkflowTab = (id, row) => {
+  setShowMySteps(false);
+  setCompanyName(row?.companyName || "");
+  setClientId(id);
+  setDetailTab("workflow");
+  setShowDetail(true);
+};
 
   // ---------Handle Delete Job-------------
   const handleDeleteJob = async (id) => {
@@ -1605,6 +1624,8 @@ const handleExportData = async () => {
       handleUpdateClientStatus,
       handleUpdateUser,
       setColumnFilters,
+
+      setWorkflowJob,
 
       columnFilters,
       searchValue,
@@ -2321,7 +2342,21 @@ const renderColumnControls = () => (
           </div>
 
           <div className="flex items-center gap-4">
-            {isAdmin(auth) && <JobsChartBtn />}
+           <button type="button" title="My workflow steps" aria-label="My workflow steps"
+  onClick={() => setShowMySteps(true)}
+  className="p-1 rounded-md hover:shadow-md cursor-pointer border">
+  <TbChecklist className="h-6 w-6" />
+</button>
+{isAdmin(auth) && (
+  <button type="button" title="Workflow templates" aria-label="Workflow templates"
+    onClick={() => setShowWorkflowTemplates(true)}
+    className="p-1 rounded-md hover:shadow-md cursor-pointer border">
+    <TbListDetails className="h-6 w-6" />
+  </button>
+)}
+{isAdmin(auth) && <JobsChartBtn />}
+
+
             <JobHeaderActions
               auth={auth}
               style={style}
@@ -2866,6 +2901,11 @@ const renderColumnControls = () => (
                 handleDeleteJob={handleDeleteJob}
                 users={users}
                 setShowDetail={setShowDetail}
+
+                usersData={usersData}
+                initialTab={detailTab}
+
+
               />
             </div>
           </div>
@@ -3019,6 +3059,27 @@ const renderColumnControls = () => (
           />
         </div>
       )}
+
+
+
+
+      <JobWorkflowDrawer
+  job={workflowJob}
+  users={usersData}
+  canManage={isAdmin(auth)}
+  onClose={() => setWorkflowJob(null)}
+/>
+<MyStepsDrawer
+  open={showMySteps}
+  onClose={() => setShowMySteps(false)}
+  onOpenJob={openJobWorkflowTab}
+/>
+<WorkflowTemplatesOverlay
+  open={showWorkflowTemplates}
+  onClose={() => setShowWorkflowTemplates(false)}
+  users={usersData}
+  jobTypes={departments.filter((d) => d !== "All")}
+/>
     </>
   );
 }

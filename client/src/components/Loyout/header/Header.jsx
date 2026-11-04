@@ -26,6 +26,8 @@ import { useUserInfo } from "./useUserInfo";
 import { useUserActivity } from "./useUserActivity";
 import { useSocketNotifications } from "./useSocketNotifications";
 import { useClickOutside } from "./useClickOutside";
+import UserActivityMobile from "../UserActivityMobile";
+import OnlineUsersMobile from "../../../utlis/OnlineUsersMobile";
 
 export default function Header({
   setShowQuickList,
@@ -191,11 +193,17 @@ export default function Header({
             <UserWorkedTime />
 
             {/* User Activity / Online Users */}
-            {auth?.user?.role?.name === "Admin" ? (
-              <OnlineUsers />
-            ) : (
-              <UserActivity />
-            )}
+{auth?.user?.role?.name === "Admin" ? (
+  <>
+    <OnlineUsers />           {/* desktop – already has max-md:hidden */}
+    <OnlineUsersMobile />     {/* mobile – has md:hidden */}
+  </>
+) : (
+  <>
+    <UserActivity />          {/* desktop – already has max-md:hidden */}
+    <UserActivityMobile />    {/* mobile – has md:hidden */}
+  </>
+)}
 
             {/* Quick Lists */}
             <span

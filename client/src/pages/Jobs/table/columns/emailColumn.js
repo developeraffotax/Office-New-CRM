@@ -108,7 +108,7 @@ Cell: ({ row }) => {
   );
 },
 
-    size: 80,
+    size: 160,
     minSize: 80,
     maxSize: 400,
     grow: false,

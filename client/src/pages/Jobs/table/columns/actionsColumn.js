@@ -285,6 +285,6 @@ export const actionsColumn = ({
         </div>
       );
     },
-    size: isProgress ? 190 : 120,
+    size: isProgress ? 210 : 140,
   };
 };

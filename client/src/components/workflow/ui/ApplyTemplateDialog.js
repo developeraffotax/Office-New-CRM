@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { workflowApi, errMsg } from "../workflowApi";
 import { Modal, inputCls, btnPrimary, btnGhost } from "./ui";
+import { departments } from "../constants";
 
 // Use from the templates page (pick a template + filter) or from AllJobs with row selection:
 //   <ApplyTemplateDialog selectedJobIds={selectedIds} onClose={...} onApplied={refetchJobs} />
@@ -110,18 +111,39 @@ export default function ApplyTemplateDialog({ initialTemplateId = "", selectedJo
 
         {!useSelected && (
           <div className="grid gap-3 sm:grid-cols-3">
-            <label>
+            {/* <label>
               <span className="mb-1 block text-xs font-medium text-stone-600">Job type</span>
               <input className={inputCls} value={jobName} onChange={(e) => setJobName(e.target.value)} />
-            </label>
-            <label>
+            </label> */}
+
+            <label className="block">
+                            <span className="mb-1 block text-xs font-medium text-stone-600">
+                              Department
+                            </span>
+                             
+                            <select
+                              className={inputCls}
+                              value={jobName}
+                              onChange={(e) => setJobName(e.target.value)}
+                            >
+                              <option value="">Select a department</option>
+                              {departments.map((j) => (
+                                <option key={j} value={j}>
+                                  {j}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+
+
+            {/* <label>
               <span className="mb-1 block text-xs font-medium text-stone-600">Job status (optional)</span>
               <input className={inputCls} value={jobStatus} onChange={(e) => setJobStatus(e.target.value)} />
             </label>
             <label>
               <span className="mb-1 block text-xs font-medium text-stone-600">Job holder (optional)</span>
               <input className={inputCls} value={jobHolder} onChange={(e) => setJobHolder(e.target.value)} />
-            </label>
+            </label> */}
           </div>
         )}
 
@@ -134,7 +156,7 @@ export default function ApplyTemplateDialog({ initialTemplateId = "", selectedJo
             </label>
             <label className="flex items-center gap-2">
               <input type="radio" className="accent-orange-600" checked={ifExists === "replace"} onChange={() => setIfExists("replace")} />
-              Replace it (progress is lost)
+              Replace it
             </label>
           </div>
         </fieldset>

@@ -13,6 +13,7 @@ import ApplyTemplateDialog from "./ui/ApplyTemplateDialog";
 import BulkReassignDialog from "./ui/BulkReassignDialog";
 import { inputCls, btnPrimary, btnGhost, btnDanger } from "./ui/ui";
 import axios from "axios";
+import { departments } from "./constants";
 
 const MODES = [
   { value: "jobHolder", label: "Job holder" },
@@ -307,20 +308,21 @@ export default function WorkflowTemplatesPage() {
               </label>
               <label className="block">
                 <span className="mb-1 block text-xs font-medium text-stone-600">
-                  Job type
+                  Department
                 </span>
-                <input
+                 
+                <select
                   className={inputCls}
-                  list="wf-job-types"
                   value={draft.jobType}
                   onChange={(e) => patch({ jobType: e.target.value })}
-                  placeholder="Bookkeeping"
-                />
-                <datalist id="wf-job-types">
-                  {jobTypes.map((j) => (
-                    <option key={j} value={j} />
+                >
+                  <option value="">Select a department</option>
+                  {departments.map((j) => (
+                    <option key={j} value={j}>
+                      {j}
+                    </option>
                   ))}
-                </datalist>
+                </select>
               </label>
               {/* <label className="text-sm sm:col-span-2">
             <span className="mb-1 block font-medium text-stone-700">

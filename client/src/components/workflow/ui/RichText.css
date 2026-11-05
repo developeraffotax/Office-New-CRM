@@ -1,16 +1,133 @@
-/* Tailwind's preflight removes list bullets, so restore them for rich text. */
-.rt-content ul { list-style: disc; padding-left: 1.25rem; margin: 0.25rem 0; }
-.rt-content ol { list-style: decimal; padding-left: 1.25rem; margin: 0.25rem 0; }
-.rt-content li > p { margin: 0; }
-.rt-content p { margin: 0.25rem 0; }
-.rt-content h2 { font-size: 1rem; font-weight: 600; margin: 0.6rem 0 0.25rem; }
-.rt-content h3 { font-size: 0.9rem; font-weight: 600; margin: 0.5rem 0 0.2rem; }
-.rt-content a { color: #c2410c; text-decoration: underline; }
-.rt-content blockquote { border-left: 3px solid #fed7aa; padding-left: 0.75rem; color: #57534e; margin: 0.4rem 0; }
-.rt-content code { background: #f5f5f4; padding: 0 0.25rem; border-radius: 0.25rem; font-size: 0.85em; }
+/* ---------- Design tokens ---------- */
+.rt-editor {
+  --rt-accent: #d4622a;
+  --rt-bg: #ffffff;
+  --rt-surface: #faf9f7;
+  --rt-border: #e8e4e1;
+  --rt-text: #1c1917;
+  --rt-text-soft: #78716c;
+  --rt-shadow: 0 4px 12px -2px rgba(28, 25, 23, 0.05),
+    0 2px 4px -1px rgba(28, 25, 23, 0.03);
+  --rt-focus-ring: 0 0 0 4px rgba(212, 98, 42, 0.1);
 
-/* react-quill: let the wrapper draw the border */
-.rt-editor .ql-toolbar.ql-snow { border: 0; border-bottom: 1px solid #e7e5e4; }
-.rt-editor .ql-container.ql-snow { border: 0; font-family: inherit; font-size: 0.875rem; }
-.rt-editor .ql-editor { min-height: 96px; color: #292524; }
-.rt-editor .ql-editor.ql-blank::before { color: #a8a29e; font-style: normal; }
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
+  width: 100%;
+}
+
+/* ---------- Shell ---------- */
+.rt-shell {
+  background: var(--rt-bg);
+  border: 1px solid var(--rt-border);
+  border-radius: 0px;
+  overflow: hidden;
+  box-shadow: var(--rt-shadow);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rt-shell:focus-within {
+  border-color: var(--rt-accent);
+  box-shadow: var(--rt-shadow), var(--rt-focus-ring);
+}
+
+/* ---------- Toolbar ---------- */
+.rt-shell .ql-toolbar.ql-snow {
+  border: none !important;
+  border-bottom: 1px solid var(--rt-border) !important;
+  background: var(--rt-surface);
+  padding: 8px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.rt-shell .ql-toolbar.ql-snow .ql-formats {
+  margin-right: 12px;
+}
+
+.rt-shell .ql-snow .ql-stroke {
+  stroke: var(--rt-text-soft) !important;
+}
+.rt-shell .ql-snow .ql-fill {
+  fill: var(--rt-text-soft) !important;
+}
+
+.rt-shell .ql-toolbar button:hover .ql-stroke,
+.rt-shell .ql-toolbar button.ql-active .ql-stroke {
+  stroke: var(--rt-accent) !important;
+}
+.rt-shell .ql-toolbar button:hover .ql-fill,
+.rt-shell .ql-toolbar button.ql-active .ql-fill {
+  fill: var(--rt-accent) !important;
+}
+
+.rt-shell .ql-toolbar button {
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+}
+.rt-shell .ql-toolbar button:hover {
+  background: rgba(212, 98, 42, 0.08);
+}
+
+/* ---------- Editor area ---------- */
+.rt-shell .ql-container.ql-snow {
+  border: none !important;
+  font-size: 15px;
+}
+
+.rt-shell .ql-editor {
+  min-height: 220px;
+  padding: 20px 24px !important;
+  line-height: 1.65;
+  color: var(--rt-text);
+}
+
+.rt-shell .ql-editor.ql-blank::before {
+  font-style: italic;
+  color: #b8b0a6;
+  left: 24px !important;
+  right: 24px;
+}
+
+/* nicer heading styles inside the editor */
+.rt-shell .ql-editor h1 {
+  font-size: 1.6em;
+  font-weight: 700;
+  margin: 0.6em 0 0.3em;
+}
+.rt-shell .ql-editor h2 {
+  font-size: 1.35em;
+  font-weight: 600;
+  margin: 0.55em 0 0.25em;
+}
+.rt-shell .ql-editor h3 {
+  font-size: 1.15em;
+  font-weight: 600;
+  margin: 0.5em 0 0.2em;
+}
+
+/* ---------- Footer / character count ---------- */
+.rt-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  padding: 0 2px;
+}
+
+.rt-count {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--rt-text-soft);
+  background: var(--rt-surface);
+  border: 1px solid var(--rt-border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.rt-count--near {
+  color: var(--rt-accent);
+  border-color: rgba(212, 98, 42, 0.25);
+  background: rgba(212, 98, 42, 0.06);
+}

@@ -259,7 +259,7 @@ export const actionsColumn = ({
   <TbRoute className="h-5 w-5" />
 </button>
 
-           <div>
+           {/* <div>
             {docLink ? (
               <a
                 href={docLink}
@@ -279,12 +279,12 @@ export const actionsColumn = ({
                 <FaGoogleDrive className="h-5 w-5" />
               </span>
             )}
-          </div>
+          </div> */}
 
           
         </div>
       );
     },
-    size: isProgress ? 210 : 140,
+    size: isProgress ? 190 : 120,
   };
 };

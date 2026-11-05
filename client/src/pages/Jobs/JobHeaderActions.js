@@ -4,7 +4,7 @@ import {
   FiMoreVertical,
   FiPlus,
 } from "react-icons/fi";
-import { TbLoader } from "react-icons/tb";
+import { TbListDetails, TbLoader } from "react-icons/tb";
 import {
   LuDownload,
   LuImport,
@@ -13,6 +13,7 @@ import {
   LuDatabase,
 } from "react-icons/lu";
 import { isAdmin } from "../../utlis/isAdmin";
+import { useNavigate } from "react-router-dom";
 
 export default function JobHeaderActions({
   auth,
@@ -29,6 +30,7 @@ export default function JobHeaderActions({
   const [open, setOpen] = useState(false);
   const menuRef = useRef();
 
+  const navigate = useNavigate()
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClick = (e) => {
@@ -39,6 +41,12 @@ export default function JobHeaderActions({
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
+
+
+
+
+
+ 
 
   return (
     <div className="flex items-center justify-end gap-3 w-full font-inter">
@@ -105,6 +113,13 @@ export default function JobHeaderActions({
                   </div>
 
                   {[
+                    {
+                      label: "Workflow Templates",
+                      icon: <TbListDetails />,
+                      action: () => navigate("/jobs/manage-workflow"),
+                    },
+
+
                     {
                       label: "Manage Subtasks",
                       icon: <LuSettings2 />,

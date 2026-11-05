@@ -553,7 +553,7 @@ export default function JobDetail({
 
 
 
-            {activeTab === "workflow" && (
+            {/* {activeTab === "workflow" && (
   <div className="flex-1 min-h-0 overflow-y-auto pr-1">
     <JobWorkflowPanel
       clientId={clientId}
@@ -562,7 +562,7 @@ export default function JobDetail({
       onChanged={getClient}
     />
   </div>
-)}
+)} */}
           </div>
 
           <div className="w-full flex flex-col gap-3">

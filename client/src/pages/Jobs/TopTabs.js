@@ -5,7 +5,7 @@ export const TopTabs = ({ activeTab, setActiveTab }) => {
     { key: "salesDetail", label: "Sales" },
     { key: "loginInfo", label: "Login Info" },
     { key: "departmentInfo", label: "Department" },
-    { key: "workflow", label: "Workflow" },
+    // { key: "workflow", label: "Workflow" },
   ];
 
   return (

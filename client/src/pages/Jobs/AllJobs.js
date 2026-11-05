@@ -2342,11 +2342,13 @@ const renderColumnControls = () => (
           </div>
 
           <div className="flex items-center gap-4">
-           <button type="button" title="My workflow steps" aria-label="My workflow steps"
+           {/* <button type="button" title="My workflow steps" aria-label="My workflow steps"
   onClick={() => setShowMySteps(true)}
   className="p-1 rounded-md hover:shadow-md cursor-pointer border">
   <TbChecklist className="h-6 w-6" />
-</button>
+</button> */}
+
+{/* 
 {isAdmin(auth) && (
   <Link
     to="/jobs/manage-workflow"
@@ -2356,7 +2358,7 @@ const renderColumnControls = () => (
   >
     <TbListDetails className="h-6 w-6" />
   </Link>
-)}
+)} */}
 {isAdmin(auth) && <JobsChartBtn />}
 
 
@@ -3072,11 +3074,13 @@ const renderColumnControls = () => (
   canManage={isAdmin(auth)}
   onClose={() => setWorkflowJob(null)}
 />
-<MyStepsDrawer
+
+
+{/* <MyStepsDrawer
   open={showMySteps}
   onClose={() => setShowMySteps(false)}
   onOpenJob={openJobWorkflowTab}
-/>
+/> */}
  
     </>
   );

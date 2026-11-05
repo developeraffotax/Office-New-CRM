@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import {
+  MdAdd,
+  MdDeleteOutline,
+  MdKeyboardArrowDown,
+  MdKeyboardArrowUp,
+} from "react-icons/md";
 import { workflowApi, errMsg } from "./workflowApi";
 import RichTextEditor from "./ui/RichTextEditor";
 import WorkflowUserSelect from "./ui/WorkflowUserSelect";
@@ -15,12 +21,16 @@ const MODES = [
   { value: "unassigned", label: "Unassigned" },
 ];
 
+// small square icon button used for move up / down / remove
+const iconBtn =
+  "rounded-md p-1.5 text-stone-500 hover:bg-stone-200/70 hover:text-stone-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent";
+
 let seq = 0;
 const blankStep = () => ({
   _key: `new-${Date.now()}-${seq++}`,
   title: "",
   description: "",
-  assigneeMode: "jobHolder",
+  assigneeMode: "fixed",
   assignee: null,
   dueOffsetDays: "",
 });
@@ -166,90 +176,153 @@ export default function WorkflowTemplatesPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 lg:flex-row">
-      {/* list */}
-      <aside className="w-full shrink-0 lg:w-72">
-        <div className="mb-3 flex items-center justify-between">
-          <h1 className="text-base font-semibold text-stone-900">
-            Workflow templates
-          </h1>
-          <button
-            type="button"
-            className={btnPrimary}
-            onClick={() => setDraft(blankDraft())}
-          >
-            New template
-          </button>
-        </div>
-        <ul className="space-y-1.5">
-          {templates.map((t) => (
-            <li key={t._id}>
+    <div className="w-full font-inter ">
+      
+      {/* one split pane: list on the left, editor on the right */}
+      <div className="flex flex-col  border border-stone-200 bg-white h-full lg:flex-row">
+        {/* list */}
+        <aside className="flex w-full shrink-0 flex-col rounded-t-lg border-b border-stone-200 bg-stone-50 lg:w-72 lg:rounded-l-lg lg:rounded-tr-none lg:border-b-0 lg:border-r">
+          <div className="flex items-center justify-between px-4 py-3">
+            <h2 className="text-sm font-semibold text-stone-900">
+              Workflow Templates
+              <span className="ml-1.5 font-normal text-stone-500">
+                {templates.length}
+              </span>
+            </h2>
+            <button
+              type="button"
+              onClick={() => setDraft(blankDraft())}
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm font-medium text-orange-600 hover:bg-orange-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+            >
+              <MdAdd className="h-4 w-4" aria-hidden="true" />
+              New
+            </button>
+          </div>
+
+          <ul className="flex-1 overflow-y-auto border-t border-stone-200 py-1   list-none">
+            {templates.map((t) => {
+              const selected = draft._id === t._id;
+              return (
+                <li key={t._id} className="m-0">
+                  <button
+                    type="button"
+                    onClick={() => setDraft(toDraft(t))}
+                    aria-current={selected ? "true" : undefined}
+                    className={`flex w-full flex-col gap-0.5 border-l-2 px-4 py-2.5 text-left transition-colors focus:outline-none focus-visible:bg-stone-100 ${
+                      selected
+                        ? "border-orange-500 bg-white"
+                        : "border-transparent hover:bg-stone-100"
+                    }`}
+                  >
+                    <span className="truncate text-sm font-medium text-stone-900">
+                      {t.name}
+                    </span>
+                    <span className="text-xs text-stone-500">
+                      {t.jobType} · {t.steps.length}{" "}
+                      {t.steps.length === 1 ? "step" : "steps"}
+                      {!t.isActive && (
+                        <span className="font-medium text-amber-600">
+                          {" "}
+                          · off
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+            {!templates.length && (
+              <li className="px-4 py-6 text-sm text-stone-500">
+                No templates yet. Create one for a job type, then apply it to
+                many jobs at once.
+              </li>
+            )}
+          </ul>
+
+          <div className="border-t border-stone-200 px-4 py-3">
+            <button
+              type="button"
+              onClick={() => setShowReassign(true)}
+              className="text-sm font-medium text-stone-600 hover:text-orange-600 focus:outline-none focus-visible:underline"
+            >
+              Reassign a user's open steps
+            </button>
+          </div>
+        </aside>
+
+        {/* editor */}
+        <section className="min-w-0 flex-1 rounded-b-lg lg:rounded-r-lg lg:rounded-bl-none">
+          {/* toolbar */}
+          <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 bg-white/95 px-6 py-3 backdrop-blur lg:rounded-tr-lg">
+            <div className="min-w-0">
+              <h2 className="truncate text-base font-semibold text-stone-900">
+                {draft._id ? "Edit template" : "New template"}
+              </h2>
+              <p className="text-xs text-stone-500">
+                {draft._id
+                  ? "Edits apply to jobs you add this template to from now on."
+                  : "Name it, pick the job type, then add the steps."}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {draft._id && (
+                <>
+                  <button type="button" className={btnDanger} onClick={remove}>
+                    Delete
+                  </button>
+                  <button
+                    type="button"
+                    className={btnGhost}
+                    onClick={() => setShowApply(true)}
+                    disabled={!draft.isActive}
+                  >
+                    Apply to jobs
+                  </button>
+                </>
+              )}
               <button
                 type="button"
-                onClick={() => setDraft(toDraft(t))}
-                className={`w-full rounded-md border px-3 py-2 text-left ${
-                  draft._id === t._id
-                    ? "border-orange-500 bg-orange-50"
-                    : "border-stone-200 bg-white hover:bg-stone-50"
-                }`}
+                className={btnPrimary}
+                onClick={save}
+                disabled={saving}
               >
-                <span className="block text-sm font-medium text-stone-900">
-                  {t.name}
-                </span>
-                <span className="block text-xs text-stone-500">
-                  {t.jobType} · {t.steps.length} steps{!t.isActive && " · off"}
-                </span>
+                {saving ? "Saving…" : "Save template"}
               </button>
-            </li>
-          ))}
-          {!templates.length && (
-            <li className="rounded-md border border-dashed border-stone-300 p-4 text-sm text-stone-500">
-              No templates yet. Create one for a job type, then apply it to many
-              jobs at once.
-            </li>
-          )}
-        </ul>
-        <button
-          type="button"
-          className={`${btnGhost} mt-3 w-full`}
-          onClick={() => setShowReassign(true)}
-        >
-          Reassign a user's open steps
-        </button>
-      </aside>
+            </div>
+          </div>
 
-      {/* editor */}
-      <section className="min-w-0 flex-1 rounded-lg border border-stone-200 bg-white p-4">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="text-sm">
-            <span className="mb-1 block font-medium text-stone-700">
-              Template name
-            </span>
-            <input
-              className={inputCls}
-              value={draft.name}
-              onChange={(e) => patch({ name: e.target.value })}
-              placeholder="Bookkeeping – Monthly"
-            />
-          </label>
-          <label className="text-sm">
-            <span className="mb-1 block font-medium text-stone-700">
-              Job type
-            </span>
-            <input
-              className={inputCls}
-              list="wf-job-types"
-              value={draft.jobType}
-              onChange={(e) => patch({ jobType: e.target.value })}
-              placeholder="Bookkeeping"
-            />
-            <datalist id="wf-job-types">
-              {jobTypes.map((j) => (
-                <option key={j} value={j} />
-              ))}
-            </datalist>
-          </label>
-          <label className="text-sm sm:col-span-2">
+          {/* details */}
+          <div className="border-b border-stone-200 px-6 py-5">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-stone-600">
+                  Template name
+                </span>
+                <input
+                  className={inputCls}
+                  value={draft.name}
+                  onChange={(e) => patch({ name: e.target.value })}
+                  placeholder="Bookkeeping – Monthly"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-stone-600">
+                  Job type
+                </span>
+                <input
+                  className={inputCls}
+                  list="wf-job-types"
+                  value={draft.jobType}
+                  onChange={(e) => patch({ jobType: e.target.value })}
+                  placeholder="Bookkeeping"
+                />
+                <datalist id="wf-job-types">
+                  {jobTypes.map((j) => (
+                    <option key={j} value={j} />
+                  ))}
+                </datalist>
+              </label>
+              {/* <label className="text-sm sm:col-span-2">
             <span className="mb-1 block font-medium text-stone-700">
               Description (optional)
             </span>
@@ -267,57 +340,89 @@ export default function WorkflowTemplatesPage() {
               className="accent-orange-600"
             />
             Available to apply
-          </label>
-        </div>
+          </label> */}
+            </div>
+          </div>
 
-        <h2 className="mb-2 mt-6 text-sm font-semibold text-stone-900">
-          Steps
-        </h2>
-        <ol className="space-y-3">
-          {draft.steps.map((s, i) => (
-            <li key={s._key} className="rounded-md border border-stone-200 p-3">
-              <div className="mb-2 flex items-center gap-2">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-xs font-semibold text-orange-700">
-                  {i + 1}
-                </span>
-                <input
-                  className={inputCls}
-                  aria-label={`Step ${i + 1} title`}
-                  value={s.title}
-                  onChange={(e) => patchStep(s._key, { title: e.target.value })}
-                  placeholder="What needs to happen?"
-                />
-                <button
-                  type="button"
-                  className={btnGhost}
-                  onClick={() => moveStep(i, -1)}
-                  disabled={i === 0}
-                  aria-label="Move step up"
-                >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  className={btnGhost}
-                  onClick={() => moveStep(i, 1)}
-                  disabled={i === draft.steps.length - 1}
-                  aria-label="Move step down"
-                >
-                  ↓
-                </button>
-                <button
-                  type="button"
-                  className={btnDanger}
-                  onClick={() => removeStep(s._key)}
-                  disabled={draft.steps.length === 1}
-                  aria-label="Remove step"
-                >
-                  ✕
-                </button>
-              </div>
+          {/* steps */}
+          <div className="px-6 py-6">
+            <h3 className="mb-5 text-sm font-semibold text-stone-900">
+              Steps
+              <span className="ml-1.5 font-normal text-stone-500">
+                {draft.steps.length}
+              </span>
+            </h3>
 
-              <div className="mb-2 grid gap-2 sm:grid-cols-3">
-                <label className="text-xs text-stone-600">
+            <ul className="list-none">
+              {draft.steps.map((s, i) => (
+                <li
+                  key={s._key}
+                  className="relative m-0 pb-5 pl-11 before:absolute before:bottom-0 before:left-[15px] before:top-9 before:w-px before:bg-stone-200 last:pb-0 last:before:hidden"
+                >
+                  <span className="absolute left-0 top-1.5 flex h-8 w-8 items-center justify-center rounded-full border border-orange-300 bg-white text-sm font-semibold text-orange-700">
+                    {i + 1}
+                  </span>
+
+                  <div className="rounded-lg border border-stone-200 bg-white">
+                    {/* step header: title, user, actions */}
+                    <div className="flex flex-wrap items-center gap-2 rounded-t-lg border-b border-stone-200 bg-stone-50 px-3 py-2.5">
+                      <input
+                        className={`${inputCls} min-w-[12rem] flex-1`}
+                        aria-label={`Step ${i + 1} title`}
+                        value={s.title}
+                        onChange={(e) =>
+                          patchStep(s._key, { title: e.target.value })
+                        }
+                        placeholder="Which department will handle it?"
+                      />
+                      {s.assigneeMode === "fixed" && (
+                        <WorkflowUserSelect
+                          className="sm:!w-52"
+                          users={users}
+                          value={s.assignee}
+                          onChange={(id) => patchStep(s._key, { assignee: id })}
+                          placeholder="Choose user"
+                          ariaLabel={`Step ${i + 1} user`}
+                        />
+                      )}
+                      <div className="flex items-center">
+                        <button
+                          type="button"
+                          className={iconBtn}
+                          onClick={() => moveStep(i, -1)}
+                          disabled={i === 0}
+                          aria-label="Move step up"
+                          title="Move up"
+                        >
+                          <MdKeyboardArrowUp className="h-5 w-5" />
+                        </button>
+                        <button
+                          type="button"
+                          className={iconBtn}
+                          onClick={() => moveStep(i, 1)}
+                          disabled={i === draft.steps.length - 1}
+                          aria-label="Move step down"
+                          title="Move down"
+                        >
+                          <MdKeyboardArrowDown className="h-5 w-5" />
+                        </button>
+                        <button
+                          type="button"
+                          className={`${iconBtn} hover:!bg-red-50 hover:!text-red-600`}
+                          onClick={() => removeStep(s._key)}
+                          disabled={draft.steps.length === 1}
+                          aria-label="Remove step"
+                          title="Remove step"
+                        >
+                          <MdDeleteOutline className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="p-0">
+                      {/* `empty:hidden` collapses this row while everything inside is commented out */}
+                      <div className="mb-3 grid gap-3 empty:hidden sm:grid-cols-3">
+                        {/* <label className="text-xs text-stone-600">
                   Done by
                   <select
                     className={`${inputCls} mt-1`}
@@ -335,7 +440,8 @@ export default function WorkflowTemplatesPage() {
                       </option>
                     ))}
                   </select>
-                </label>
+                </label> */}
+                        {/* Moved up, next to the step title:
                 {s.assigneeMode === "fixed" && (
                   <label className="text-xs text-stone-600">
                     User
@@ -347,8 +453,8 @@ export default function WorkflowTemplatesPage() {
                       placeholder="Choose user"
                     />
                   </label>
-                )}
-                <label className="text-xs text-stone-600">
+                )} */}
+                        {/* <label className="text-xs text-stone-600">
                   Due (days after applied)
                   <input
                     type="number"
@@ -360,48 +466,35 @@ export default function WorkflowTemplatesPage() {
                     }
                     placeholder="No due date"
                   />
-                </label>
-              </div>
+                </label> */}
+                      </div>
 
-              <RichTextEditor
-                value={s.description}
-                onChange={(html) => patchStep(s._key, { description: html })}
-              />
-            </li>
-          ))}
-        </ol>
-        <button type="button" className={`${btnGhost} mt-3`} onClick={addStep}>
-          Add step
-        </button>
+                      {/* <p className="mb-1.5 text-xs font-medium text-stone-600">
+                        Instructions
+                      </p> */}
+                      <RichTextEditor
+                        value={s.description}
+                        onChange={(html) =>
+                          patchStep(s._key, { description: html })
+                        }
+                      />
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-stone-200 pt-4">
-          <div className="flex gap-2">
-            {draft._id && (
-              <>
-                <button
-                  type="button"
-                  className={btnGhost}
-                  onClick={() => setShowApply(true)}
-                  disabled={!draft.isActive}
-                >
-                  Apply to jobs
-                </button>
-                <button type="button" className={btnDanger} onClick={remove}>
-                  Delete template
-                </button>
-              </>
-            )}
+            <button
+              type="button"
+              className={`${btnGhost} ml-11 mt-5 inline-flex items-center gap-1.5`}
+              onClick={addStep}
+            >
+              <MdAdd className="h-4 w-4" aria-hidden="true" />
+              Add step
+            </button>
           </div>
-          <button
-            type="button"
-            className={btnPrimary}
-            onClick={save}
-            disabled={saving}
-          >
-            {saving ? "Saving…" : "Save template"}
-          </button>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {showApply && (
         <ApplyTemplateDialog

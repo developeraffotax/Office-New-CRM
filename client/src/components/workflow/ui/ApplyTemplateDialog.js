@@ -91,7 +91,7 @@ export default function ApplyTemplateDialog({ initialTemplateId = "", selectedJo
           <select className={inputCls} value={templateId} onChange={(e) => setTemplateId(e.target.value)}>
             <option value="">Choose a template</option>
             {templates.map((t) => (
-              <option key={t._id} value={t._id}>{t.name} ({t.jobType})</option>
+              <option key={t._id} value={t._id}>{t.name} {t.jobType && `(${t.jobType})`}</option>
             ))}
           </select>
         </label>
@@ -110,13 +110,13 @@ export default function ApplyTemplateDialog({ initialTemplateId = "", selectedJo
         )}
 
         {!useSelected && (
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-2 sm:grid-cols-1">
             {/* <label>
               <span className="mb-1 block text-xs font-medium text-stone-600">Job type</span>
               <input className={inputCls} value={jobName} onChange={(e) => setJobName(e.target.value)} />
             </label> */}
 
-            <label className="block">
+            <label className="block ">
                             <span className="mb-1 block text-xs font-medium text-stone-600">
                               Department
                             </span>

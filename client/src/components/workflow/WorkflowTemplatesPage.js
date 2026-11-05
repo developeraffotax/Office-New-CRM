@@ -308,7 +308,7 @@ export default function WorkflowTemplatesPage() {
               </label>
               <label className="block">
                 <span className="mb-1 block text-xs font-medium text-stone-600">
-                  Department
+                  Department - Display Only
                 </span>
                  
                 <select

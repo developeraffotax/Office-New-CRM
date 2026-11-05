@@ -126,7 +126,8 @@ export const getTemplate = async (id) => {
 export const createTemplate = (body, userId) => {
   const name = String(body.name || "").trim();
   const jobType = String(body.jobType || "").trim();
-  if (!name || !jobType) throw new WorkflowError("Name and job type are required");
+  // if (!name || !jobType) throw new WorkflowError("Name and job type are required");
+  if (!name ) throw new WorkflowError("Template Name is required");
   return WorkflowTemplate.create({
     name,
     jobType,
@@ -143,7 +144,8 @@ export const updateTemplate = async (id, body, userId) => {
   if (!t) throw new WorkflowError("Template not found", 404);
   const name = String(body.name || "").trim();
   const jobType = String(body.jobType || "").trim();
-  if (!name || !jobType) throw new WorkflowError("Name and job type are required");
+  // if (!name || !jobType) throw new WorkflowError("Name and job type are required");
+  if (!name ) throw new WorkflowError("Template Name is required");
   t.name = name;
   t.jobType = jobType;
   t.description = String(body.description || "").trim();

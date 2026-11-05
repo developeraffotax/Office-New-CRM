@@ -17,7 +17,7 @@ const templateStepSchema = new mongoose.Schema({
 const workflowTemplateSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true }, // "Bookkeeping – Monthly"
-    jobType: { type: String, required: true, trim: true }, // matches job.jobName
+    jobType: { type: String, trim: true }, // matches job.jobName
     description: { type: String, default: "", trim: true },
     isActive: { type: Boolean, default: true },
     version: { type: Number, default: 1 }, // bumped on every edit

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { MdDeleteOutline, MdOutlineModeEdit } from "react-icons/md";
 import { workflowApi, errMsg } from "./workflowApi";
 import RichTextEditor from "./ui/RichTextEditor";
 import RichTextView from "./ui/RichTextView";
 import WorkflowUserSelect from "./ui/WorkflowUserSelect";
 import { inputCls, btnPrimary, btnGhost, btnDanger } from "./ui/ui";
-
+import { isAdmin } from "../../utlis/checkPermission";
+import { useSelector } from "react-redux";
 
 
 
@@ -18,8 +20,8 @@ const STATUS = {
   skipped: { label: "Skipped", cls: "bg-stone-100 text-stone-400" },
 };
 
-function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove }) {
-  const [open, setOpen] = useState(false);
+function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove, canManage }) {
+  const [open, setOpen] = useState(true);
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(step.title);
   const [description, setDescription] = useState(step.description || "");
@@ -43,8 +45,10 @@ function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove }
     if (await onPatch(step._id, { title, description })) setEditing(false);
   };
 
+  const removeStep = () => window.confirm(`Remove "${step.title}" from this job?`) && onDelete(step._id);
+
   return (
-    <li className={`rounded-md border bg-white p-3 ${done ? "border-emerald-200" : "border-stone-200"}`}>
+    <li className={`rounded-md m-0 border bg-white p-3 ${done ? "border-emerald-200" : "border-stone-200"}`}>
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-xs font-semibold text-orange-700">
           {index + 1}
@@ -57,13 +61,13 @@ function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove }
             type="button"
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
-            className={`min-w-[10rem] flex-1 text-left text-sm font-medium ${done ? "text-stone-400 line-through" : "text-stone-900"}`}
+            className={`min-w-[10rem] flex-1 text-left text-base font-medium ${done ? "text-stone-400 line-through" : "text-stone-900"}`}
           >
             {step.title}
           </button>
         )}
 
-        <select
+        {/* <select
           aria-label="Status"
           value={step.status}
           disabled={busy}
@@ -73,7 +77,7 @@ function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove }
           {Object.entries(STATUS).map(([value, s]) => (
             <option key={value} value={value}>{s.label}</option>
           ))}
-        </select>
+        </select> */}
 
         <WorkflowUserSelect
           className="!w-40"
@@ -83,7 +87,34 @@ function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove }
           onChange={(id) => onPatch(step._id, { assignee: id })}
         />
 
-        <input
+        {/* Edit / remove, right of the user select */}
+        <div className="flex items-center gap-0.5">
+          <button
+            type="button"
+            title={editing ? "Cancel editing" : "Edit step"}
+            aria-label={editing ? "Cancel editing step" : "Edit step"}
+            aria-pressed={editing}
+            disabled={busy}
+            onClick={() => setEditing((e) => !e)}
+            className={`rounded p-1.5 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50 ${
+              editing ? "bg-orange-50 text-orange-600" : "text-stone-500 hover:text-orange-600"
+            }`}
+          >
+            <MdOutlineModeEdit className="h-4 w-4" />
+          </button>
+          {canManage && <button
+            type="button"
+            title="Remove step"
+            aria-label="Remove step"
+            disabled={busy}
+            onClick={removeStep}
+            className="rounded p-1.5 text-stone-500 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <MdDeleteOutline className="h-4 w-4" />
+          </button>}
+        </div>
+
+        {/* <input
           type="date"
           aria-label="Due date"
           value={step.dueDate ? step.dueDate.slice(0, 10) : ""}
@@ -95,11 +126,11 @@ function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove }
         <div className="flex gap-1">
           <button type="button" className={btnGhost} onClick={() => onMove(-1)} disabled={busy || index === 0} aria-label="Move step up">↑</button>
           <button type="button" className={btnGhost} onClick={() => onMove(1)} disabled={busy || index === total - 1} aria-label="Move step down">↓</button>
-        </div>
+        </div> */}
       </div>
 
       {(open || editing) && (
-        <div className="mt-3 space-y-3 border-t border-stone-100 pt-3">
+        <div className="mt-2 space-y-3 border-t border-stone-100 p-1">
           {editing ? (
             <>
               <RichTextEditor value={description} onChange={setDescription} />
@@ -115,7 +146,7 @@ function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove }
               ) : (
                 <p className="text-sm text-stone-400">No instructions for this step.</p>
               )}
-              <label className="block text-xs font-medium text-stone-600">
+              {/* <label className="block text-xs font-medium text-stone-600">
                 Note
                 <textarea
                   rows={2}
@@ -125,13 +156,14 @@ function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove }
                   onBlur={() => note !== (step.note || "") && onPatch(step._id, { note })}
                   placeholder="Anything the next person should know"
                 />
-              </label>
-              {step.completedAt && (
+              </label> */}
+              {/* {step.completedAt && (
                 <p className="text-xs text-stone-500">
                   Completed {new Date(step.completedAt).toLocaleDateString()}
                   {step.completedBy?.name ? ` by ${step.completedBy.name}` : ""}
                 </p>
-              )}
+              )} */}
+              {/* Replaced by the edit / remove icons next to the user select:
               <div className="flex gap-2">
                 <button type="button" className={btnGhost} onClick={() => setEditing(true)}>Edit step</button>
                 <button
@@ -141,7 +173,7 @@ function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove }
                 >
                   Remove step
                 </button>
-              </div>
+              </div> */}
             </>
           )}
         </div>
@@ -151,12 +183,18 @@ function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove }
 }
 
 // Drop into EditJobModal (as a tab) or a drawer: <JobWorkflowPanel clientId={job._id} users={users} />
-export default function JobWorkflowPanel({ clientId, users = [], canManage = true, onChanged }) {
+export default function JobWorkflowPanel({ clientId, users = [],  onChanged }) {
   const [wf, setWf] = useState(undefined); // undefined = loading, null = no workflow
   const [templates, setTemplates] = useState([]);
   const [templateId, setTemplateId] = useState("");
   const [newTitle, setNewTitle] = useState("");
   const [busy, setBusy] = useState(false);
+
+    const {
+    auth: { user },
+  } = useSelector((state) => state.auth);
+
+  const canManage = isAdmin(user)
 
   const load = useCallback(async () => {
     try {
@@ -283,14 +321,14 @@ export default function JobWorkflowPanel({ clientId, users = [], canManage = tru
             {wf.templateName || "Workflow"}
             {wf.templateVersion ? <span className="ml-1 font-normal text-stone-500">v{wf.templateVersion}</span> : null}
           </p>
-          <p className="text-xs text-stone-500">{done} of {total} steps done</p>
+          {/* <p className="text-xs text-stone-500">{done} of {total} steps done</p> */}
         </div>
         <div className="flex gap-2">
-          {wf.templateId && (
+          {/* {wf.templateId && (
             <button type="button" className={btnGhost} onClick={sync} disabled={busy}>
               Update from template
             </button>
-          )}
+          )} */}
           {canManage && (
             <button type="button" className={btnDanger} onClick={removeWorkflow} disabled={busy}>
               Remove workflow
@@ -299,7 +337,7 @@ export default function JobWorkflowPanel({ clientId, users = [], canManage = tru
         </div>
       </div>
 
-      <div
+      {/* <div
         className="h-2 overflow-hidden rounded-full bg-stone-100"
         role="progressbar"
         aria-valuenow={percent}
@@ -308,9 +346,9 @@ export default function JobWorkflowPanel({ clientId, users = [], canManage = tru
         aria-label="Workflow progress"
       >
         <div className="h-full bg-orange-500 transition-[width]" style={{ width: `${percent}%` }} />
-      </div>
+      </div> */}
 
-      <ol className="space-y-2">
+      <ul className="space-y-2 list-none ">
         {wf.steps.map((s, i) => (
           <StepCard
             key={s._id}
@@ -322,9 +360,10 @@ export default function JobWorkflowPanel({ clientId, users = [], canManage = tru
             onPatch={patchStep}
             onDelete={deleteStep}
             onMove={(dir) => moveStep(i, dir)}
+            canManage={canManage}
           />
         ))}
-      </ol>
+      </ul>
 
       <form onSubmit={addStep} className="flex gap-2">
         <input

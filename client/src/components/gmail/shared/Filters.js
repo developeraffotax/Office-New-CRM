@@ -353,7 +353,7 @@ useEffect(() => {
                 }}
                 sx={selectStyle}
               >
-                <MenuItem value="">
+                <MenuItem value="" key={`inbox_category_filter_all`}>
                   {" "}
                   <Typography variant="body2" fontWeight={600}>
                     {" "}
@@ -363,6 +363,7 @@ useEffect(() => {
                 <MenuItem
                   sx={{ borderBottom: 1, borderColor: "#ddd" }}
                   value={"unassigned"}
+                  key={`inbox_category_filter_unassigned`}
                 >
                   {" "}
                   Unassigned{" "}
@@ -370,7 +371,7 @@ useEffect(() => {
 
                 {categories.map(({ name }) => {
                   return (
-                    <MenuItem value={name}>
+                    <MenuItem value={name} key={`inbox_category_filter_${name}`}>
                       {" "}
                       {name.charAt(0).toUpperCase() + name.slice(1)}{" "}
                     </MenuItem>

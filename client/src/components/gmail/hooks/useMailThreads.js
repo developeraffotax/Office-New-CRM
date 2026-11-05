@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
 import { useSocket } from "../../../context/socketProvider";
 import { useSearchParams } from "react-router-dom";
@@ -96,7 +96,7 @@ const [loading, setLoading] = useState({
 });
   const [pagination, setPagination] = useState({});
 
- 
+   const abortControllerRef = useRef(null);
  
   // const [filters, setFilters] = useState({
   //   userId: isAdmin ? "unassigned" : "",
@@ -205,31 +205,66 @@ const filters = useMemo(
   // }, []);
 
   // ---------------- Fetch threads from API ----------------
-  const fetchThreads = useCallback(async () => {
-     setLoading((prev) => ({ ...prev, fetching: true }));
-    try {
-      const { data } = await axios.get(endpoint, {
-        params: {
-          folder, // 👈 injected from URL
-          companyName,
-          ...filters,
-        },
-      });
+  // const fetchThreads = useCallback(async () => {
+  //    setLoading((prev) => ({ ...prev, fetching: true }));
+  //   try {
+  //     const { data } = await axios.get(endpoint, {
+  //       params: {
+  //         folder, // 👈 injected from URL
+  //         companyName,
+  //         ...filters,
+  //       },
+  //     });
 
+  //     setThreads(data.threads);
+  //     setPagination(data.pagination);
+  //   } catch (err) {
+  //     toast.error(`Failed to load ${folder}`);
+  //     console.error("Failed to fetch threads:", err);
+  //     setThreads([]);
+  //     setPagination({});
+  //   } finally {
+  //      setLoading((prev) => ({ ...prev, fetching: false }));
+  //   }
+  // }, [endpoint, filters, folder, companyName]);
+
+
+
+
+
+
+const fetchThreads = useCallback(async () => {
+  // cancel any in-flight request
+  if (abortControllerRef.current) {
+    abortControllerRef.current.abort();
+  }
+  const controller = new AbortController();
+  abortControllerRef.current = controller;
+
+  setLoading(prev => ({ ...prev, fetching: true }));
+  try {
+    const { data } = await axios.get(endpoint, {
+      params: { folder, companyName, ...filters },
+      signal: controller.signal,
+    });
+
+    // only apply if this is still the latest request
+    if (!controller.signal.aborted) {
       setThreads(data.threads);
       setPagination(data.pagination);
-    } catch (err) {
-      toast.error(`Failed to load ${folder}`);
-      console.error("Failed to fetch threads:", err);
+    }
+  } catch (err) {
+    if (!axios.isCancel(err) && err.name !== "CanceledError") {
+      // real error handling
       setThreads([]);
       setPagination({});
-    } finally {
-       setLoading((prev) => ({ ...prev, fetching: false }));
     }
-  }, [endpoint, filters, folder, companyName]);
-
-
-
+  } finally {
+    if (!controller.signal.aborted) {
+      setLoading(prev => ({ ...prev, fetching: false }));
+    }
+  }
+}, [endpoint, filters, folder, companyName]);
 
 
 

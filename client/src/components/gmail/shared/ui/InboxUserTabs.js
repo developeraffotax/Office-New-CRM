@@ -54,6 +54,7 @@ export default function InboxUserTabs({
             {/* ---------------- ALL TAB ---------------- */}
             {showAll && (
               <div
+                key="inbox_user_filter_all"
                 onClick={() => onChange("")}
                 className={`
                   relative px-4 py-2 text-sm transition-all cursor-pointer whitespace-nowrap
@@ -72,6 +73,7 @@ export default function InboxUserTabs({
             {
               showUnassigned && (
                 <div
+                key="inbox_user_filter_unassigned"
                 onClick={() => onChange("unassigned")}
                 className={`
                   relative px-4 py-2 text-sm transition-all cursor-pointer whitespace-nowrap
@@ -97,7 +99,7 @@ export default function InboxUserTabs({
               const isActive = activeValue === id;
 
               return (
-                <Draggable key={id} draggableId={String(id)} index={index}>
+                <Draggable key={id} draggableId={String(id)} index={index} >
                   {(provided, snapshot) => (
                     <div
                       ref={provided.innerRef}

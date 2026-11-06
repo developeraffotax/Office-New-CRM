@@ -300,7 +300,7 @@ export default function JobWorkflowPanel({ clientId, users = [],  onChanged }) {
           <select className={`${inputCls} !w-64`} value={templateId} onChange={(e) => setTemplateId(e.target.value)} aria-label="Template">
             <option value="">Choose a template</option>
             {templates.map((t) => (
-              <option key={t._id} value={t._id}>{t.name} ({t.jobType})</option>
+              <option key={t._id} value={t._id}>{t.name} {t.jobType && `(${t.jobType})`}</option>
             ))}
           </select>
           <button type="button" className={btnPrimary} onClick={applyTemplate} disabled={busy || !templateId}>

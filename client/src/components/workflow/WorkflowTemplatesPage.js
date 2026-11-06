@@ -22,6 +22,10 @@ const MODES = [
   { value: "unassigned", label: "Unassigned" },
 ];
 
+const UNASSIGNED = "__unassigned__";
+
+
+
 // small square icon button used for move up / down / remove
 const iconBtn =
   "rounded-md p-1.5 text-stone-500 hover:bg-stone-200/70 hover:text-stone-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent";
@@ -175,6 +179,15 @@ export default function WorkflowTemplatesPage() {
       toast.error(errMsg(e));
     }
   };
+
+  // picking "Unassigned" sets both fields; picking a user (or the placeholder) goes back to "fixed"
+const setStepUser = (key, id) =>
+  patchStep(
+    key,
+    id === UNASSIGNED
+      ? { assigneeMode: "unassigned", assignee: null }
+      : { assigneeMode: "fixed", assignee: id },
+  );
 
   return (
     <div className="w-full font-inter ">
@@ -377,7 +390,23 @@ export default function WorkflowTemplatesPage() {
                         }
                         placeholder="Which department will handle it?"
                       />
-                      {s.assigneeMode === "fixed" && (
+
+
+                      {["fixed", "unassigned"].includes(s.assigneeMode) && (
+  <WorkflowUserSelect
+    className="sm:!w-52"
+    users={[{ _id: UNASSIGNED, name: "Unassigned" }, ...users]}
+    value={s.assigneeMode === "unassigned" ? UNASSIGNED : s.assignee}
+    onChange={(id) => setStepUser(s._key, id)}
+    placeholder="Choose user"
+    ariaLabel={`Step ${i + 1} user`}
+  />
+)}
+ 
+
+
+
+                      {/* {s.assigneeMode === "fixed" && (
                         <WorkflowUserSelect
                           className="sm:!w-52"
                           users={users}
@@ -386,7 +415,7 @@ export default function WorkflowTemplatesPage() {
                           placeholder="Choose user"
                           ariaLabel={`Step ${i + 1} user`}
                         />
-                      )}
+                      )} */}
                       <div className="flex items-center">
                         <button
                           type="button"

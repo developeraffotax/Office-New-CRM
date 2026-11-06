@@ -512,12 +512,17 @@ useEffect(() => {
   )
 }
 
-
-            <Divider
+{
+  isAdmin && (
+     <Divider
               orientation="vertical"
               flexItem
               sx={{ height: 24, alignSelf: "center" }}
             />
+
+  )
+}
+           
 
             <ToggleButton
               value="starred"

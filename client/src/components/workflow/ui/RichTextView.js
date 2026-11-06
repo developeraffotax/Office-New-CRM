@@ -5,7 +5,7 @@ export default function RichTextView({ html, className = "" }) {
   if (!html) return null;
   return (
     <div
-      className={`rt-content text-sm text-stone-700 ${className}`}
+      className={`rich-text-content text-sm text-stone-700 ${className}`}
       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html, { ADD_ATTR: ["target"] }) }}
     />
   );

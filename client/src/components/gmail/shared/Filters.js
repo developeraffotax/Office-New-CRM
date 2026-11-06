@@ -42,6 +42,8 @@ import { IoClose } from "react-icons/io5";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import PersonPinIcon from "@mui/icons-material/PersonPin";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
+import ForumOutlinedIcon from "@mui/icons-material/ForumOutlined";
+import ForumIcon from "@mui/icons-material/Forum";
 
 import ManageCategoriesModal from "../categories/ManageCategoriesModal";
 import InboxUserTabs from "./ui/InboxUserTabs";
@@ -476,6 +478,40 @@ useEffect(() => {
                 C
               </Box>
             </ToggleButton>
+
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{ height: 24, alignSelf: "center" }}
+            />
+
+
+            {/* Toggle All Conversations visibility */}
+{
+  isAdmin && (
+    <ToggleButton
+  value="all"
+  size="small"
+  selected={visibleTabs.includes("all")}
+  onChange={() => toggleTab("all")}
+  title="All Conversations"
+  color="primary"
+  sx={{
+    border: "none",
+    borderRadius: "8px",
+  }}
+>
+  {visibleTabs.includes("all") ? (
+    <ForumIcon  fontSize="small" />   // or change icon if you want
+  ) : (
+    <ForumOutlinedIcon fontSize="small" />
+  )}
+
+  
+</ToggleButton>
+  )
+}
+
 
             <Divider
               orientation="vertical"

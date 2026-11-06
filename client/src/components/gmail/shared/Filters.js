@@ -62,7 +62,7 @@ export default function Filters({
   categories = [],
   fetchThreads,
 
-  setIsComposeOpen
+  setIsComposeOpen,
 }) {
   const {
     auth: { user },
@@ -72,7 +72,10 @@ export default function Filters({
 
   const hasPermission = isAdmin || isTeamLead;
 
-   const hasUnassignedPermission = useMemo(() => hasSubrole(user, "Inbox", "Unassigned"), [user])
+  const hasUnassignedPermission = useMemo(
+    () => hasSubrole(user, "Inbox", "Unassigned"),
+    [user],
+  );
 
   const [searchParams] = useSearchParams();
   const folder = searchParams.get("folder") || "inbox";
@@ -96,15 +99,7 @@ export default function Filters({
     return ["all", "unassigned", ...users.map((u) => u._id)];
   });
 
-
-
-
-  console.log("USERS IN INBOX", users)
-
-
-
-
-
+  console.log("USERS IN INBOX", users);
 
   useEffect(() => {
     if (!users.length) return;
@@ -157,36 +152,30 @@ export default function Filters({
     setAnchorEl(null);
   };
 
+  const clearFilters = () => {
+    const hasAll = visibleTabs.includes("all");
+    const hasUnassigned = visibleTabs.includes("unassigned");
 
+    const filters = {
+      category: "",
+      userId: hasAll ? "" : hasUnassigned ? "unassigned" : "",
+      unreadOnly: false,
+      startDate: "",
+      endDate: "",
+      page: 1,
+      search: "",
+      lastMessageBy: "",
+      starred: false,
+      mailThreadId: "",
+    };
 
-const clearFilters = () => {
-  const hasAll = visibleTabs.includes("all");
-  const hasUnassigned = visibleTabs.includes("unassigned");
-
-  const filters = {
-    category: "",
-    userId: hasAll ? "" : hasUnassigned ? "unassigned" : "",
-    unreadOnly: false,
-    startDate: "",
-    endDate: "",
-    page: 1,
-    search: "",
-    lastMessageBy: "",
-    starred: false,
-    mailThreadId: "",
+    setFilters(filters);
+    setSearchInput("");
   };
-
-  setFilters(filters);
-  setSearchInput("");
-};
-
 
   const handleUpdate = (updates) => {
     setFilters({ ...updates, page: 1 });
   };
-
-
- 
 
   useEffect(() => {
     // Check if user is Admin OR Team Lead, AND the feature is enabled
@@ -218,34 +207,30 @@ const clearFilters = () => {
     // Added isTeamLead to the dependency array
   }, [filters, folder, companyName, isAdmin, isTeamLead, isInboxUserTabs]);
 
-
   // 2. Sync local input state whenever URL search filter changes (URL -> State)
-useEffect(() => {
-  setSearchInput(filters.search || "");
-}, [filters.search]);
+  useEffect(() => {
+    setSearchInput(filters.search || "");
+  }, [filters.search]);
 
-// 3. Debounce updates from local input state to URL search params (State -> URL)
-useEffect(() => {
-  const timer = setTimeout(() => {
-    const trimmed = searchInput.trim();
-    if (trimmed !== (filters.search || "")) {
-      const searchFilters = {
-        search: trimmed,
-        page: 1,
+  // 3. Debounce updates from local input state to URL search params (State -> URL)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const trimmed = searchInput.trim();
+      if (trimmed !== (filters.search || "")) {
+        const searchFilters = {
+          search: trimmed,
+          page: 1,
+        };
+
+        // if(filters?.userId === "unassigned") {
+        //   searchFilters.userId = "";
+        // }
+        setFilters(searchFilters);
       }
+    }, 500);
 
-      // if(filters?.userId === "unassigned") {
-      //   searchFilters.userId = "";
-      // }
-      setFilters(searchFilters);
-    }
-  }, 500);
-
-  return () => clearTimeout(timer);
-}, [searchInput, filters.search, setFilters]);
-
-
-
+    return () => clearTimeout(timer);
+  }, [searchInput, filters.search, setFilters]);
 
   // useEffect(() => {
   //   const trimmed = searchInput.trim();
@@ -373,7 +358,10 @@ useEffect(() => {
 
                 {categories.map(({ name }) => {
                   return (
-                    <MenuItem value={name} key={`inbox_category_filter_${name}`}>
+                    <MenuItem
+                      value={name}
+                      key={`inbox_category_filter_${name}`}
+                    >
                       {" "}
                       {name.charAt(0).toUpperCase() + name.slice(1)}{" "}
                     </MenuItem>
@@ -485,44 +473,35 @@ useEffect(() => {
               sx={{ height: 24, alignSelf: "center" }}
             />
 
-
             {/* Toggle All Conversations visibility */}
-{
-  isAdmin && (
-    <ToggleButton
-  value="all"
-  size="small"
-  selected={visibleTabs.includes("all")}
-  onChange={() => toggleTab("all")}
-  title="All Conversations"
-  color="primary"
-  sx={{
-    border: "none",
-    borderRadius: "8px",
-  }}
->
-  {visibleTabs.includes("all") ? (
-    <ForumIcon  fontSize="small" />   // or change icon if you want
-  ) : (
-    <ForumOutlinedIcon fontSize="small" />
-  )}
+            {isAdmin && (
+              <ToggleButton
+                value="all"
+                size="small"
+                selected={visibleTabs.includes("all")}
+                onChange={() => toggleTab("all")}
+                title="All Conversations"
+                color="primary"
+                sx={{
+                  border: "none",
+                  borderRadius: "8px",
+                }}
+              >
+                {visibleTabs.includes("all") ? (
+                  <ForumIcon fontSize="small" /> // or change icon if you want
+                ) : (
+                  <ForumOutlinedIcon fontSize="small" />
+                )}
+              </ToggleButton>
+            )}
 
-  
-</ToggleButton>
-  )
-}
-
-{
-  isAdmin && (
-     <Divider
-              orientation="vertical"
-              flexItem
-              sx={{ height: 24, alignSelf: "center" }}
-            />
-
-  )
-}
-           
+            {isAdmin && (
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ height: 24, alignSelf: "center" }}
+              />
+            )}
 
             <ToggleButton
               value="starred"
@@ -708,43 +687,31 @@ useEffect(() => {
               handleUpdate={handleUpdate}
             />
 
-
-            
-  <IconButton
-    onClick={() => fetchThreads?.()}
-    sx={{
-      width: 32,
-      height: 32,
-      borderRadius: "8px",
-      border: "1px solid rgba(0,0,0,0.15)",
-      color: "text.secondary",
-      "&:hover": {
-        bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
-        borderColor: "primary.main",
-        color: "primary.main",
-      },
-    }}
-  >
-    <AutorenewIcon fontSize="small" />
-  </IconButton>
- 
-
-
-
+            <IconButton
+              onClick={() => fetchThreads?.()}
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: "8px",
+                border: "1px solid rgba(0,0,0,0.15)",
+                color: "text.secondary",
+                "&:hover": {
+                  bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
+                  borderColor: "primary.main",
+                  color: "primary.main",
+                },
+              }}
+            >
+              <AutorenewIcon fontSize="small" />
+            </IconButton>
 
             {/* <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} /> */}
           </Stack>
 
           <Stack direction="row" spacing={1} alignItems="center">
-
-            
-
-             
-
-
-             <button
-                onClick={() =>  setIsComposeOpen(true)}
-                className="
+            <button
+              onClick={() => setIsComposeOpen(true)}
+              className="
                   flex items-center justify-center md:justify-start gap-2
                   bg-[#C2E7FF] hover:bg-[#B3D7EF] text-[#001D35] 
                   font-medium text-base rounded-2xl 
@@ -752,20 +719,17 @@ useEffect(() => {
                   transition-all duration-200 ease-in-out
                   w-[40px] h-[46px] md:w-auto
                 "
-              >
-                {/* Material Design Edit/Compose Icon */}
-                <MdOutlineCreate className="text-2xl flex-shrink-0" />
-                
-                {/* Button Text (Hidden on mobile, visible on desktop) */}
-                <span className="hidden md:inline  font-google tracking-wide">
-                  Compose
-                </span>
-              </button>
+            >
+              {/* Material Design Edit/Compose Icon */}
+              <MdOutlineCreate className="text-2xl flex-shrink-0" />
 
+              {/* Button Text (Hidden on mobile, visible on desktop) */}
+              <span className="hidden md:inline  font-google tracking-wide">
+                Compose
+              </span>
+            </button>
 
-              {
-              isAdmin && <PendingApprovalsButton />
-            }
+            {isAdmin && <PendingApprovalsButton />}
 
             <ContextMenu
               trigger={
@@ -792,7 +756,10 @@ useEffect(() => {
               droppableId="inbox_users"
               users={team.filter((u) => visibleTabs.includes(u._id))}
               showAll={isAdmin && visibleTabs.includes("all")}
-              showUnassigned={(isAdmin || hasUnassignedPermission) && visibleTabs.includes("unassigned")}
+              showUnassigned={
+                (isAdmin || hasUnassignedPermission) &&
+                visibleTabs.includes("unassigned")
+              }
               activeValue={filters.userId || ""}
               // showAll={true}
               onChange={(userId) =>
@@ -1101,10 +1068,6 @@ useEffect(() => {
               Team Visibility
             </Typography>
           </Box>
-
-         
-
-
 
           {/* Main Categories */}
           {(isAdmin || hasUnassignedPermission) && (

@@ -1255,9 +1255,10 @@ const handleClearFilters = () => {
     enableBottomToolbar: true,
     enablePagination: true,
     initialState: {
-      pagination: { pageSize: 20 },
-      pageSize: 20,
+      pagination: { pageSize: 100 },
+      // pageSize: 20,
       density: "compact",
+    
     },
 
     muiRowDragHandleProps: ({ table }) => ({

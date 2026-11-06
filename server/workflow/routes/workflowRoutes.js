@@ -24,6 +24,7 @@ router.get("/my-steps", c.getMySteps);
 
 // One job's workflow
 router.get("/job/:clientId", c.getJobWorkflow);
+router.post("/job/:clientId/workflow", isAdmin, c.createManualWorkflow);
 router.delete("/job/:clientId", isAdmin, c.removeJobWorkflow);
 router.post("/job/:clientId/steps", c.addStep);
 router.patch("/job/:clientId/steps/:stepId", c.updateStep);

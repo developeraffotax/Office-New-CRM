@@ -29,6 +29,7 @@ export const getMySteps = handle((req) => svc.getMySteps(uid(req), { status: req
 
 // per job
 export const getJobWorkflow = handle((req) => svc.getJobWorkflow(req.params.clientId));
+export const createManualWorkflow = handle((req) => svc.createManualWorkflow(req.params.clientId, uid(req)));
 export const removeJobWorkflow = handle((req) => svc.removeJobWorkflow(req.params.clientId, uid(req)));
 export const addStep = handle((req) => svc.addStep(req.params.clientId, req.body, uid(req)));
 export const updateStep = handle((req) =>

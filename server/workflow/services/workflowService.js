@@ -314,6 +314,33 @@ export const getJobWorkflow = async (clientId) => {
   return wf;
 };
 
+
+
+// A workflow with no template behind it. It starts empty and is built step by step with addStep.
+export const createManualWorkflow = async (clientId, userId) => {
+  const id = toObjectId(clientId, "job id");
+  if (!(await Client().exists({ _id: id }))) throw new WorkflowError("Job not found", 404);
+  try {
+    await JobWorkflow.create({
+      clientId: id,
+      templateId: null,
+      templateName: "Manual workflow",
+      templateVersion: 0,
+      steps: [],
+      appliedBy: userId,
+    });
+  } catch (err) {
+    if (err?.code === 11000) throw new WorkflowError("This job already has a workflow", 409); // unique clientId
+    throw err;
+  }
+  await logActivity(id, userId, "Manual workflow created");
+  return getJobWorkflow(clientId);
+};
+
+
+
+
+
 export const removeJobWorkflow = async (clientId, userId) => {
   const res = await JobWorkflow.deleteOne({ clientId: toObjectId(clientId, "job id") });
   if (res.deletedCount) await logActivity(clientId, userId, "Workflow removed");

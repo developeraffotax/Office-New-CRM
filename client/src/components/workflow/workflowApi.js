@@ -21,6 +21,7 @@ export const workflowApi = {
   mySteps: (params) => data(axios.get(`${BASE}/my-steps`, { params })),
   // one job
   getJobWorkflow: (clientId) => data(axios.get(`${BASE}/job/${clientId}`)),
+  createManualWorkflow: (clientId) => data(axios.post(`${BASE}/job/${clientId}/workflow`)),
   removeJobWorkflow: (clientId) => data(axios.delete(`${BASE}/job/${clientId}`)),
   addStep: (clientId, body) => data(axios.post(`${BASE}/job/${clientId}/steps`, body)),
   updateStep: (clientId, stepId, body) => data(axios.patch(`${BASE}/job/${clientId}/steps/${stepId}`, body)),

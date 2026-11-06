@@ -9,8 +9,6 @@ import { inputCls, btnPrimary, btnGhost, btnDanger } from "./ui/ui";
 import { isAdmin } from "../../utlis/checkPermission";
 import { useSelector } from "react-redux";
 
-
-
 const OPEN = ["pending", "in_progress", "blocked"];
 const STATUS = {
   pending: { label: "To do", cls: "bg-stone-100 text-stone-700" },
@@ -20,7 +18,17 @@ const STATUS = {
   skipped: { label: "Skipped", cls: "bg-stone-100 text-stone-400" },
 };
 
-function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove, canManage }) {
+function StepCard({
+  step,
+  index,
+  total,
+  users,
+  busy,
+  onPatch,
+  onDelete,
+  onMove,
+  canManage,
+}) {
   const [open, setOpen] = useState(true);
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(step.title);
@@ -37,7 +45,10 @@ function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove, 
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const overdue = step.dueDate && OPEN.includes(step.status) && new Date(step.dueDate) < today;
+  const overdue =
+    step.dueDate &&
+    OPEN.includes(step.status) &&
+    new Date(step.dueDate) < today;
   const done = step.status === "done";
 
   const saveEdit = async () => {
@@ -45,23 +56,36 @@ function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove, 
     if (await onPatch(step._id, { title, description })) setEditing(false);
   };
 
-  const removeStep = () => window.confirm(`Remove "${step.title}" from this job?`) && onDelete(step._id);
+  const removeStep = () =>
+    window.confirm(`Remove "${step.title}" from this job?`) &&
+    onDelete(step._id);
 
   return (
-    <li className={`rounded-md m-0 border bg-white p-3 ${done ? "border-emerald-200" : "border-stone-200"}`}>
+    <li
+      className={`rounded-md m-0 border bg-white p-3 ${
+        done ? "border-emerald-200" : "border-stone-200"
+      }`}
+    >
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-xs font-semibold text-orange-700">
           {index + 1}
         </span>
 
         {editing ? (
-          <input className={`${inputCls} min-w-[12rem] flex-1`} value={title} onChange={(e) => setTitle(e.target.value)} aria-label="Step title" />
+          <input
+            className={`${inputCls} min-w-[12rem] flex-1`}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            aria-label="Step title"
+          />
         ) : (
           <button
             type="button"
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
-            className={`min-w-[10rem] flex-1 text-left text-base font-medium ${done ? "text-stone-400 line-through" : "text-stone-900"}`}
+            className={`min-w-[10rem] flex-1 text-left text-base font-medium ${
+              done ? "text-stone-400 line-through" : "text-stone-900"
+            }`}
           >
             {step.title}
           </button>
@@ -97,21 +121,25 @@ function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove, 
             disabled={busy}
             onClick={() => setEditing((e) => !e)}
             className={`rounded p-1.5 hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50 ${
-              editing ? "bg-orange-50 text-orange-600" : "text-stone-500 hover:text-orange-600"
+              editing
+                ? "bg-orange-50 text-orange-600"
+                : "text-stone-500 hover:text-orange-600"
             }`}
           >
             <MdOutlineModeEdit className="h-4 w-4" />
           </button>
-          {canManage && <button
-            type="button"
-            title="Remove step"
-            aria-label="Remove step"
-            disabled={busy}
-            onClick={removeStep}
-            className="rounded p-1.5 text-stone-500 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <MdDeleteOutline className="h-4 w-4" />
-          </button>}
+          {canManage && (
+            <button
+              type="button"
+              title="Remove step"
+              aria-label="Remove step"
+              disabled={busy}
+              onClick={removeStep}
+              className="rounded p-1.5 text-stone-500 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <MdDeleteOutline className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
         {/* <input
@@ -135,8 +163,21 @@ function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove, 
             <>
               <RichTextEditor value={description} onChange={setDescription} />
               <div className="flex gap-2">
-                <button type="button" className={btnPrimary} onClick={saveEdit} disabled={busy}>Save step</button>
-                <button type="button" className={btnGhost} onClick={() => setEditing(false)}>Cancel</button>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={saveEdit}
+                  disabled={busy}
+                >
+                  Save step
+                </button>
+                <button
+                  type="button"
+                  className={btnGhost}
+                  onClick={() => setEditing(false)}
+                >
+                  Cancel
+                </button>
               </div>
             </>
           ) : (
@@ -144,7 +185,9 @@ function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove, 
               {step.description ? (
                 <RichTextView html={step.description} />
               ) : (
-                <p className="text-sm text-stone-400">No instructions for this step.</p>
+                <p className="text-sm text-stone-400">
+                  No instructions for this step.
+                </p>
               )}
               {/* <label className="block text-xs font-medium text-stone-600">
                 Note
@@ -183,18 +226,18 @@ function StepCard({ step, index, total, users, busy, onPatch, onDelete, onMove, 
 }
 
 // Drop into EditJobModal (as a tab) or a drawer: <JobWorkflowPanel clientId={job._id} users={users} />
-export default function JobWorkflowPanel({ clientId, users = [],  onChanged }) {
+export default function JobWorkflowPanel({ clientId, users = [], onChanged }) {
   const [wf, setWf] = useState(undefined); // undefined = loading, null = no workflow
   const [templates, setTemplates] = useState([]);
   const [templateId, setTemplateId] = useState("");
   const [newTitle, setNewTitle] = useState("");
   const [busy, setBusy] = useState(false);
 
-    const {
+  const {
     auth: { user },
   } = useSelector((state) => state.auth);
 
-  const canManage = isAdmin(user)
+  const canManage = isAdmin(user);
 
   const load = useCallback(async () => {
     try {
@@ -211,7 +254,11 @@ export default function JobWorkflowPanel({ clientId, users = [],  onChanged }) {
   }, [load]);
 
   useEffect(() => {
-    if (wf === null && canManage) workflowApi.listTemplates().then(setTemplates).catch((e) => toast.error(errMsg(e)));
+    if (wf === null && canManage)
+      workflowApi
+        .listTemplates()
+        .then(setTemplates)
+        .catch((e) => toast.error(errMsg(e)));
   }, [wf, canManage]);
 
   // Runs an API call that returns the updated workflow. Resolves true on success.
@@ -232,8 +279,13 @@ export default function JobWorkflowPanel({ clientId, users = [],  onChanged }) {
   const applyTemplate = async () => {
     setBusy(true);
     try {
-      const res = await workflowApi.apply({ templateId, jobIds: [clientId], ifExists: "skip" });
-      if (res.unresolvedSteps) toast("Some steps have no user. Assign them below.", { icon: "⚠️" });
+      const res = await workflowApi.apply({
+        templateId,
+        jobIds: [clientId],
+        ifExists: "skip",
+      });
+      if (res.unresolvedSteps)
+        toast("Some steps have no user. Assign them below.", { icon: "⚠️" });
       await load();
       onChanged?.();
     } catch (e) {
@@ -249,7 +301,11 @@ export default function JobWorkflowPanel({ clientId, users = [],  onChanged }) {
       const res = await workflowApi.sync(clientId);
       setWf(res.workflow);
       onChanged?.();
-      toast.success(res.upToDate ? "Already up to date" : `${res.added} step(s) added, ${res.updated} updated`);
+      toast.success(
+        res.upToDate
+          ? "Already up to date"
+          : `${res.added} step(s) added, ${res.updated} updated`,
+      );
     } catch (e) {
       toast.error(errMsg(e));
     } finally {
@@ -258,7 +314,10 @@ export default function JobWorkflowPanel({ clientId, users = [],  onChanged }) {
   };
 
   const removeWorkflow = async () => {
-    if (!window.confirm("Remove this job's workflow? Step progress will be lost.")) return;
+    if (
+      !window.confirm("Remove this job's workflow? Step progress will be lost.")
+    )
+      return;
     setBusy(true);
     try {
       await workflowApi.removeJobWorkflow(clientId);
@@ -271,8 +330,10 @@ export default function JobWorkflowPanel({ clientId, users = [],  onChanged }) {
     }
   };
 
-  const patchStep = (stepId, body) => run(() => workflowApi.updateStep(clientId, stepId, body));
-  const deleteStep = (stepId) => run(() => workflowApi.deleteStep(clientId, stepId));
+  const patchStep = (stepId, body) =>
+    run(() => workflowApi.updateStep(clientId, stepId, body));
+  const deleteStep = (stepId) =>
+    run(() => workflowApi.deleteStep(clientId, stepId));
   const moveStep = (index, dir) => {
     const ids = wf.steps.map((s) => s._id);
     const j = index + dir;
@@ -283,28 +344,62 @@ export default function JobWorkflowPanel({ clientId, users = [],  onChanged }) {
   const addStep = async (e) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
-    if (await run(() => workflowApi.addStep(clientId, { title: newTitle }))) setNewTitle("");
+    if (await run(() => workflowApi.addStep(clientId, { title: newTitle })))
+      setNewTitle("");
   };
 
-  if (wf === undefined) return <p className="text-sm text-stone-500">Loading workflow…</p>;
+  const createManual = () =>
+    run(() => workflowApi.createManualWorkflow(clientId));
+
+  if (wf === undefined)
+    return <p className="text-sm text-stone-500">Loading workflow…</p>;
 
   if (wf === null && !canManage) {
-    return <p className="text-sm text-stone-500">This job has no workflow yet. An admin can add one.</p>;
+    return (
+      <p className="text-sm text-stone-500">
+        This job has no workflow yet. An admin can add one.
+      </p>
+    );
   }
 
   if (wf === null) {
     return (
       <div className="rounded-md border border-dashed border-stone-300 p-4">
-        <p className="mb-3 text-sm text-stone-700">This job has no workflow yet. Pick a template to add one.</p>
+        <p className="mb-3 text-sm text-stone-700">
+          This job has no workflow yet. Pick a template to add one.
+        </p>
         <div className="flex flex-wrap gap-2">
-          <select className={`${inputCls} !w-64`} value={templateId} onChange={(e) => setTemplateId(e.target.value)} aria-label="Template">
+          <select
+            className={`${inputCls} !w-64`}
+            value={templateId}
+            onChange={(e) => setTemplateId(e.target.value)}
+            aria-label="Template"
+          >
             <option value="">Choose a template</option>
             {templates.map((t) => (
-              <option key={t._id} value={t._id}>{t.name} {t.jobType && `(${t.jobType})`}</option>
+              <option key={t._id} value={t._id}>
+                {t.name} {t.jobType && `(${t.jobType})`}
+              </option>
             ))}
           </select>
-          <button type="button" className={btnPrimary} onClick={applyTemplate} disabled={busy || !templateId}>
+          <button
+            type="button"
+            className={btnPrimary}
+            onClick={applyTemplate}
+            disabled={busy || !templateId}
+          >
             Apply workflow
+          </button>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-stone-200 pt-4">
+          <p className="text-sm text-stone-600">No template fits this job?</p>
+          <button
+            type="button"
+            className={btnGhost}
+            onClick={createManual}
+            disabled={busy}
+          >
+            Create a manual workflow
           </button>
         </div>
       </div>
@@ -319,7 +414,11 @@ export default function JobWorkflowPanel({ clientId, users = [],  onChanged }) {
         <div>
           <p className="text-sm font-semibold text-stone-900">
             {wf.templateName || "Workflow"}
-            {wf.templateVersion ? <span className="ml-1 font-normal text-stone-500">v{wf.templateVersion}</span> : null}
+            {wf.templateVersion ? (
+              <span className="ml-1 font-normal text-stone-500">
+                v{wf.templateVersion}
+              </span>
+            ) : null}
           </p>
           {/* <p className="text-xs text-stone-500">{done} of {total} steps done</p> */}
         </div>
@@ -330,7 +429,12 @@ export default function JobWorkflowPanel({ clientId, users = [],  onChanged }) {
             </button>
           )} */}
           {canManage && (
-            <button type="button" className={btnDanger} onClick={removeWorkflow} disabled={busy}>
+            <button
+              type="button"
+              className={btnDanger}
+              onClick={removeWorkflow}
+              disabled={busy}
+            >
               Remove workflow
             </button>
           )}
@@ -364,6 +468,11 @@ export default function JobWorkflowPanel({ clientId, users = [],  onChanged }) {
           />
         ))}
       </ul>
+      {!wf.steps.length && (
+        <p className="text-sm text-stone-500">
+          No steps yet. Add the first step below.
+        </p>
+      )}
 
       <form onSubmit={addStep} className="flex gap-2">
         <input
@@ -373,7 +482,11 @@ export default function JobWorkflowPanel({ clientId, users = [],  onChanged }) {
           placeholder="Add a step to this job only"
           aria-label="New step title"
         />
-        <button type="submit" className={btnGhost} disabled={busy || !newTitle.trim()}>
+        <button
+          type="submit"
+          className={btnGhost}
+          disabled={busy || !newTitle.trim()}
+        >
           Add step
         </button>
       </form>

@@ -262,27 +262,34 @@ export default function HR() {
   }, []);
 
   // ----------Fetch All Departments-------->
-  const fetchAllDepartments = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/department/all`,
+const fetchAllDepartments = async () => {
+  try {
+    const { data } = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/v1/department/all`,
+    );
+
+    let departments = data.departments;
+
+    if (!isAdmin(auth?.user)) {
+      departments = departments.filter((dpt) =>
+        dpt.users.some((user) => user?.user._id === auth?.user?.id),
       );
-
-      let departments = data.departments;
-
-      if (!isAdmin(auth?.user)) {
-        departments = departments.filter((dpt) =>
-          dpt.users.some((user) => user?.user._id === auth?.user?.id),
-        );
-      }
-
-      console.log("🧡🧡🧡🧡🧡🧡 Departments:", departments);
-
-      setDepartmentData(departments);
-    } catch (error) {
-      console.log(error);
     }
-  };
+
+    // Apply saved order
+    const savedOrder = JSON.parse(
+      localStorage.getItem("hr_departmentsOrder") || "null",
+    );
+    if (savedOrder) {
+      departments = mergeDepartmentsWithSavedOrder(departments, savedOrder);
+    }
+
+    console.log("🧡🧡🧡🧡🧡🧡 Departments:", departments);
+    setDepartmentData(departments);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   useEffect(() => {
     fetchAllDepartments();
@@ -331,6 +338,43 @@ export default function HR() {
 
     return [...ordered, ...newOnes];
   }
+
+  function mergeDepartmentsWithSavedOrder(fetchedDepartments, savedOrder) {
+  if (!savedOrder || !Array.isArray(savedOrder)) return fetchedDepartments;
+
+  const savedSet = new Set(savedOrder);
+  const deptMap = new Map(
+    fetchedDepartments.map((d) => [d._id, d])
+  );
+
+  // Keep saved order (only departments that still exist)
+  const ordered = savedOrder
+    .map((id) => deptMap.get(id))
+    .filter(Boolean);
+
+  // Append any new departments that aren't in the saved order
+  const newOnes = fetchedDepartments.filter((d) => !savedSet.has(d._id));
+
+  return [...ordered, ...newOnes];
+}
+
+const handleDepartmentOnDragEnd = (result) => {
+  if (!result.destination) return;
+
+  const items = reorder(
+    deparmentsData,
+    result.source.index,
+    result.destination.index,
+  );
+
+  // Save only the IDs
+  localStorage.setItem(
+    "hr_departmentsOrder",
+    JSON.stringify(items.map((d) => d._id)),
+  );
+
+  setDepartmentData(items);
+};
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -1974,10 +2018,18 @@ const setColumnFromOutsideTable = (colKey, filterVal) => {
       <span className="flex-none text-gray-300 select-none">|</span>
 
       {/* ── Departments (takes the remaining space) ── */}
-      {deparmentsData?.length > 0 && (
-        <div className="flex-1 min-w-0 overflow-x-auto hidden1">
-          <div className="flex items-center gap-2 whitespace-nowrap">
-            {/* All */}
+     {/* ── Departments (takes the remaining space) ── */}
+{deparmentsData?.length > 0 && (
+  <div className="flex-1 min-w-0 overflow-x-auto hidden1">
+    <DragDropContext onDragEnd={handleDepartmentOnDragEnd}>
+      <Droppable droppableId="departments0" direction="horizontal">
+        {(provided) => (
+          <div
+            {...provided.droppableProps}
+            ref={provided.innerRef}
+            className="flex items-center gap-2 whitespace-nowrap"
+          >
+            {/* All – not draggable */}
             <div
               className={`px-2.5 py-1 rounded-md cursor-pointer text-[13px] font-medium transition-colors flex-none
                 ${
@@ -1994,38 +2046,52 @@ const setColumnFromOutsideTable = (colKey, filterVal) => {
               All
             </div>
 
-            {deparmentsData.map((dep) => {
+            {deparmentsData.map((dep, index) => {
               const name = dep.departmentName;
               const isActive = departmentFilter === name;
 
               return (
-                <div
+                <Draggable
                   key={dep._id}
-                  className={`px-2.5 py-1 rounded-md cursor-pointer text-[13px] font-medium transition-colors flex-none
-                    ${
-                      isActive
-                        ? "bg-orange-500 text-white"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    }`}
-                  onClick={() => {
-                    setDepartmentFilter((prev) => {
-                      const isSame = prev === name;
-                      const newValue = isSame ? "" : name;
-
-                      setColumnFromOutsideTable("department", newValue);
-                      table.getColumn("product")?.setFilterValue("");
-
-                      return newValue;
-                    });
-                  }}
+                  draggableId={dep._id}
+                  index={index}
                 >
-                  {name}
-                </div>
+                  {(provided) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                      className={`px-2.5 py-1 rounded-md !cursor-pointer text-[13px] font-medium transition-colors flex-none
+                        ${
+                          isActive
+                            ? "bg-orange-500 text-white"
+                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        }`}
+                      onClick={() => {
+                        setDepartmentFilter((prev) => {
+                          const isSame = prev === name;
+                          const newValue = isSame ? "" : name;
+
+                          setColumnFromOutsideTable("department", newValue);
+                          table.getColumn("product")?.setFilterValue("");
+
+                          return newValue;
+                        });
+                      }}
+                    >
+                      {name}
+                    </div>
+                  )}
+                </Draggable>
               );
             })}
+            {provided.placeholder}
           </div>
-        </div>
-      )}
+        )}
+      </Droppable>
+    </DragDropContext>
+  </div>
+)}
     </div>
 
     <hr className="mb-1 bg-gray-300 w-full h-[1px]" />

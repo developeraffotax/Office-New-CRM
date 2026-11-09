@@ -27,8 +27,7 @@ import { TbLoader, TbLoader2 } from "react-icons/tb";
 import { LuLink } from "react-icons/lu";
 
 import HandleHrRoleModal from "../../components/hr/HandleHrRoleModal";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import QuickAccess from "../../utlis/QuickAccess";
+ import QuickAccess from "../../utlis/QuickAccess";
 import { useSelector } from "react-redux";
 
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
@@ -50,6 +49,9 @@ import {
   hasSubrole,
   isAdmin,
 } from "../../utlis/checkPermission";
+import { DragDropProvider } from "@dnd-kit/react";
+import { useSortable } from "@dnd-kit/react/sortable";
+import { move } from "@dnd-kit/helpers";
 
 const months = [
   "January",
@@ -92,6 +94,57 @@ const initialColumnVisibility = {
   product: true,
   software: true,
 };
+
+
+// ---------- Sortable User Chip ----------
+function SortableUser({ id, index, children, className, onClick }) {
+  const { ref, isDragging } = useSortable({
+    id,
+    index,
+    type: "user",
+    accept: "user",
+  });
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: isDragging ? 0.55 : 1,
+        cursor: "grab",
+        zIndex: isDragging ? 50 : undefined,
+      }}
+      onClick={onClick}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ---------- Sortable Department Chip ----------
+function SortableDepartment({ id, index, children, className, onClick }) {
+  const { ref, isDragging } = useSortable({
+    id,
+    index,
+    type: "department",
+    accept: "department",
+  });
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: isDragging ? 0.55 : 1,
+        cursor: "grab",
+        zIndex: isDragging ? 50 : undefined,
+      }}
+      onClick={onClick}
+    >
+      {children}
+    </div>
+  );
+}
 
 export default function HR() {
   const auth = useSelector((state) => state.auth.auth);
@@ -358,23 +411,7 @@ const fetchAllDepartments = async () => {
   return [...ordered, ...newOnes];
 }
 
-const handleDepartmentOnDragEnd = (result) => {
-  if (!result.destination) return;
 
-  const items = reorder(
-    deparmentsData,
-    result.source.index,
-    result.destination.index,
-  );
-
-  // Save only the IDs
-  localStorage.setItem(
-    "hr_departmentsOrder",
-    JSON.stringify(items.map((d) => d._id)),
-  );
-
-  setDepartmentData(items);
-};
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -1446,16 +1483,32 @@ const handleClearFilters = () => {
     return result;
   };
 
-  //  -----------Handle drag end---------
-  const handleUserOnDragEnd = (result) => {
-    const items = reorder(
-      userName,
-      result.source.index,
-      result.destination.index,
+  //  -----------Handle drag end--------// ---------- Users drag end ----------
+const handleUserOnDragEnd = (event) => {
+  if (event.canceled) return;
+
+  setUserName((items) => {
+    const newOrder = move(items, event);
+    localStorage.setItem("hr_usernamesOrder", JSON.stringify(newOrder));
+    return newOrder;
+  });
+};
+
+// ---------- Departments drag end ----------
+const handleDepartmentOnDragEnd = (event) => {
+  if (event.canceled) return;
+
+  setDepartmentData((items) => {
+    const newOrder = move(items, event);
+    localStorage.setItem(
+      "hr_departmentsOrder",
+      JSON.stringify(newOrder.map((d) => d._id)),
     );
-    localStorage.setItem("hr_usernamesOrder", JSON.stringify(items));
-    setUserName(items);
-  };
+    return newOrder;
+  });
+};
+
+
 
   // --------------Job_Holder Length---------->
 
@@ -1955,143 +2008,114 @@ const setColumnFromOutsideTable = (colKey, filterVal) => {
 
 
         {/* ----------Job_Holder Summery Filters---------- */}
+{/* ----------Job_Holder Summery Filters---------- */}
 {showJobHolder && isAdmin(auth?.user) && (
   <>
     <div className="w-full py-2 flex items-center gap-3">
-      {/* ── Users (only as wide as needed) ── */}
+      {/* ── Users ── */}
       <div className="flex-none max-w-[80%] overflow-x-auto hidden1">
-        <DragDropContext onDragEnd={handleUserOnDragEnd}>
-          <Droppable droppableId="users0" direction="horizontal">
-            {(provided) => (
-              <div
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                className="flex items-center gap-3 whitespace-nowrap"
-              >
-                <div
-                  className={`py-1 rounded-tl-md w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                    active1 === "All" &&
-                    "border-b-2 text-orange-600 border-orange-600"
-                  }`}
-                  onClick={() => {
-                    setActive1("All");
-                    userName.forEach((u) => setColumnFromOutsideTable(u, ""));
-                  }}
-                >
-                  All
-                </div>
-
-                {userName
-                  .filter((user) => getJobHolderCount(user) !== 0)
-                  .map((user, index) => (
-                    <Draggable key={user} draggableId={user} index={index}>
-                      {(provided) => (
-                        <div
-                          className={`py-1 rounded-tl-md w-fit rounded-tr-md px-1 !cursor-pointer font-[500] text-[14px] ${
-                            active1 === user &&
-                            "border-b-2 text-orange-600 border-orange-600"
-                          }`}
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          onClick={() => {
-                            setActive1(user);
-                            userName.forEach((u) =>
-                              setColumnFromOutsideTable(u, ""),
-                            );
-                            setColumnFromOutsideTable(user, "Yes");
-                          }}
-                        >
-                          {user} ({getJobHolderCount(user)})
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
-      </div>
-
-      {/* Separator */}
-      <span className="flex-none text-gray-300 select-none">|</span>
-
-      {/* ── Departments (takes the remaining space) ── */}
-     {/* ── Departments (takes the remaining space) ── */}
-{deparmentsData?.length > 0 && (
-  <div className="flex-1 min-w-0 overflow-x-auto hidden1">
-    <DragDropContext onDragEnd={handleDepartmentOnDragEnd}>
-      <Droppable droppableId="departments0" direction="horizontal">
-        {(provided) => (
-          <div
-            {...provided.droppableProps}
-            ref={provided.innerRef}
-            className="flex items-center gap-2 whitespace-nowrap"
-          >
+        <DragDropProvider onDragEnd={handleUserOnDragEnd}>
+          <div className="flex items-center gap-3 whitespace-nowrap">
             {/* All – not draggable */}
             <div
-              className={`px-2.5 py-1 rounded-md cursor-pointer text-[13px] font-medium transition-colors flex-none
-                ${
-                  !departmentFilter
-                    ? "bg-orange-500 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
+              className={`py-1 rounded-tl-md w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                active1 === "All" &&
+                "border-b-2 text-orange-600 border-orange-600"
+              }`}
               onClick={() => {
-                setDepartmentFilter("");
-                setColumnFromOutsideTable("department", "");
-                table.getColumn("product")?.setFilterValue("");
+                setActive1("All");
+                userName.forEach((u) => setColumnFromOutsideTable(u, ""));
               }}
             >
               All
             </div>
 
-            {deparmentsData.map((dep, index) => {
-              const name = dep.departmentName;
-              const isActive = departmentFilter === name;
-
-              return (
-                <Draggable
-                  key={dep._id}
-                  draggableId={dep._id}
+            {userName
+              .filter((user) => getJobHolderCount(user) !== 0)
+              .map((user, index) => (
+                <SortableUser
+                  key={user}
+                  id={user}
                   index={index}
+                  className={`py-1 rounded-tl-md w-fit rounded-tr-md px-1 !cursor-pointer font-[500] text-[14px] ${
+                    active1 === user &&
+                    "border-b-2 text-orange-600 border-orange-600"
+                  }`}
+                  onClick={() => {
+                    setActive1(user);
+                    userName.forEach((u) =>
+                      setColumnFromOutsideTable(u, ""),
+                    );
+                    setColumnFromOutsideTable(user, "Yes");
+                  }}
                 >
-                  {(provided) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      className={`px-2.5 py-1 rounded-md !cursor-pointer text-[13px] font-medium transition-colors flex-none
-                        ${
-                          isActive
-                            ? "bg-orange-500 text-white"
-                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                        }`}
-                      onClick={() => {
-                        setDepartmentFilter((prev) => {
-                          const isSame = prev === name;
-                          const newValue = isSame ? "" : name;
-
-                          setColumnFromOutsideTable("department", newValue);
-                          table.getColumn("product")?.setFilterValue("");
-
-                          return newValue;
-                        });
-                      }}
-                    >
-                      {name}
-                    </div>
-                  )}
-                </Draggable>
-              );
-            })}
-            {provided.placeholder}
+                  {user} ({getJobHolderCount(user)})
+                </SortableUser>
+              ))}
           </div>
-        )}
-      </Droppable>
-    </DragDropContext>
-  </div>
-)}
+        </DragDropProvider>
+      </div>
+
+      {/* Separator */}
+      <span className="flex-none text-gray-300 select-none">|</span>
+
+      {/* ── Departments ── */}
+      {deparmentsData?.length > 0 && (
+        <div className="flex-1 min-w-0 overflow-x-auto hidden1">
+          <DragDropProvider onDragEnd={handleDepartmentOnDragEnd}>
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              {/* All – not draggable */}
+              <div
+                className={`px-2.5 py-1 rounded-md cursor-pointer text-[13px] font-medium transition-colors flex-none
+                  ${
+                    !departmentFilter
+                      ? "bg-orange-500 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+                onClick={() => {
+                  setDepartmentFilter("");
+                  setColumnFromOutsideTable("department", "");
+                  table.getColumn("product")?.setFilterValue("");
+                }}
+              >
+                All
+              </div>
+
+              {deparmentsData.map((dep, index) => {
+                const name = dep.departmentName;
+                const isActive = departmentFilter === name;
+
+                return (
+                  <SortableDepartment
+                    key={dep._id}
+                    id={dep._id}
+                    index={index}
+                    className={`px-2.5 py-1 rounded-md !cursor-pointer text-[13px] font-medium transition-colors flex-none
+                      ${
+                        isActive
+                          ? "bg-orange-500 text-white"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      }`}
+                    onClick={() => {
+                      setDepartmentFilter((prev) => {
+                        const isSame = prev === name;
+                        const newValue = isSame ? "" : name;
+
+                        setColumnFromOutsideTable("department", newValue);
+                        table.getColumn("product")?.setFilterValue("");
+
+                        return newValue;
+                      });
+                    }}
+                  >
+                    {name}
+                  </SortableDepartment>
+                );
+              })}
+            </div>
+          </DragDropProvider>
+        </div>
+      )}
     </div>
 
     <hr className="mb-1 bg-gray-300 w-full h-[1px]" />

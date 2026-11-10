@@ -45,7 +45,7 @@ export default function ManualRangePicker({ value, onChange }) {
         variant="outlined"
         startIcon={<CalendarMonthIcon />}
         onClick={handleOpen}
-        sx={{ minWidth: 260, justifyContent: "flex-start" }}
+        sx={{   justifyContent: "flex-start" }}
       >
         {label}
       </Button>

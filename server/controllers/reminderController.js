@@ -58,6 +58,7 @@ export const createReminder = async (req, res) => {
         scheduledAt: new Date(scheduledAt),
         redirectLink: newRedirectLink,
         groupId,
+        createdBy: req.user.user._id,   // ← add this
 });
 
       // ✅ Schedule with Agenda
@@ -94,6 +95,233 @@ export const createReminder = async (req, res) => {
 
 
 
+// Update entire group of reminders (title, description, time, users)
+export const updateGroupReminder = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const {
+      title,
+      description,
+      scheduledAt,
+      redirectLink,
+      usersList, // array of { _id, name }
+    } = req.body;
+
+    const currentUserId = req.user.user._id;
+
+    if (!groupId) {
+      return res.status(400).send({
+        success: false,
+        message: "Group ID is required!",
+      });
+    }
+
+    // Find all reminders in this group
+    const existingReminders = await reminderModel.find({ groupId });
+
+    if (existingReminders.length === 0) {
+      return res.status(404).send({
+        success: false,
+        message: "Reminder group not found!",
+      });
+    }
+
+    // Only the creator can do full edit
+    if (existingReminders[0].createdBy.toString() !== currentUserId.toString()) {
+      return res.status(403).send({
+        success: false,
+        message: "Only the creator can edit this reminder group!",
+      });
+    }
+
+    // ---------- 1. Handle removed users ----------
+    const newUserIds = usersList.map((u) => u._id.toString());
+    const toDelete = existingReminders.filter(
+      (r) => !newUserIds.includes(r.userId.toString())
+    );
+
+    for (const rem of toDelete) {
+      // Cancel Agenda job
+      await agenda.cancel({
+        name: "send reminder",
+        "data.reminderId": rem._id,
+      });
+      // Delete from DB
+      await reminderModel.findByIdAndDelete(rem._id);
+    }
+
+    // ---------- 2. Handle existing + new users ----------
+    const existingUserIds = existingReminders.map((r) => r.userId.toString());
+    const updatedReminders = [];
+
+    for (const user of usersList) {
+      const userIdStr = user._id.toString();
+      const existing = existingReminders.find(
+        (r) => r.userId.toString() === userIdStr
+      );
+
+      if (existing) {
+        // Update existing reminder
+        existing.title = title ?? existing.title;
+        existing.description = description ?? existing.description;
+        if (redirectLink !== undefined) existing.redirectLink = redirectLink;
+
+        let scheduleChanged = false;
+        if (scheduledAt) {
+          existing.scheduledAt = new Date(scheduledAt);
+          scheduleChanged = true;
+        }
+
+        await existing.save();
+
+        if (scheduleChanged) {
+          // Cancel old + reschedule
+          await agenda.cancel({
+            name: "send reminder",
+            "data.reminderId": existing._id,
+          });
+          await agenda.schedule(new Date(scheduledAt), "send reminder", {
+            reminderId: existing._id,
+          });
+        }
+
+        // Socket refresh
+        await emitToUser(existing.userId, "reminder:refresh", {
+          type: "updated",
+          reminderId: existing._id,
+        });
+
+        updatedReminders.push(existing);
+      } else {
+        // Create new reminder for newly added user
+        const newRem = await reminderModel.create({
+          userId: user._id,
+          title,
+          description,
+          taskId: existingReminders[0].taskId,
+          scheduledAt: new Date(scheduledAt || existingReminders[0].scheduledAt),
+          redirectLink: redirectLink || existingReminders[0].redirectLink,
+          groupId,
+          createdBy: currentUserId,
+        });
+
+        await agenda.schedule(new Date(newRem.scheduledAt), "send reminder", {
+          reminderId: newRem._id,
+        });
+
+        await emitToUser(user._id, "reminder:refresh", {
+          type: "created",
+          reminderId: newRem._id,
+        });
+
+        updatedReminders.push(newRem);
+      }
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Reminder group updated successfully!",
+      reminders: updatedReminders,
+    });
+  } catch (error) {
+    console.error("Update Group Reminder Error:", error);
+    res.status(500).send({
+      success: false,
+      message: "Error occurred while updating reminder group!",
+      error: error.message,
+    });
+  }
+};
+
+
+
+// Controller
+export const getRemindersByGroupId = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+
+    const reminders = await reminderModel
+      .find({ groupId })
+      .populate("userId", "name")
+      .lean();
+
+    res.status(200).send({
+      success: true,
+      reminders,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error fetching group reminders",
+      error: error.message,
+    });
+  }
+};
+
+
+
+// Delete entire group of reminders (for everybody)
+export const deleteGroupReminder = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const currentUserId = req.user.user._id;
+
+    if (!groupId) {
+      return res.status(400).send({
+        success: false,
+        message: "Group ID is required!",
+      });
+    }
+
+    const existingReminders = await reminderModel.find({ groupId });
+
+    if (existingReminders.length === 0) {
+      return res.status(404).send({
+        success: false,
+        message: "Reminder group not found!",
+      });
+    }
+
+    // Only the creator can delete the whole group
+    if (existingReminders[0].createdBy.toString() !== currentUserId.toString()) {
+      return res.status(403).send({
+        success: false,
+        message: "Only the creator can delete this reminder group!",
+      });
+    }
+
+    // Cancel all Agenda jobs + delete all reminders + notify users
+    for (const rem of existingReminders) {
+      await agenda.cancel({
+        name: "send reminder",
+        "data.reminderId": rem._id,
+      });
+
+      await reminderModel.findByIdAndDelete(rem._id);
+
+      await emitToUser(rem.userId, "reminder:refresh", {
+        type: "deleted",
+        reminderId: rem._id,
+      });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Reminder deleted for everyone successfully!",
+    });
+  } catch (error) {
+    console.error("Delete Group Reminder Error:", error);
+    res.status(500).send({
+      success: false,
+      message: "Error occurred while deleting reminder group!",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
 
 
 // Update Reminder
@@ -126,6 +354,14 @@ export const updateReminder = async (req, res) => {
         message: "Reminder not found!",
       });
     }
+
+    if (isCompleted === true && !reminder.isCompleted) {
+  // Cancel any pending agenda job when marking complete
+  await agenda.cancel({
+    name: "send reminder",
+    "data.reminderId": reminder._id,
+  });
+}
 
     // 📝 Update fields (only if provided)
     if (title !== undefined) reminder.title = title;

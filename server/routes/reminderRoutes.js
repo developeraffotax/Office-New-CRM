@@ -3,10 +3,13 @@ import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
   completeReminder,
   createReminder,
+  deleteGroupReminder,
   deleteReminder,
   getDueReminders,
  
   getDueRemindersCount,
+ 
+  getRemindersByGroupId,
  
   getRemindersByTaskId,
  
@@ -15,6 +18,7 @@ import {
   markAsReadReminder,
  
   snoozeReminder,
+  updateGroupReminder,
   updateReminder,
 } from "../controllers/reminderController.js";
  
@@ -26,6 +30,26 @@ router.post("/create/reminder", requiredSignIn, createReminder);
 
 // Update Reminder
 router.put("/update/reminder/:reminderId", requiredSignIn, updateReminder);
+
+
+// In reminder routes
+router.put(
+  "/update/group/:groupId",
+  requiredSignIn,
+  updateGroupReminder
+);
+
+
+router.delete(
+  "/delete/group/:groupId",
+  requiredSignIn,
+  deleteGroupReminder
+);
+
+
+
+// Route
+router.get("/group/:groupId", requiredSignIn, getRemindersByGroupId);
 
 // Get Reminder
 router.get("/fetch/reminder", requiredSignIn, getDueReminders);

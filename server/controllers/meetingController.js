@@ -1,11 +1,10 @@
 import meetingModel from "../models/meetingModel.js";
 import reminderModel from "../models/reminderModel.js";
-import cron from "node-cron";
-import moment from "moment";
-import notificationModel from "../models/notificationModel.js";
+import mongoose from "mongoose";
 import agenda from "../utils/agenda.js";
+import { emitToUser } from "../utils/socketEmitter.js"; // make sure this path is correct
 
-// Create Meeting
+// ===================== CREATE MEETING =====================
 export const createMeeting = async (req, res) => {
   try {
     const {
@@ -32,7 +31,7 @@ export const createMeeting = async (req, res) => {
       });
     }
 
-    // Create a new meeting
+    // Create meeting
     const meeting = await meetingModel.create({
       title,
       description,
@@ -42,63 +41,50 @@ export const createMeeting = async (req, res) => {
       usersList,
     });
 
-    if (meeting) {
-      // const reminders = [];
+    // Create one groupId for all reminders of this meeting
+    const groupId = new mongoose.Types.ObjectId();
+    const finalRedirectLink = `${redirectLink}?meeting_id=${meeting._id}`;
 
-      for (let user of usersList) {
-        const reminder = await reminderModel.create({
-          userId: user._id,
-          title,
-          description,
-          taskId: meeting._id,
-          scheduledAt: new Date(scheduledAt),
-          redirectLink: `${redirectLink}?meeting_id=${meeting._id}`,
-        });
-        // reminders.push(reminder);
+    for (const user of usersList) {
+      const reminder = await reminderModel.create({
+        userId: user._id,
+        title,
+        description,
+        taskId: meeting._id.toString(),
+        scheduledAt: new Date(scheduledAt),
+        redirectLink: finalRedirectLink,
+        groupId,
+        createdBy: req.user.user._id,
+      });
 
-        // ✅ Schedule with Agenda
-        await agenda.schedule(new Date(scheduledAt), "send reminder", {
-          reminderId: reminder._id,
-        });
-      }
+      // Schedule with Agenda
+      await agenda.schedule(new Date(scheduledAt), "send reminder", {
+        reminderId: reminder._id,
+      });
 
-      // Send notification to users
-      // for (let user of usersList) {
-      //   await notificationModel.create({
-      //     title: "Meeting Created",
-      //     redirectLink: "/meetings",
-      //     description: `${req.user.user.name} create a new meeting of "${meeting.title}"`,
-      //     taskId: `${meeting._id}`,
-      //     userId: user._id,
-      //   });
-      // }
+      // Optional socket
+      await emitToUser(user._id, "reminder:refresh", {
+        type: "created",
+        reminderId: reminder._id,
+      });
     }
 
     res.status(200).send({
       success: true,
       message: "Meeting created successfully!",
-      meeting: meeting,
+      meeting,
     });
   } catch (error) {
     console.log("Error", error);
     res.status(500).send({
       success: false,
       message: "Error creating meeting",
-      error: error,
+      error: error.message,
     });
   }
 };
 
-
-
-
-
-
-
-
-
-
-// Update Meeting
+// ===================== UPDATE MEETING =====================
 export const updateMeeting = async (req, res) => {
   try {
     const meetingId = req.params.id;
@@ -112,7 +98,6 @@ export const updateMeeting = async (req, res) => {
       redirectLink,
     } = req.body;
 
-    // Step 1: Check if meeting exists
     const existingMeeting = await meetingModel.findById(meetingId);
     if (!existingMeeting) {
       return res.status(404).json({
@@ -121,7 +106,7 @@ export const updateMeeting = async (req, res) => {
       });
     }
 
-    // Step 2: Update meeting with fallbacks
+    // 1. Update the meeting itself
     const updatedMeeting = await meetingModel.findByIdAndUpdate(
       meetingId,
       {
@@ -135,27 +120,142 @@ export const updateMeeting = async (req, res) => {
       { new: true }
     );
 
-    // Step 3: Update associated reminders
-    if (scheduledAt && updatedMeeting) {
-      const reminders = await reminderModel.find({ taskId: meetingId });
+    // 2. Sync reminders
+    const existingReminders = await reminderModel.find({
+      taskId: meetingId.toString(),
+    });
 
-      for (const reminder of reminders) {
-        reminder.scheduledAt = new Date(scheduledAt);
+    // If no usersList sent, just update title/description/time on existing reminders
+    if (!usersList) {
+      for (const reminder of existingReminders) {
         if (title) reminder.title = title;
         if (description) reminder.description = description;
+
+        let scheduleChanged = false;
+        if (scheduledAt) {
+          reminder.scheduledAt = new Date(scheduledAt);
+          scheduleChanged = true;
+        }
+
         await reminder.save();
 
-        // Cancel the old scheduled job
-        await agenda.cancel({ "data.reminderId": reminder._id });
+        if (scheduleChanged) {
+          await agenda.cancel({
+            name: "send reminder",
+            "data.reminderId": reminder._id,
+          });
+          await agenda.schedule(new Date(scheduledAt), "send reminder", {
+            reminderId: reminder._id,
+          });
+        }
 
-        // Reschedule the job with updated time
-        await agenda.schedule(new Date(scheduledAt), "send reminder", {
+        await emitToUser(reminder.userId, "reminder:refresh", {
+          type: "updated",
           reminderId: reminder._id,
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Meeting updated successfully!",
+        meeting: updatedMeeting,
+      });
+    }
+
+    // ---------- Full usersList sync ----------
+    const newUserIds = usersList.map((u) => u._id.toString());
+    const groupId =
+      existingReminders[0]?.groupId || new mongoose.Types.ObjectId();
+
+    const finalTitle = title ?? existingMeeting.title;
+    const finalDescription = description ?? existingMeeting.description;
+    const finalScheduledAt = scheduledAt
+      ? new Date(scheduledAt)
+      : existingMeeting.scheduledAt;
+    const finalRedirectLink = redirectLink
+      ? `${redirectLink}?meeting_id=${meetingId}`
+      : existingReminders[0]?.redirectLink;
+
+    // A. Delete reminders of users who were removed
+    const toDelete = existingReminders.filter(
+      (r) => !newUserIds.includes(r.userId.toString())
+    );
+
+    for (const rem of toDelete) {
+      await agenda.cancel({
+        name: "send reminder",
+        "data.reminderId": rem._id,
+      });
+      await reminderModel.findByIdAndDelete(rem._id);
+
+      await emitToUser(rem.userId, "reminder:refresh", {
+        type: "deleted",
+        reminderId: rem._id,
+      });
+    }
+
+    // B. Update existing + create new
+    for (const user of usersList) {
+      const userIdStr = user._id.toString();
+      const existing = existingReminders.find(
+        (r) => r.userId.toString() === userIdStr
+      );
+
+      if (existing) {
+        // Update existing reminder
+        existing.title = finalTitle;
+        existing.description = finalDescription;
+        existing.redirectLink = finalRedirectLink;
+
+        let scheduleChanged = false;
+        if (scheduledAt) {
+          existing.scheduledAt = finalScheduledAt;
+          scheduleChanged = true;
+        }
+
+        // Make sure groupId is set (for older data)
+        if (!existing.groupId) existing.groupId = groupId;
+
+        await existing.save();
+
+        if (scheduleChanged) {
+          await agenda.cancel({
+            name: "send reminder",
+            "data.reminderId": existing._id,
+          });
+          await agenda.schedule(finalScheduledAt, "send reminder", {
+            reminderId: existing._id,
+          });
+        }
+
+        await emitToUser(existing.userId, "reminder:refresh", {
+          type: "updated",
+          reminderId: existing._id,
+        });
+      } else {
+        // Create new reminder for newly added user
+        const newRem = await reminderModel.create({
+          userId: user._id,
+          title: finalTitle,
+          description: finalDescription,
+          taskId: meetingId.toString(),
+          scheduledAt: finalScheduledAt,
+          redirectLink: finalRedirectLink,
+          groupId,
+          createdBy: req.user.user._id,
+        });
+
+        await agenda.schedule(finalScheduledAt, "send reminder", {
+          reminderId: newRem._id,
+        });
+
+        await emitToUser(user._id, "reminder:refresh", {
+          type: "created",
+          reminderId: newRem._id,
         });
       }
     }
 
-    // Step 4: Respond success
     return res.status(200).json({
       success: true,
       message: "Meeting updated successfully!",
@@ -166,26 +266,63 @@ export const updateMeeting = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Server error while updating meeting",
-      error,
+      error: error.message,
     });
   }
 };
 
+// ===================== DELETE MEETING =====================
+export const deleteMeeting = async (req, res) => {
+  try {
+    const meetingId = req.params.id;
 
+    const meeting = await meetingModel.findById(meetingId);
+    if (!meeting) {
+      return res.status(404).send({
+        success: false,
+        message: "Meeting not found!",
+      });
+    }
 
+    // Find all related reminders
+    const reminders = await reminderModel.find({
+      taskId: meetingId.toString(),
+    });
 
+    // Cancel Agenda jobs + emit socket + delete
+    for (const reminder of reminders) {
+      await agenda.cancel({
+        name: "send reminder",
+        "data.reminderId": reminder._id,
+      });
 
+      await emitToUser(reminder.userId, "reminder:refresh", {
+        type: "deleted",
+        reminderId: reminder._id,
+      });
+    }
 
+    // Delete all reminders of this meeting
+    await reminderModel.deleteMany({ taskId: meetingId.toString() });
 
+    // Delete the meeting
+    await meetingModel.findByIdAndDelete(meetingId);
 
+    res.status(200).send({
+      success: true,
+      message: "Meeting and all related reminders deleted successfully!",
+    });
+  } catch (error) {
+    console.log("Error", error);
+    res.status(500).send({
+      success: false,
+      message: "Error occurred while deleting meeting!",
+      error: error.message,
+    });
+  }
+};
 
-
-
-
-
-
-
-// Get All Meetings
+// ===================== GET ALL MEETINGS =====================
 export const getAllMeetings = async (req, res) => {
   try {
     const meetings = await meetingModel
@@ -195,164 +332,37 @@ export const getAllMeetings = async (req, res) => {
     res.status(200).send({
       success: true,
       message: "Meetings list!",
-      meetings: meetings,
+      meetings,
     });
   } catch (error) {
     console.log("Error", error);
     res.status(500).send({
       success: false,
-      message: "Error occured while get meetings list!",
-      error: error,
+      message: "Error occurred while getting meetings list!",
+      error: error.message,
     });
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-// Get Single Meeting
+// ===================== GET SINGLE MEETING =====================
 export const fetchMeeting = async (req, res) => {
   try {
     const meetingId = req.params.id;
     const meeting = await meetingModel
-      .findById({ _id: meetingId })
+      .findById(meetingId)
       .populate("usersList", "name email avatar");
 
     res.status(200).send({
       success: true,
       message: "Meeting details!",
-      meeting: meeting,
+      meeting,
     });
   } catch (error) {
     console.log("Error", error);
     res.status(500).send({
       success: false,
-      message: "Error occured while get meeting!",
-      error: error,
+      message: "Error occurred while getting meeting!",
+      error: error.message,
     });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Delete Meeting
-export const deleteMeeting = async (req, res) => {
-  try {
-    const meetingId = req.params.id;
-    const meeting = await meetingModel.findById({ _id: meetingId });
-    if (meeting) {
-      // for (let user of meeting.usersList) {
-      //   const reminder = await reminderModel.create({
-      //     userId: user._id,
-      //     title: `Meeting Cancelled: ${meeting.title}`,
-      //     description: meeting.description,
-      //     taskId: meeting._id,
-      //     date: meeting.date,
-      //     time: meeting.time,
-      //     redirectLink: "/meetings",
-      //   });
-
-      // }
-
-      // Step 3: Update associated reminders
-
-      const reminders = await reminderModel.find({ taskId: meetingId });
-
-      for (const reminder of reminders) {
-        // Cancel the old scheduled job
-        await agenda.cancel({ "data.reminderId": reminder._id });
-      }
-    }
-    
-    await reminderModel.deleteMany({taskId: meetingId})
-    await meetingModel.findByIdAndDelete({ _id: meetingId });
-
-    res.status(200).send({
-      success: true,
-      message: "Meeting deleted successfully!",
-    });
-  } catch (error) {
-    console.log("Error", error);
-    res.status(500).send({
-      success: false,
-      message: "Error occured while delete meeting!",
-      error: error,
-    });
-  }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Delete Meeting If Date Expire
-// export const deleteExpireMeeting = async (req, res) => {
-//   try {
-//     const currentDate = moment().format("YYYY-MM-DD");
-
-//     const result = await meetingModel.deleteMany({
-//       date: { $lt: currentDate },
-//     });
-
-//     res.status(200).send({
-//       success: true,
-//       message: `${result.deletedCount} expired meeting(s) deleted.`,
-//     });
-//   } catch (error) {
-//     console.log("Error", error);
-//     res.status(500).send({
-//       success: false,
-//       message: "Error occured while delete expire meetings!",
-//       error: error,
-//     });
-//   }
-// };
-
-// Schedule the task to run daily at midnight
-// cron.schedule("30 23 * * *", () => {
-//   console.log("Running task scheduler for recurring tasks...");
-//   deleteExpireMeeting();
-// });

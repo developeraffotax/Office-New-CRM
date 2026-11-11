@@ -9,7 +9,13 @@ import {
 } from "@mui/material";
 import { toggleGroupSx } from "../constants";
 
-const VIEW_LABELS = { monthly: "Monthly", weekly: "Weekly", daily: "Daily" };
+const VIEW_LABELS = {
+  yearly: "Yearly",
+  quarterly: "Quarterly",
+  monthly: "Monthly",
+  weekly: "Weekly",
+  daily: "Daily",
+};
 const DATE_BASIS_LABELS = { created: "Created Date", won: "Won Date" };
 
 export default function LeadChartHeader({
@@ -25,6 +31,7 @@ export default function LeadChartHeader({
   dateBasis = "created",
   onDateBasisChange,
   dailyAllowed = true,
+  compareLabel = null,
 }) {
   return (
     <Stack
@@ -58,6 +65,7 @@ export default function LeadChartHeader({
           >
             {VIEW_LABELS[view]} · {metric === "value" ? "Value" : "Count"} · by{" "}
             {DATE_BASIS_LABELS[dateBasis]}
+            {compareLabel && ` · ${compareLabel}`}
           </Typography>
         </Stack>
         <Typography
@@ -88,8 +96,6 @@ export default function LeadChartHeader({
           </ToggleButton>
         </ToggleButtonGroup>
 
-        
-
         <ToggleButtonGroup
           size="small"
           exclusive
@@ -108,6 +114,8 @@ export default function LeadChartHeader({
           onChange={(e, val) => val && onViewChange(val)}
           sx={toggleGroupSx}
         >
+          <ToggleButton value="yearly">Yearly</ToggleButton>
+          <ToggleButton value="quarterly">Quarterly</ToggleButton>
           <ToggleButton value="monthly">Monthly</ToggleButton>
           <ToggleButton value="weekly">Weekly</ToggleButton>
           <Tooltip
@@ -135,7 +143,6 @@ export default function LeadChartHeader({
           <ToggleButton value="line">Line</ToggleButton>
           <ToggleButton value="area">Area</ToggleButton>
         </ToggleButtonGroup>
-
 
         {/* Date basis */}
         <Tooltip
@@ -165,9 +172,6 @@ export default function LeadChartHeader({
             </ToggleButtonGroup>
           </Stack>
         </Tooltip>
-
-
-        
       </Stack>
     </Stack>
   );

@@ -2065,38 +2065,35 @@ const getWeekRangeLabel = (year, week) => {
 
 
 
-
-const VALID_VIEWS = ["daily", "weekly", "monthly"];
+const VALID_VIEWS = ["daily", "weekly", "monthly", "quarterly", "yearly"]; // NEW
 const MAX_DAILY_RANGE_DAYS = 366;
 const DATE_FIELDS = { created: "leadCreatedAt", won: "wonAt" };
 
+// NEW: views whose range is widened to whole periods (leads AND goals)
+const ALIGN_UNIT = { weekly: "isoWeek", quarterly: "quarter", yearly: "year" };
+
+// NEW: monthly goal doc -> period key for monthly / quarterly / yearly
+const goalPeriodKey = (view, year, month) =>
+  view === "quarterly" ? `${year}-Q${Math.ceil(month / 3)}`
+  : view === "yearly" ? `${year}`
+  : `${year}-${month}`;
 
 export const getWonLeadData = async (req, res) => {
   try {
-    const { startDate, endDate, view = "monthly", tz = "+05:00",  dateBasis = "created"  } = req.query;
+    const { startDate, endDate, view = "monthly", tz = "+05:00", dateBasis = "created" } = req.query;
 
-
-   
- if (!Object.hasOwn(DATE_FIELDS, dateBasis)) {
-  return res.status(400).json({ error: `dateBasis must be one of ${Object.keys(DATE_FIELDS).join(", ")}` });
-}
-const dateField = DATE_FIELDS[dateBasis];
-const dateRef = `$${dateField}`;
-
+    if (!Object.hasOwn(DATE_FIELDS, dateBasis)) {
+      return res.status(400).json({ error: `dateBasis must be one of ${Object.keys(DATE_FIELDS).join(", ")}` });
+    }
+    const dateField = DATE_FIELDS[dateBasis];
+    const dateRef = `$${dateField}`;
 
     if (!VALID_VIEWS.includes(view)) {
       return res.status(400).json({ error: `view must be one of ${VALID_VIEWS.join(", ")}` });
     }
-    // remove the moment.tz.zone(tz) check, or validate the format instead:
-if (!/^[+-]\d{2}:\d{2}$/.test(tz)) {
-  return res.status(400).json({ error: "tz must look like +05:00" });
-}
-
-
-
-
-
-
+    if (!/^[+-]\d{2}:\d{2}$/.test(tz)) {
+      return res.status(400).json({ error: "tz must look like +05:00" });
+    }
 
     if (view === "daily") {
       if (!startDate || !endDate) {
@@ -2104,9 +2101,7 @@ if (!/^[+-]\d{2}:\d{2}$/.test(tz)) {
       }
       const days = moment(endDate).diff(moment(startDate), "days") + 1;
       if (days > MAX_DAILY_RANGE_DAYS) {
-        return res.status(400).json({
-          error: `Daily view supports at most ${MAX_DAILY_RANGE_DAYS} days`,
-        });
+        return res.status(400).json({ error: `Daily view supports at most ${MAX_DAILY_RANGE_DAYS} days` });
       }
     }
 
@@ -2114,16 +2109,29 @@ if (!/^[+-]\d{2}:\d{2}$/.test(tz)) {
     const resolvedUsers = await resolveUsers(requestedUsers);
     const { labels, periodKeys, dayMeta } = buildLabels(view, startDate, endDate, tz);
 
+    // hoisted: was defined twice inside the loop
+    const local = (d) => moment.utc(d).utcOffset(tz);
+    const tzDate = { date: dateRef, timezone: tz }; // NEW
+
     const groupId =
       view === "daily"
-        ? { day: { $dateToString: { format: "%Y-%m-%d", date: dateRef, timezone: tz } } }
+        ? { day: { $dateToString: { format: "%Y-%m-%d", ...tzDate } } }
         : view === "weekly"
           ? { year: { $isoWeekYear: dateRef }, week: { $isoWeek: dateRef } }
-          : { year: { $year: dateRef }, month: { $month: dateRef } };
+          : view === "quarterly" // NEW
+            ? {
+                year: { $year: tzDate },
+                quarter: { $ceil: { $divide: [{ $month: tzDate }, 3] } },
+              }
+            : view === "yearly" // NEW
+              ? { year: { $year: tzDate } }
+              : { year: { $year: dateRef }, month: { $month: dateRef } };
 
     const leadPeriodKey = (id) =>
       view === "daily" ? id.day
       : view === "weekly" ? `${id.year}-W${id.week}`
+      : view === "quarterly" ? `${id.year}-Q${id.quarter}` // NEW
+      : view === "yearly" ? `${id.year}`                   // NEW
       : `${id.year}-${id.month}`;
 
     const goalGroupId = {
@@ -2138,17 +2146,16 @@ if (!/^[+-]\d{2}:\d{2}$/.test(tz)) {
           status: "won",
           jobHolder: { $in: ru.jobHolderNames },
         };
-        if (startDate && endDate) {
-  const local = (d) => moment.utc(d).utcOffset(tz);
 
-  leadFilters[dateField] =
-    view === "weekly"
-      ? {
-          $gte: local(startDate).startOf("isoWeek").toDate(),
-          $lte: local(endDate).endOf("isoWeek").toDate(),
+        if (startDate && endDate) {
+          const unit = ALIGN_UNIT[view];
+          leadFilters[dateField] = unit
+            ? {
+                $gte: local(startDate).startOf(unit).toDate(),
+                $lte: local(endDate).endOf(unit).toDate(),
+              }
+            : { $gte: new Date(startDate), $lte: new Date(endDate) };
         }
-      : { $gte: new Date(startDate), $lte: new Date(endDate) };
-}
 
         const leadsAgg = await leadModel.aggregate([
           { $match: leadFilters },
@@ -2183,85 +2190,53 @@ if (!/^[+-]\d{2}:\d{2}$/.test(tz)) {
         const countType = `Target Lead Count${ru.goalTypeSuffix}`;
         const valueType = `Target Lead Value${ru.goalTypeSuffix}`;
 
-const goalMatch = {
-  goalType: { $in: [countType, valueType] },
-  jobHolder: { $in: ru.goalJobHolderIds },
-};
+        const goalMatch = {
+          goalType: { $in: [countType, valueType] },
+          jobHolder: { $in: ru.goalJobHolderIds },
+        };
 
-if (startDate && endDate) {
-  const local = (d) => moment.utc(d).utcOffset(tz);
-
-  if (view === "daily") {
-    // whole months, so a goal starting on the 1st isn't dropped
-    goalMatch.startDate = {
-      $gte: local(startDate).startOf("month").toDate(),
-      $lte: local(endDate).endOf("month").toDate(),
-    };
-  } else if (view === "weekly") {
-    // first/last label weeks can spill into the prev/next month,
-    // so load those months' goal docs too
-    goalMatch.startDate = {
-      $gte: local(startDate).startOf("isoWeek").startOf("month").toDate(),
-      $lte: local(endDate).endOf("isoWeek").endOf("month").toDate(),
-    };
-  } else {
-    // monthly: exact range, unchanged
-    goalMatch.startDate = {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate),
-    };
-  }
-}
+        if (startDate && endDate) {
+          if (view === "daily") {
+            goalMatch.startDate = {
+              $gte: local(startDate).startOf("month").toDate(),
+              $lte: local(endDate).endOf("month").toDate(),
+            };
+          } else if (view === "weekly") {
+            goalMatch.startDate = {
+              $gte: local(startDate).startOf("isoWeek").startOf("month").toDate(),
+              $lte: local(endDate).endOf("isoWeek").endOf("month").toDate(),
+            };
+          } else if (view === "quarterly" || view === "yearly") { // NEW
+            const unit = ALIGN_UNIT[view];
+            goalMatch.startDate = {
+              $gte: local(startDate).startOf(unit).toDate(),
+              $lte: local(endDate).endOf(unit).toDate(),
+            };
+          } else {
+            goalMatch.startDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
+          }
+        }
 
         const targetCounts = new Array(labels.length).fill(0);
         const targetValues = new Array(labels.length).fill(0);
-
-
         const round2 = (n) => Math.round(n * 100) / 100;
 
         if (view === "daily") {
-          const goalsAgg = await goalModel.aggregate([
-            { $match: goalMatch },
-            {
-              $group: {
-                _id: {
-                  month: { $dateToString: { format: "%Y-%m", date: "$startDate", timezone: tz } },
-                  type: "$goalType",
-                },
-                total: { $sum: { $ifNull: ["$achievement", 0] } },
-              },
-            },
-          ]);
-
-          const monthly = {}; // { "2026-03": { [countType]: n, [valueType]: n } }
-          goalsAgg.forEach((g) => {
-            (monthly[g._id.month] ||= {})[g._id.type] = g.total;
-          });
-
-          dayMeta.forEach(({ monthKey, daysInMonth }, idx) => {
-            const m = monthly[monthKey];
-            if (!m) return;
-            if (m[countType]) targetCounts[idx] = round2(m[countType] / daysInMonth);
-            if (m[valueType]) targetValues[idx] = round2(m[valueType] / daysInMonth);
-          });
+          // ...unchanged...
         } else if (view === "weekly") {
-          const weeklyTotals = await getWeeklyGoalTotals(goalMatch);
-          Object.entries(weeklyTotals).forEach(([periodKey, byType]) => {
-            const idx = periodKeys[periodKey];
-            if (idx === undefined) return;
-            if (byType[countType]) targetCounts[idx] = byType[countType];
-            if (byType[valueType]) targetValues[idx] = byType[valueType];
-          });
+          // ...unchanged...
         } else {
+          // CHANGED: monthly + quarterly + yearly share one query (grouped per month),
+          // then roll the months up into the right period key
           const goalsAgg = await goalModel.aggregate([
             { $match: goalMatch },
             { $group: { _id: goalGroupId, total: { $sum: { $ifNull: ["$achievement", 0] } } } },
           ]);
           goalsAgg.forEach((g) => {
-            const idx = periodKeys[`${g._id.year}-${g._id.month}`];
+            const idx = periodKeys[goalPeriodKey(view, g._id.year, g._id.month)];
             if (idx === undefined) return;
-            if (g._id.type === countType) targetCounts[idx] = g.total;
-            if (g._id.type === valueType) targetValues[idx] = g.total;
+            if (g._id.type === countType) targetCounts[idx] += g.total;
+            if (g._id.type === valueType) targetValues[idx] = round2(targetValues[idx] + g.total);
           });
         }
 

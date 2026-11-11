@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { DATE_FILTER, DEFAULTS } from "../constants";
 import { getDateRange, getDefaultUsers } from "../utils";
+import { extendRange, getCompareOption, getCompareOptions, shiftRange } from "../rangeHelpers";
 import dayjs from "dayjs";
 
 export default function useLeadChartFilters(auth) {
@@ -10,6 +11,16 @@ export default function useLeadChartFilters(auth) {
 
  
 const [dateBasis, setDateBasis] = useState(DEFAULTS.dateBasis);
+
+const [compare, setCompare] = useState("none");
+
+const activeCompare = useMemo(() => getCompareOption(compare), [compare]);
+
+// memoized: the data hook depends on it
+const effectiveRange = useMemo(
+  () => extendRange(dateRange, activeCompare),
+  [dateRange, activeCompare],
+);
 
   // Re-seed the user selection whenever auth changes
   useEffect(() => {
@@ -28,9 +39,10 @@ const [dateBasis, setDateBasis] = useState(DEFAULTS.dateBasis);
 
 
 
-    const applyFilters = useCallback(({ dateFilter: df, dateRange: dr, users, dateBasis: db }) => {
+    const applyFilters = useCallback(({ dateFilter: df, dateRange: dr, users, dateBasis: db, compare: cmp }) => {
     if (df) setDateFilter(df);
     if (db) setDateBasis(db);
+    setCompare(cmp ?? "none");
     setDateRange(
       df && df !== DATE_FILTER.CUSTOM
         ? getDateRange(df)
@@ -42,6 +54,7 @@ const [dateBasis, setDateBasis] = useState(DEFAULTS.dateBasis);
   const reset = useCallback(() => {
     setDateBasis(DEFAULTS.dateBasis);
     setDateFilter(DEFAULTS.dateFilter);
+    setCompare("none");
     setDateRange(getDateRange(DEFAULTS.dateFilter));
     setSelectedUsers(getDefaultUsers(auth));
   }, [auth]);
@@ -58,5 +71,8 @@ const [dateBasis, setDateBasis] = useState(DEFAULTS.dateBasis);
     changeDateFilter,
      applyFilters,
     reset,
+
+compare, setCompare, activeCompare, effectiveRange,
+compareLabel: activeCompare ? `+${activeCompare.label} earlier` : null,
   };
 }

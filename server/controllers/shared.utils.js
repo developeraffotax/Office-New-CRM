@@ -374,7 +374,42 @@ export function buildLabels(view, startDate, endDate, tz = "+05:00") {
       }
       current.add(1, "week");
     }
-  } else {
+  } else if (view === "quarterly") {
+    const start = startDate
+      ? moment.utc(startDate).utcOffset(tz).startOf("quarter")
+      : moment().startOf("year");
+    const end = endDate
+      ? moment.utc(endDate).utcOffset(tz).endOf("quarter")
+      : moment().endOf("year");
+    const current = start.clone();
+
+    while (current.isSameOrBefore(end)) {
+      const key = `${current.year()}-Q${current.quarter()}`;
+      if (!(key in periodKeys)) {
+        periodKeys[key] = labels.length;
+        labels.push(`Q${current.quarter()} ${current.year()}`);
+      }
+      current.add(1, "quarter");
+    }
+  } else if (view === "yearly") {
+    // fallback when no dates are sent: last 5 years
+    const start = startDate
+      ? moment.utc(startDate).utcOffset(tz).startOf("year")
+      : moment().subtract(4, "years").startOf("year");
+    const end = endDate
+      ? moment.utc(endDate).utcOffset(tz).endOf("year")
+      : moment().endOf("year");
+    const current = start.clone();
+
+    while (current.isSameOrBefore(end)) {
+      const key = `${current.year()}`;
+      if (!(key in periodKeys)) {
+        periodKeys[key] = labels.length;
+        labels.push(key);
+      }
+      current.add(1, "year");
+    }
+  }  else {
     const start = startDate ? moment(startDate).startOf("month") : moment().startOf("year");
     const end = endDate ? moment(endDate).endOf("month") : moment().endOf("year");
     let current = start.clone();

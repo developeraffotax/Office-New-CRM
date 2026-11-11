@@ -9,9 +9,10 @@ import {
   Tooltip,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
-import ToggleStatsButton from "../../ui/ToggleStatsButton"; 
+import ToggleStatsButton from "../../ui/ToggleStatsButton";
 import UserFilterSelect from "../../../../components/KpiDashboard/ui/UserFilterSelect"; // adjust if needed
 import { DATE_FILTER_OPTIONS, QUICK_RANGE_FILTERS } from "../constants";
+import { COMPARE_OPTIONS } from "../rangeHelpers";
 
 const datePickerSlotProps = {
   textField: { size: "small", variant: "outlined", sx: { width: 130 } },
@@ -58,13 +59,14 @@ export default function LeadChartFilters({
   dateRange,
   onDateRangeChange,
   onQuickRangeSelect,
+  compare = "none",
+  onCompareChange,
   users,
   teams,
   selectedUsers,
   onUsersChange,
   onReset,
-
-  savedViews
+  savedViews,
 }) {
   return (
     <Stack
@@ -75,7 +77,6 @@ export default function LeadChartFilters({
       justifyContent="flex-end"
       alignItems="center"
     >
-
       {savedViews}
       <ToggleStatsButton showStats={showStats} onToggle={onToggleStats} />
 
@@ -124,6 +125,29 @@ export default function LeadChartFilters({
           </Tooltip>
         ))}
       </ButtonGroup>
+
+      {/* Compare with: widens the range back by N months / years */}
+      <Tooltip
+        arrow
+        title="Also include this much earlier data (e.g. This year + 2 years = 3 years)"
+      >
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>Compare with</InputLabel>
+          <Select
+            value={compare}
+            label="Compare with"
+            onChange={(e) => onCompareChange?.(e.target.value)}
+            sx={{ bgcolor: "#fff", borderRadius: 1.5 }}
+          >
+            <MenuItem value="none">None</MenuItem>
+            {COMPARE_OPTIONS.map(({ value, label }) => (
+              <MenuItem key={value} value={value}>
+                {label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Tooltip>
 
       <FormControl size="small">
         <UserFilterSelect

@@ -13,7 +13,9 @@ export default function LeadChartToolbar({
   teams,
   onReset,
   savedViews,
-  dateBasis
+  dateBasis,
+  compare = "none",
+  onCompareChange,
 }) {
   return (
     <Stack
@@ -27,7 +29,8 @@ export default function LeadChartToolbar({
         {showStats && (
           <WonLeadStats
             users={filters.selectedUsers}
-            dateRange={filters.dateRange}
+            // stats cover the same span as the chart (picked range + "Compare with")
+            dateRange={filters.effectiveRange}
             isAdmin={admin}
             dateBasis={dateBasis}
           />
@@ -42,12 +45,13 @@ export default function LeadChartToolbar({
         dateRange={filters.dateRange}
         onDateRangeChange={filters.setDateRange}
         onQuickRangeSelect={filters.selectQuickRange}
+        compare={compare}
+        onCompareChange={onCompareChange}
         users={users}
         teams={teams}
         selectedUsers={filters.selectedUsers}
         onUsersChange={filters.setSelectedUsers}
         onReset={onReset}
-
         savedViews={savedViews}
       />
     </Stack>

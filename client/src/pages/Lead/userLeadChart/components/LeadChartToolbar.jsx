@@ -16,27 +16,15 @@ export default function LeadChartToolbar({
   dateBasis,
   compare = "none",
   onCompareChange,
+  compareOptions,
 }) {
   return (
     <Stack
-      direction={{ xs: "column", lg: "row" }}
-      justifyContent="space-between"
-      alignItems={{ xs: "stretch", lg: "flex-start" }}
-      spacing={1.5}
+      direction="column"
+      spacing={2}
       sx={toolbarSx}
     >
-      <Box sx={statsBoxSx}>
-        {showStats && (
-          <WonLeadStats
-            users={filters.selectedUsers}
-            // stats cover the same span as the chart (picked range + "Compare with")
-            dateRange={filters.effectiveRange}
-            isAdmin={admin}
-            dateBasis={dateBasis}
-          />
-        )}
-      </Box>
-
+      {/* Filters on top */}
       <LeadChartFilters
         showStats={showStats}
         onToggleStats={onToggleStats}
@@ -47,6 +35,7 @@ export default function LeadChartToolbar({
         onQuickRangeSelect={filters.selectQuickRange}
         compare={compare}
         onCompareChange={onCompareChange}
+        compareOptions={compareOptions}
         users={users}
         teams={teams}
         selectedUsers={filters.selectedUsers}
@@ -54,6 +43,18 @@ export default function LeadChartToolbar({
         onReset={onReset}
         savedViews={savedViews}
       />
+
+      {/* Stats below filters */}
+      {showStats && (
+        <Box sx={statsBoxSx}>
+          <WonLeadStats
+            users={filters.selectedUsers}
+            dateRange={filters.effectiveRange}
+            isAdmin={admin}
+            dateBasis={dateBasis}
+          />
+        </Box>
+      )}
     </Stack>
   );
 }

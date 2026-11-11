@@ -1,13 +1,14 @@
 import dayjs from "dayjs";
 
-// ── Auto view ─────────────────────────────────────────────
+/* ───────── Auto view ───────── */
+
 // First row whose maxDays >= selected span wins. Tune freely.
 export const VIEW_THRESHOLDS = [
-  { maxDays: 31, view: "daily" },       // up to a month
-  { maxDays: 100, view: "weekly" },     // up to ~3 months
-  { maxDays: 800, view: "monthly" },    // up to ~2 years (a year → monthly)
-  { maxDays: 1000, view: "quarterly" }, // up to ~2.7 years
-  { maxDays: Infinity, view: "yearly" } // 3+ years
+  { maxDays: 31, view: "daily" },
+  { maxDays: 100, view: "weekly" },
+  { maxDays: 800, view: "monthly" },
+  { maxDays: 1000, view: "quarterly" },
+  { maxDays: Infinity, view: "yearly" },
 ];
 
 export const rangeDays = ([start, end]) =>
@@ -20,48 +21,51 @@ export function suggestView(range) {
   return VIEW_THRESHOLDS.find((t) => days <= t.maxDays).view;
 }
 
-// ── Compare ───────────────────────────────────────────────
+/* ───────── Compare with ───────── */
+
 export const COMPARE_OPTIONS = [
-  { value: "1m", label: "1 month ago", amount: 1, unit: "month" },
-  { value: "2m", label: "2 months ago", amount: 2, unit: "month" },
-  { value: "3m", label: "3 months ago", amount: 3, unit: "month" },
-  { value: "1y", label: "1 year ago", amount: 1, unit: "year" },
-  { value: "2y", label: "2 years ago", amount: 2, unit: "year" },
-  { value: "3y", label: "3 years ago", amount: 3, unit: "year" },
+  { value: "1w", label: "1 week", amount: 1, unit: "week" },
+  { value: "2w", label: "2 weeks", amount: 2, unit: "week" },
+  { value: "3w", label: "3 weeks", amount: 3, unit: "week" },
+  { value: "1m", label: "1 month", amount: 1, unit: "month" },
+  { value: "2m", label: "2 months", amount: 2, unit: "month" },
+  { value: "3m", label: "3 months", amount: 3, unit: "month" },
+  { value: "1y", label: "1 year", amount: 1, unit: "year" },
+  { value: "2y", label: "2 years", amount: 2, unit: "year" },
+  { value: "3y", label: "3 years", amount: 3, unit: "year" },
 ];
 
+// Which unit the selected range is "in": "week" | "month" | "year" | null
+export function getCompareUnit(range) {
+  if (!range?.[0] || !range?.[1]) return null;
+  const s = dayjs(range[0]);
+  const e = dayjs(range[1]);
+  const startsOn = (unit) => s.isSame(s.startOf(unit), "day");
 
-export const getCompareOption = (value) =>
-  COMPARE_OPTIONS.find((o) => o.value === value) ?? null;
+  // calendar-aligned presets (This/Last month, This/Last year)
+  if (startsOn("month") && e.isSame(s, "month")) return "month";
+  if (startsOn("year") && e.isSame(s, "year")) return "year";
+
+  // everything else (Last 7 days, Last 30 days, custom): by length
+  const days = rangeDays(range);
+  if (days <= 10) return "week";
+  if (days <= 240) return "month";
+  return "year";
+}
+
+// Options to show for this range
+export function getCompareOptions(range) {
+  const unit = getCompareUnit(range);
+  return unit ? COMPARE_OPTIONS.filter((o) => o.unit === unit) : [];
+}
+
+// The selected option, only if it is still valid for this range
+export function resolveCompare(range, value) {
+  return getCompareOptions(range).find((o) => o.value === value) ?? null;
+}
 
 // Widen the range backwards; the end stays where it is
 export function extendRange(range, option) {
   if (!option || !range?.[0] || !range?.[1]) return range;
   return [dayjs(range[0]).subtract(option.amount, option.unit), range[1]];
 }
-
-
-
-
-
-// // Shift a [start, end] range back; a range ending on a month-end stays
-// // month-end (Apr 30 - 1 month → Mar 31, not Mar 30)
-// export function shiftRange([start, end], { amount, unit }) {
-//   const s = dayjs(start).subtract(amount, unit);
-//   const e0 = dayjs(end);
-//   let e = e0.subtract(amount, unit);
-//   if (e0.isSame(e0.endOf("month"), "day")) e = e.endOf("month");
-//   return [s, e];
-// }
-
-// // Only offer shifts that don't overlap the current range:
-// // "This year" can't compare with "1 month ago", but can with "1 year ago"
-// export function getCompareOptions(range) {
-//   if (!range?.[0] || !range?.[1]) return [];
-//   const start = dayjs(range[0]);
-//   return COMPARE_OPTIONS.filter((opt) => shiftRange(range, opt)[1].isBefore(start));
-// }
-
-// // pad / trim so the previous period lines up with the current labels by position
-// export const alignToLength = (arr = [], length) =>
-//   Array.from({ length }, (_, i) => arr[i] ?? 0);

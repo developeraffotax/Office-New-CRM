@@ -15,7 +15,7 @@ import useUsersAndTeams from "./hooks/useUsersAndTeams";
 import useWonLeadsData from "./hooks/useWonLeadsData";
 import { DATE_FILTER } from "./constants";
 import { getDateRange, getHeaderLabel, isDailyAllowed } from "./utils";
-import { suggestView, extendRange, getCompareOption } from "./rangeHelpers";
+import { suggestView, extendRange, resolveCompare } from "./rangeHelpers";
 import { cardSx, chartCardSx, dividerSx } from "./styles";
 import { useSavedFilters } from "../../../components/SavedFilters/useSavedFilters";
 import SavedViews from "./components/SavedViews";
@@ -45,11 +45,12 @@ export default function UserLeadChart() {
     dateBasis,
   });
 
-  /* ───────── Auto view: pick the best view for the range ───────── */
-  const autoView = (range) => {
-    const v = suggestView(extendRange(range, filters.activeCompare));
-    if (v) viewState.setView(v);
-  };
+// 2) autoView: only apply the compare if it still fits the NEW range
+const autoView = (range) => {
+  const v = suggestView(extendRange(range, resolveCompare(range, filters.compare)));
+  if (v) viewState.setView(v);
+};
+
 
   // Wrapped handlers: same API as `filters`, but each range change also sets the view.
   // Done here (not in an effect) so saved views and Reset keep their own view.
@@ -67,13 +68,13 @@ export default function UserLeadChart() {
       filters.setDateRange(range);
       autoView(range);
     },
-    setCompare: (value) => {
-      filters.setCompare(value);
-      const v = suggestView(
-        extendRange(filters.dateRange, getCompareOption(value)),
-      );
-      if (v) viewState.setView(v);
-    },
+setCompare: (value) => {
+  filters.setCompare(value);
+  const v = suggestView(
+    extendRange(filters.dateRange, resolveCompare(filters.dateRange, value)),
+  );
+  if (v) viewState.setView(v);
+},
   };
 
   /* ───────── Saved views ───────── */
@@ -153,6 +154,7 @@ export default function UserLeadChart() {
           dateBasis={dateBasis}
           compare={filters.compare}
           onCompareChange={toolbarFilters.setCompare}
+          compareOptions={filters.compareOptions}
         />
 
         <Divider sx={dividerSx} />

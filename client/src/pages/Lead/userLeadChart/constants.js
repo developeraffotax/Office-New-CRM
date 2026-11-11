@@ -11,7 +11,7 @@ export const DEFAULTS = {
   metric: "value", // "count" | "value"
   view: VIEW.MONTHLY,
   dateFilter: DATE_FILTER.THIS_YEAR,
-  showStats: true,
+  showStats: false,
   showTargets: true,
   dateBasis: "won"
 };

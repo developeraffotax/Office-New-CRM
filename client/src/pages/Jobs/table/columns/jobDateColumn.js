@@ -2,18 +2,14 @@ import { format } from "date-fns";
 import DateRangePopover from "../../../../utlis/DateRangePopover";
 import { useEffect, useMemo, useRef, useState, memo } from "react";
 import toast from "react-hot-toast";
- 
+import { hasSubrole, isAdmin } from "../../../../utlis/checkPermission";
 
-
-
-
-
-  const DEFAULT_DATE_FILTERS = [
+const DEFAULT_DATE_FILTERS = [
   "Expired",
   "Today",
   "Tomorrow",
-  "In 2 days",   // ← NEW
-  "In 3 days",   // ← NEW
+  "In 2 days", // ← NEW
+  "In 3 days", // ← NEW
   "In 7 days",
   "In 15 days",
   "In 30 Days",
@@ -21,30 +17,32 @@ import toast from "react-hot-toast";
   "Upcoming",
 ];
 
+export const jobDateColumn = ({ handleUpdateDates, auth }) => {
+  const canEdit =
+    isAdmin(auth?.user) || hasSubrole(auth?.user, "Jobs", "AffotaxDLN");
 
+  return {
+    id: "Job_Date",
+    header: "Job Date",
+    accessorFn: (row) => row.job?.workDeadline || "",
+    Header: ({ column }) => <DateHeader column={column} />,
 
+    Cell: (props) => (
+      <DateCell
+        {...props}
+        handleUpdateDates={handleUpdateDates}
+        canEdit={canEdit}
+      />
+    ),
 
-export const jobDateColumn = ({ handleUpdateDates }) => ({
-  id: "Job_Date",
-  // accessorKey: "job.workDeadline",
-    header: "Job Date", 
-  accessorFn: (row) => row.job?.workDeadline || "",
-  Header: ({ column }) => <DateHeader column={column} />,
+    enableColumnFilter: true,
 
-  Cell: (props) => (
-    <DateCell {...props} handleUpdateDates={handleUpdateDates} />
-  ),
-
-  // ❌ REMOVE client filterFn
-  // filterFn: DateFilterFn,
-
-  enableColumnFilter: true,
-
-  size: 100,
-  minSize: 80,
-  maxSize: 140,
-  grow: false,
-});
+    size: 100,
+    minSize: 80,
+    maxSize: 140,
+    grow: false,
+  };
+};
 
 const DateHeader = memo(({ column }) => {
   const [filterValue, setFilterValue] = useState("");
@@ -118,7 +116,7 @@ const DateHeader = memo(({ column }) => {
     <div className="flex flex-col gap-[2px] relative">
       <span
         className="ml-1 cursor-pointer"
-        title="Clear Filter"
+        title="Affotax Deadline"
         onClick={() => {
           setFilterValue("");
           setDateRange({
@@ -129,7 +127,8 @@ const DateHeader = memo(({ column }) => {
           column.setFilterValue(undefined);
         }}
       >
-        Job Date
+        {/* Job Date */}
+        AffotaxDLN
       </span>
 
       <select
@@ -166,7 +165,7 @@ const DateHeader = memo(({ column }) => {
   );
 });
 
-const DateCell = memo(({ cell, row, handleUpdateDates }) => {
+const DateCell = memo(({ cell, row, handleUpdateDates, canEdit }) => {
   const initialDate = useMemo(() => {
     const d = new Date(cell.getValue());
 
@@ -177,7 +176,20 @@ const DateCell = memo(({ cell, row, handleUpdateDates }) => {
 
   const [editing, setEditing] = useState(false);
 
+  const startEditing = () => {
+    if (!canEdit) {
+      toast.error("You don't have permission to change this date");
+      return;
+    }
+    setEditing(true);
+  };
+
   const commitChange = (value) => {
+    if (!canEdit) {
+      setEditing(false);
+      return;
+    }
+
     const parsed = new Date(value);
 
     if (isNaN(parsed)) {
@@ -195,7 +207,10 @@ const DateCell = memo(({ cell, row, handleUpdateDates }) => {
   return (
     <div className="w-full">
       {!editing ? (
-        <p className="cursor-pointer" onDoubleClick={() => setEditing(true)}>
+        <p
+          className={canEdit ? "cursor-pointer" : "cursor-default"}
+          onDoubleClick={startEditing}
+        >
           {date ? format(new Date(date), "dd-MMM-yyyy") : "-"}
         </p>
       ) : (

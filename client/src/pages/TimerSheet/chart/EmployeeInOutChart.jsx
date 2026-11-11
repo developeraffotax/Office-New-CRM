@@ -448,7 +448,7 @@ export default function EmployeeInOutChart() {
       opts?.w?.config?.series?.[0]?.data?.[opts.dataPointIndex];
 
     if (point?.meta?.isHoliday) {
-      return point.meta.isWeekend ? "Off" : "Absent";
+      return point.meta.isWeekend ? "Weekend" : "Absent";
     }
 
     // worked time (sum of sessions), not first-in → last-out

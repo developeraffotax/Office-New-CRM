@@ -27,7 +27,7 @@ import { TbLoader, TbLoader2 } from "react-icons/tb";
 import { LuLink } from "react-icons/lu";
 
 import HandleHrRoleModal from "../../components/hr/HandleHrRoleModal";
- import QuickAccess from "../../utlis/QuickAccess";
+import QuickAccess from "../../utlis/QuickAccess";
 import { useSelector } from "react-redux";
 
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
@@ -94,7 +94,6 @@ const initialColumnVisibility = {
   product: true,
   software: true,
 };
-
 
 // ---------- Sortable User Chip ----------
 function SortableUser({ id, index, children, className, onClick }) {
@@ -315,34 +314,34 @@ export default function HR() {
   }, []);
 
   // ----------Fetch All Departments-------->
-const fetchAllDepartments = async () => {
-  try {
-    const { data } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/department/all`,
-    );
-
-    let departments = data.departments;
-
-    if (!isAdmin(auth?.user)) {
-      departments = departments.filter((dpt) =>
-        dpt.users.some((user) => user?.user._id === auth?.user?.id),
+  const fetchAllDepartments = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/department/all`,
       );
-    }
 
-    // Apply saved order
-    const savedOrder = JSON.parse(
-      localStorage.getItem("hr_departmentsOrder") || "null",
-    );
-    if (savedOrder) {
-      departments = mergeDepartmentsWithSavedOrder(departments, savedOrder);
-    }
+      let departments = data.departments;
 
-    console.log("🧡🧡🧡🧡🧡🧡 Departments:", departments);
-    setDepartmentData(departments);
-  } catch (error) {
-    console.log(error);
-  }
-};
+      if (!isAdmin(auth?.user)) {
+        departments = departments.filter((dpt) =>
+          dpt.users.some((user) => user?.user._id === auth?.user?.id),
+        );
+      }
+
+      // Apply saved order
+      const savedOrder = JSON.parse(
+        localStorage.getItem("hr_departmentsOrder") || "null",
+      );
+      if (savedOrder) {
+        departments = mergeDepartmentsWithSavedOrder(departments, savedOrder);
+      }
+
+      console.log("🧡🧡🧡🧡🧡🧡 Departments:", departments);
+      setDepartmentData(departments);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     fetchAllDepartments();
@@ -393,25 +392,19 @@ const fetchAllDepartments = async () => {
   }
 
   function mergeDepartmentsWithSavedOrder(fetchedDepartments, savedOrder) {
-  if (!savedOrder || !Array.isArray(savedOrder)) return fetchedDepartments;
+    if (!savedOrder || !Array.isArray(savedOrder)) return fetchedDepartments;
 
-  const savedSet = new Set(savedOrder);
-  const deptMap = new Map(
-    fetchedDepartments.map((d) => [d._id, d])
-  );
+    const savedSet = new Set(savedOrder);
+    const deptMap = new Map(fetchedDepartments.map((d) => [d._id, d]));
 
-  // Keep saved order (only departments that still exist)
-  const ordered = savedOrder
-    .map((id) => deptMap.get(id))
-    .filter(Boolean);
+    // Keep saved order (only departments that still exist)
+    const ordered = savedOrder.map((id) => deptMap.get(id)).filter(Boolean);
 
-  // Append any new departments that aren't in the saved order
-  const newOnes = fetchedDepartments.filter((d) => !savedSet.has(d._id));
+    // Append any new departments that aren't in the saved order
+    const newOnes = fetchedDepartments.filter((d) => !savedSet.has(d._id));
 
-  return [...ordered, ...newOnes];
-}
-
-
+    return [...ordered, ...newOnes];
+  }
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -617,14 +610,14 @@ const fetchAllDepartments = async () => {
   // Update User Status
   const updateUserStatus = async (taskId, statusId, newStatus) => {
     try {
-      const { data, status  } = await axios.put(
+      const { data, status } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/hr/update/status/${taskId}`,
         { statusId, status: newStatus },
       );
       if (data) {
         getAllTasks();
       }
-      return status
+      return status;
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message);
@@ -823,8 +816,6 @@ const fetchAllDepartments = async () => {
                 onChange={(e) => {
                   const deptName = e.target.value;
                   column.setFilterValue(deptName);
-
- 
                 }}
                 className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
@@ -1045,47 +1036,47 @@ const fetchAllDepartments = async () => {
             </div>
           );
         },
-Cell: ({ cell, row }) => {
-  const title = row.original.title || "";
-  const productLink = row.original?.productLink || "";
+        Cell: ({ cell, row }) => {
+          const title = row.original.title || "";
+          const productLink = row.original?.productLink || "";
 
-  return (
-    <div className="w-full h-full flex items-center gap-4">
-      {/* Title – takes ~90% and shows as much text as possible */}
-      <div className="flex-1 min-w-0 overflow-hidden">
-        {productLink ? (
-          <Link
-            to={productLink}
-            target="_blank"
-            className="block text-[14px] text-blue-600 hover:underline truncate"
-            title={title}                 // full text on hover
-          >
-            {title}
-          </Link>
-        ) : (
-          <div
-            className="text-[14px] text-blue-600 truncate cursor-default"
-            title={title}
-          >
-            {title}
-          </div>
-        )}
-      </div>
+          return (
+            <div className="w-full h-full flex items-center gap-4">
+              {/* Title – takes ~90% and shows as much text as possible */}
+              <div className="flex-1 min-w-0 overflow-hidden">
+                {productLink ? (
+                  <Link
+                    to={productLink}
+                    target="_blank"
+                    className="block text-[14px] text-blue-600 hover:underline truncate"
+                    title={title} // full text on hover
+                  >
+                    {title}
+                  </Link>
+                ) : (
+                  <div
+                    className="text-[14px] text-blue-600 truncate cursor-default"
+                    title={title}
+                  >
+                    {title}
+                  </div>
+                )}
+              </div>
 
-      {/* External link icon – fixed small width (~10%) */}
-      {productLink && (
-        <Link
-          to={productLink}
-          target="_blank"
-          className="flex-none"
-          title="Open link"
-        >
-          <FiExternalLink className="w-5 h-5 text-gray-700 hover:text-blue-600 transition-colors" />
-        </Link>
-      )}
-    </div>
-  );
-},
+              {/* External link icon – fixed small width (~10%) */}
+              {productLink && (
+                <Link
+                  to={productLink}
+                  target="_blank"
+                  className="flex-none"
+                  title="Open link"
+                >
+                  <FiExternalLink className="w-5 h-5 text-gray-700 hover:text-blue-600 transition-colors" />
+                </Link>
+              )}
+            </div>
+          );
+        },
         filterFn: (row, columnId, filterValue) => {
           if (!filterValue) return true;
 
@@ -1098,9 +1089,9 @@ Cell: ({ cell, row }) => {
           // Check every word exists in text
           return words.every((word) => cellValue.includes(word));
         },
-        size: 500,
+        size: 580,
         minSize: 350,
-        maxSize: 560,
+        maxSize: 800,
         grow: false,
       },
       // User List
@@ -1131,62 +1122,65 @@ Cell: ({ cell, row }) => {
             </div>
           );
         },
-Cell: ({ row }) => {
-  const matchedUser = row.original.users?.find(
-    (u) => u?.user?.name === name,
-  );
+        Cell: ({ row }) => {
+          const matchedUser = row.original.users?.find(
+            (u) => u?.user?.name === name,
+          );
 
-  const [status, setStatus] = useState(matchedUser?.status || "");
-  const [isUpdating, setIsUpdating] = useState(false);
+          const [status, setStatus] = useState(matchedUser?.status || "");
+          const [isUpdating, setIsUpdating] = useState(false);
 
-  const handleStatus = async () => {
-    if (isUpdating) return;
+          const handleStatus = async () => {
+            if (isUpdating) return;
 
-    const newStatus = status === "Yes" ? "No" : "Yes";
+            const newStatus = status === "Yes" ? "No" : "Yes";
 
-    setIsUpdating(true);
+            setIsUpdating(true);
 
-    try {
-      const status = await updateUserStatus(row.original._id, matchedUser?._id, newStatus);
+            try {
+              const status = await updateUserStatus(
+                row.original._id,
+                matchedUser?._id,
+                newStatus,
+              );
 
-      if (status === 200) {
-         setStatus(newStatus);
+              if (status === 200) {
+                setStatus(newStatus);
+              }
+            } catch (error) {
+              console.error("Failed to update status:", error);
+            } finally {
+              setIsUpdating(false);
+            }
+          };
 
-      }
-    } catch (error) {
-      console.error("Failed to update status:", error);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  return (
-    <div className="w-full h-full flex items-center justify-center">
-{ status && 
-        <button
-        type="button"
-        disabled={isUpdating}
-        onClick={handleStatus}
-        className={`min-w-[55px] px-3 py-1 font-semibold rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-          status === "Yes"
-            ? "  text-green-500 hover:bg-green-100"
-            : status === "No"
-            ? "  text-red-500 hover:bg-red-100"
-            : ""
-        }`}
-      >
-        {isUpdating ? (
-          <span className="flex items-center justify-center gap-1">
-            <span className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" />
-          </span>
-        ) : (
-          status || " "
-        )}
-      </button>
-}
-    </div>
-  );
-},
+          return (
+            <div className="w-full h-full flex items-center justify-center">
+              {status && (
+                <button
+                  type="button"
+                  disabled={isUpdating}
+                  onClick={handleStatus}
+                  className={`min-w-[55px] px-3 py-1 font-semibold rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    status === "Yes"
+                      ? "  text-green-500 hover:bg-green-100"
+                      : status === "No"
+                      ? "  text-red-500 hover:bg-red-100"
+                      : ""
+                  }`}
+                >
+                  {isUpdating ? (
+                    <span className="flex items-center justify-center gap-1">
+                      <span className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" />
+                    </span>
+                  ) : (
+                    status || " "
+                  )}
+                </button>
+              )}
+            </div>
+          );
+        },
         size: 100,
         minSize: 80,
         maxSize: 160,
@@ -1300,12 +1294,12 @@ Cell: ({ row }) => {
   );
 
   // Clear table Filter
-const handleClearFilters = () => {
-  table.setColumnFilters([]);
-  table.setGlobalFilter("");
-  setDepartmentFilter("");          // ← add this
-  setActive1("");                   // if you want
-};
+  const handleClearFilters = () => {
+    table.setColumnFilters([]);
+    table.setGlobalFilter("");
+    setDepartmentFilter(""); // ← add this
+    setActive1(""); // if you want
+  };
 
   const table = useMaterialReactTable({
     columns,
@@ -1339,7 +1333,6 @@ const handleClearFilters = () => {
       pagination: { pageSize: 100 },
       // pageSize: 20,
       density: "compact",
-    
     },
 
     muiRowDragHandleProps: ({ table }) => ({
@@ -1484,31 +1477,29 @@ const handleClearFilters = () => {
   };
 
   //  -----------Handle drag end--------// ---------- Users drag end ----------
-const handleUserOnDragEnd = (event) => {
-  if (event.canceled) return;
+  const handleUserOnDragEnd = (event) => {
+    if (event.canceled) return;
 
-  setUserName((items) => {
-    const newOrder = move(items, event);
-    localStorage.setItem("hr_usernamesOrder", JSON.stringify(newOrder));
-    return newOrder;
-  });
-};
+    setUserName((items) => {
+      const newOrder = move(items, event);
+      localStorage.setItem("hr_usernamesOrder", JSON.stringify(newOrder));
+      return newOrder;
+    });
+  };
 
-// ---------- Departments drag end ----------
-const handleDepartmentOnDragEnd = (event) => {
-  if (event.canceled) return;
+  // ---------- Departments drag end ----------
+  const handleDepartmentOnDragEnd = (event) => {
+    if (event.canceled) return;
 
-  setDepartmentData((items) => {
-    const newOrder = move(items, event);
-    localStorage.setItem(
-      "hr_departmentsOrder",
-      JSON.stringify(newOrder.map((d) => d._id)),
-    );
-    return newOrder;
-  });
-};
-
-
+    setDepartmentData((items) => {
+      const newOrder = move(items, event);
+      localStorage.setItem(
+        "hr_departmentsOrder",
+        JSON.stringify(newOrder.map((d) => d._id)),
+      );
+      return newOrder;
+    });
+  };
 
   // --------------Job_Holder Length---------->
 
@@ -1526,12 +1517,12 @@ const handleDepartmentOnDragEnd = (event) => {
     return yesCount;
   };
 
-const setColumnFromOutsideTable = (colKey, filterVal) => {
-  const col = table.getColumn(colKey);
-  if (col) {
-    col.setFilterValue(filterVal || undefined);
-  }
-};
+  const setColumnFromOutsideTable = (colKey, filterVal) => {
+    const col = table.getColumn(colKey);
+    if (col) {
+      col.setFilterValue(filterVal || undefined);
+    }
+  };
 
   return (
     <>
@@ -1727,261 +1718,313 @@ const setColumnFromOutsideTable = (colKey, filterVal) => {
                 </form>
 
                 {/* ========== GROUPED MANAGE MENU ========== */}
-{/* ========== GROUPED MANAGE MENU ========== */}
-<div className="relative hidden sm:flex">
-  <button
-    onClick={() => {
-      setShowDepartment(false);
-      setShowHrRoles(false);
-      setShowHrProducts(false);
-      setShowManageMenu((prev) => !prev);
-    }}
-    className={`${style.button1} text-[15px] flex items-center gap-1.5`}
-    style={{ padding: ".4rem 1rem" }}
-  >
-    Manage
-    {showManageMenu ? (
-      <IoIosArrowUp className="h-4 w-4" />
-    ) : (
-      <IoIosArrowDown className="h-4 w-4" />
-    )}
-  </button>
+                {/* ========== GROUPED MANAGE MENU ========== */}
+                <div className="relative hidden sm:flex">
+                  <button
+                    onClick={() => {
+                      setShowDepartment(false);
+                      setShowHrRoles(false);
+                      setShowHrProducts(false);
+                      setShowManageMenu((prev) => !prev);
+                    }}
+                    className={`${style.button1} text-[15px] flex items-center gap-1.5`}
+                    style={{ padding: ".4rem 1rem" }}
+                  >
+                    Manage
+                    {showManageMenu ? (
+                      <IoIosArrowUp className="h-4 w-4" />
+                    ) : (
+                      <IoIosArrowDown className="h-4 w-4" />
+                    )}
+                  </button>
 
-  {showManageMenu && (
-    <div
-      ref={closeProject}
-      className="absolute top-11 right-0 z-[99] w-[340px] bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden"
-    >
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-orange-50 to-amber-50">
-        <h3 className="text-sm font-semibold text-gray-800">Manage HR Settings</h3>
-        <p className="text-xs text-gray-500 mt-0.5">Departments, Roles & Products</p>
-      </div>
-
-      {/* ---------- DEPARTMENTS ---------- */}
-      <div className="border-b border-gray-100">
-        <div
-          className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors ${
-            showDepartment ? "bg-orange-50/70" : "hover:bg-gray-50"
-          }`}
-          onClick={() => setShowDepartment((prev) => !prev)}
-        >
-          <div className="flex items-center gap-2.5">
-            <div className={`w-1.5 h-1.5 rounded-full ${showDepartment ? "bg-orange-500" : "bg-gray-300"}`} />
-            <span className={`text-sm font-medium ${showDepartment ? "text-orange-700" : "text-gray-800"}`}>
-              Departments
-            </span>
-            <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
-              {deparmentsData?.length || 0}
-            </span>
-          </div>
-          {showDepartment ? (
-            <IoIosArrowUp className="h-4 w-4 text-orange-600" />
-          ) : (
-            <IoIosArrowDown className="h-4 w-4 text-gray-500" />
-          )}
-        </div>
-
-        {showDepartment && (
-          <div className="px-3 pb-3 space-y-1.5 max-h-[200px] overflow-y-auto">
-            {deparmentsData?.length > 0 ? (
-              deparmentsData.map((department) => (
-                <div
-                  key={department._id}
-                  className="group flex items-center justify-between gap-2 rounded-lg border border-gray-100 bg-white px-3 py-2 hover:border-orange-200 hover:bg-orange-50/40 transition-all"
-                >
-                  <p className="text-[13px] text-gray-700 truncate flex-1">
-                    {department?.departmentName}
-                  </p>
-                  <div className="flex items-center gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => {
-                        setDepartmentId(department._id);
-                        setIshandleDepartment(true);
-                        setShowManageMenu(false);
-                      }}
-                      title="Edit Department"
-                      className="p-1 rounded-md hover:bg-sky-100 text-sky-600"
+                  {showManageMenu && (
+                    <div
+                      ref={closeProject}
+                      className="absolute top-11 right-0 z-[99] w-[340px] bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden"
                     >
-                      <MdOutlineEdit className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteConfirmation(department._id)}
-                      title="Delete Department"
-                      className="p-1 rounded-md hover:bg-red-100 text-red-500"
-                    >
-                      <AiTwotoneDelete className="h-4 w-4" />
-                    </button>
-                  </div>
+                      {/* Header */}
+                      <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-orange-50 to-amber-50">
+                        <h3 className="text-sm font-semibold text-gray-800">
+                          Manage HR Settings
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Departments, Roles & Products
+                        </p>
+                      </div>
+
+                      {/* ---------- DEPARTMENTS ---------- */}
+                      <div className="border-b border-gray-100">
+                        <div
+                          className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors ${
+                            showDepartment
+                              ? "bg-orange-50/70"
+                              : "hover:bg-gray-50"
+                          }`}
+                          onClick={() => setShowDepartment((prev) => !prev)}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                showDepartment ? "bg-orange-500" : "bg-gray-300"
+                              }`}
+                            />
+                            <span
+                              className={`text-sm font-medium ${
+                                showDepartment
+                                  ? "text-orange-700"
+                                  : "text-gray-800"
+                              }`}
+                            >
+                              Departments
+                            </span>
+                            <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
+                              {deparmentsData?.length || 0}
+                            </span>
+                          </div>
+                          {showDepartment ? (
+                            <IoIosArrowUp className="h-4 w-4 text-orange-600" />
+                          ) : (
+                            <IoIosArrowDown className="h-4 w-4 text-gray-500" />
+                          )}
+                        </div>
+
+                        {showDepartment && (
+                          <div className="px-3 pb-3 space-y-1.5 max-h-[200px] overflow-y-auto">
+                            {deparmentsData?.length > 0 ? (
+                              deparmentsData.map((department) => (
+                                <div
+                                  key={department._id}
+                                  className="group flex items-center justify-between gap-2 rounded-lg border border-gray-100 bg-white px-3 py-2 hover:border-orange-200 hover:bg-orange-50/40 transition-all"
+                                >
+                                  <p className="text-[13px] text-gray-700 truncate flex-1">
+                                    {department?.departmentName}
+                                  </p>
+                                  <div className="flex items-center gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                      onClick={() => {
+                                        setDepartmentId(department._id);
+                                        setIshandleDepartment(true);
+                                        setShowManageMenu(false);
+                                      }}
+                                      title="Edit Department"
+                                      className="p-1 rounded-md hover:bg-sky-100 text-sky-600"
+                                    >
+                                      <MdOutlineEdit className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteConfirmation(department._id)
+                                      }
+                                      title="Delete Department"
+                                      className="p-1 rounded-md hover:bg-red-100 text-red-500"
+                                    >
+                                      <AiTwotoneDelete className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-xs text-gray-400 text-center py-3">
+                                No departments yet
+                              </p>
+                            )}
+
+                            <button
+                              onClick={() => {
+                                setIshandleDepartment(true);
+                                setShowManageMenu(false);
+                              }}
+                              className="w-full mt-1.5 flex items-center justify-center gap-1.5 text-sm py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 font-medium transition-colors shadow-sm"
+                            >
+                              + Add Department
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ---------- ROLES ---------- */}
+                      <div className="border-b border-gray-100">
+                        <div
+                          className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors ${
+                            showHrRoles ? "bg-orange-50/70" : "hover:bg-gray-50"
+                          }`}
+                          onClick={() => setShowHrRoles((prev) => !prev)}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                showHrRoles ? "bg-orange-500" : "bg-gray-300"
+                              }`}
+                            />
+                            <span
+                              className={`text-sm font-medium ${
+                                showHrRoles
+                                  ? "text-orange-700"
+                                  : "text-gray-800"
+                              }`}
+                            >
+                              Roles
+                            </span>
+                            <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
+                              {hrRoleData?.length || 0}
+                            </span>
+                          </div>
+                          {showHrRoles ? (
+                            <IoIosArrowUp className="h-4 w-4 text-orange-600" />
+                          ) : (
+                            <IoIosArrowDown className="h-4 w-4 text-gray-500" />
+                          )}
+                        </div>
+
+                        {showHrRoles && (
+                          <div className="px-3 pb-3 space-y-1.5 max-h-[200px] overflow-y-auto">
+                            {hrRoleData?.length > 0 ? (
+                              hrRoleData.map((role) => (
+                                <div
+                                  key={role._id}
+                                  className="group flex items-center justify-between gap-2 rounded-lg border border-gray-100 bg-white px-3 py-2 hover:border-orange-200 hover:bg-orange-50/40 transition-all"
+                                >
+                                  <p className="text-[13px] text-gray-700 truncate flex-1">
+                                    {role?.roleName}
+                                  </p>
+                                  <div className="flex items-center gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                      onClick={() => {
+                                        setHrRole(role);
+                                        setIsHandleHrRole(true);
+                                        setShowManageMenu(false);
+                                      }}
+                                      title="Edit Role"
+                                      className="p-1 rounded-md hover:bg-sky-100 text-sky-600"
+                                    >
+                                      <MdOutlineEdit className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteRoleConfirmation(role._id)
+                                      }
+                                      title="Delete Role"
+                                      className="p-1 rounded-md hover:bg-red-100 text-red-500"
+                                    >
+                                      <AiTwotoneDelete className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-xs text-gray-400 text-center py-3">
+                                No roles yet
+                              </p>
+                            )}
+
+                            <button
+                              onClick={() => {
+                                setIsHandleHrRole(true);
+                                setShowManageMenu(false);
+                              }}
+                              className="w-full mt-1.5 flex items-center justify-center gap-1.5 text-sm py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 font-medium transition-colors shadow-sm"
+                            >
+                              + Add Role
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ---------- PRODUCTS ---------- */}
+                      <div>
+                        <div
+                          className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors ${
+                            showHrProducts
+                              ? "bg-orange-50/70"
+                              : "hover:bg-gray-50"
+                          }`}
+                          onClick={() => setShowHrProducts((prev) => !prev)}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                showHrProducts ? "bg-orange-500" : "bg-gray-300"
+                              }`}
+                            />
+                            <span
+                              className={`text-sm font-medium ${
+                                showHrProducts
+                                  ? "text-orange-700"
+                                  : "text-gray-800"
+                              }`}
+                            >
+                              Products
+                            </span>
+                            <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
+                              {hrProductData?.length || 0}
+                            </span>
+                          </div>
+                          {showHrProducts ? (
+                            <IoIosArrowUp className="h-4 w-4 text-orange-600" />
+                          ) : (
+                            <IoIosArrowDown className="h-4 w-4 text-gray-500" />
+                          )}
+                        </div>
+
+                        {showHrProducts && (
+                          <div className="px-3 pb-3 space-y-1.5 max-h-[200px] overflow-y-auto">
+                            {hrProductData?.length > 0 ? (
+                              hrProductData.map((product) => (
+                                <div
+                                  key={product._id}
+                                  className="group flex items-center justify-between gap-2 rounded-lg border border-gray-100 bg-white px-3 py-2 hover:border-orange-200 hover:bg-orange-50/40 transition-all"
+                                >
+                                  <p className="text-[13px] text-gray-700 truncate flex-1">
+                                    {product?.name}
+                                  </p>
+                                  <div className="flex items-center gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                      onClick={() => {
+                                        setHrProduct(product);
+                                        setIsHandleHrProduct(true);
+                                        setShowManageMenu(false);
+                                      }}
+                                      title="Edit Product"
+                                      className="p-1 rounded-md hover:bg-sky-100 text-sky-600"
+                                    >
+                                      <MdOutlineEdit className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteProductConfirmation(
+                                          product._id,
+                                        )
+                                      }
+                                      title="Delete Product"
+                                      className="p-1 rounded-md hover:bg-red-100 text-red-500"
+                                    >
+                                      <AiTwotoneDelete className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-xs text-gray-400 text-center py-3">
+                                No products yet
+                              </p>
+                            )}
+
+                            <button
+                              onClick={() => {
+                                setIsHandleHrProduct(true);
+                                setShowManageMenu(false);
+                              }}
+                              className="w-full mt-1.5 flex items-center justify-center gap-1.5 text-sm py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 font-medium transition-colors shadow-sm"
+                            >
+                              + Add Product
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ))
-            ) : (
-              <p className="text-xs text-gray-400 text-center py-3">No departments yet</p>
-            )}
-
-            <button
-              onClick={() => {
-                setIshandleDepartment(true);
-                setShowManageMenu(false);
-              }}
-              className="w-full mt-1.5 flex items-center justify-center gap-1.5 text-sm py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 font-medium transition-colors shadow-sm"
-            >
-              + Add Department
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* ---------- ROLES ---------- */}
-      <div className="border-b border-gray-100">
-        <div
-          className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors ${
-            showHrRoles ? "bg-orange-50/70" : "hover:bg-gray-50"
-          }`}
-          onClick={() => setShowHrRoles((prev) => !prev)}
-        >
-          <div className="flex items-center gap-2.5">
-            <div className={`w-1.5 h-1.5 rounded-full ${showHrRoles ? "bg-orange-500" : "bg-gray-300"}`} />
-            <span className={`text-sm font-medium ${showHrRoles ? "text-orange-700" : "text-gray-800"}`}>
-              Roles
-            </span>
-            <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
-              {hrRoleData?.length || 0}
-            </span>
-          </div>
-          {showHrRoles ? (
-            <IoIosArrowUp className="h-4 w-4 text-orange-600" />
-          ) : (
-            <IoIosArrowDown className="h-4 w-4 text-gray-500" />
-          )}
-        </div>
-
-        {showHrRoles && (
-          <div className="px-3 pb-3 space-y-1.5 max-h-[200px] overflow-y-auto">
-            {hrRoleData?.length > 0 ? (
-              hrRoleData.map((role) => (
-                <div
-                  key={role._id}
-                  className="group flex items-center justify-between gap-2 rounded-lg border border-gray-100 bg-white px-3 py-2 hover:border-orange-200 hover:bg-orange-50/40 transition-all"
-                >
-                  <p className="text-[13px] text-gray-700 truncate flex-1">
-                    {role?.roleName}
-                  </p>
-                  <div className="flex items-center gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => {
-                        setHrRole(role);
-                        setIsHandleHrRole(true);
-                        setShowManageMenu(false);
-                      }}
-                      title="Edit Role"
-                      className="p-1 rounded-md hover:bg-sky-100 text-sky-600"
-                    >
-                      <MdOutlineEdit className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteRoleConfirmation(role._id)}
-                      title="Delete Role"
-                      className="p-1 rounded-md hover:bg-red-100 text-red-500"
-                    >
-                      <AiTwotoneDelete className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-xs text-gray-400 text-center py-3">No roles yet</p>
-            )}
-
-            <button
-              onClick={() => {
-                setIsHandleHrRole(true);
-                setShowManageMenu(false);
-              }}
-              className="w-full mt-1.5 flex items-center justify-center gap-1.5 text-sm py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 font-medium transition-colors shadow-sm"
-            >
-              + Add Role
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* ---------- PRODUCTS ---------- */}
-      <div>
-        <div
-          className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors ${
-            showHrProducts ? "bg-orange-50/70" : "hover:bg-gray-50"
-          }`}
-          onClick={() => setShowHrProducts((prev) => !prev)}
-        >
-          <div className="flex items-center gap-2.5">
-            <div className={`w-1.5 h-1.5 rounded-full ${showHrProducts ? "bg-orange-500" : "bg-gray-300"}`} />
-            <span className={`text-sm font-medium ${showHrProducts ? "text-orange-700" : "text-gray-800"}`}>
-              Products
-            </span>
-            <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
-              {hrProductData?.length || 0}
-            </span>
-          </div>
-          {showHrProducts ? (
-            <IoIosArrowUp className="h-4 w-4 text-orange-600" />
-          ) : (
-            <IoIosArrowDown className="h-4 w-4 text-gray-500" />
-          )}
-        </div>
-
-        {showHrProducts && (
-          <div className="px-3 pb-3 space-y-1.5 max-h-[200px] overflow-y-auto">
-            {hrProductData?.length > 0 ? (
-              hrProductData.map((product) => (
-                <div
-                  key={product._id}
-                  className="group flex items-center justify-between gap-2 rounded-lg border border-gray-100 bg-white px-3 py-2 hover:border-orange-200 hover:bg-orange-50/40 transition-all"
-                >
-                  <p className="text-[13px] text-gray-700 truncate flex-1">
-                    {product?.name}
-                  </p>
-                  <div className="flex items-center gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => {
-                        setHrProduct(product);
-                        setIsHandleHrProduct(true);
-                        setShowManageMenu(false);
-                      }}
-                      title="Edit Product"
-                      className="p-1 rounded-md hover:bg-sky-100 text-sky-600"
-                    >
-                      <MdOutlineEdit className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteProductConfirmation(product._id)}
-                      title="Delete Product"
-                      className="p-1 rounded-md hover:bg-red-100 text-red-500"
-                    >
-                      <AiTwotoneDelete className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-xs text-gray-400 text-center py-3">No products yet</p>
-            )}
-
-            <button
-              onClick={() => {
-                setIsHandleHrProduct(true);
-                setShowManageMenu(false);
-              }}
-              className="w-full mt-1.5 flex items-center justify-center gap-1.5 text-sm py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 font-medium transition-colors shadow-sm"
-            >
-              + Add Product
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  )}
-</div>
               </div>
             )}
 
@@ -2001,126 +2044,125 @@ const setColumnFromOutsideTable = (colKey, filterVal) => {
           </div>
         )}
 
-
-
-
-
-
-
         {/* ----------Job_Holder Summery Filters---------- */}
-{/* ----------Job_Holder Summery Filters---------- */}
-{showJobHolder && isAdmin(auth?.user) && (
-  <>
-    <div className="w-full py-2 flex items-center gap-3">
-      {/* ── Users ── */}
-      <div className="flex-none max-w-[80%] overflow-x-auto hidden1">
-        <DragDropProvider onDragEnd={handleUserOnDragEnd}>
-          <div className="flex items-center gap-3 whitespace-nowrap">
-            {/* All – not draggable */}
-            <div
-              className={`py-1 rounded-tl-md w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                active1 === "All" &&
-                "border-b-2 text-orange-600 border-orange-600"
-              }`}
-              onClick={() => {
-                setActive1("All");
-                userName.forEach((u) => setColumnFromOutsideTable(u, ""));
-              }}
-            >
-              All
-            </div>
+        {/* ----------Job_Holder Summery Filters---------- */}
+        {showJobHolder && isAdmin(auth?.user) && (
+          <>
+            <div className="w-full py-2 flex items-center gap-3">
+              {/* ── Users ── */}
+              <div className="flex-none max-w-[80%] overflow-x-auto hidden1">
+                <DragDropProvider onDragEnd={handleUserOnDragEnd}>
+                  <div className="flex items-center gap-3 whitespace-nowrap">
+                    {/* All – not draggable */}
+                    <div
+                      className={`py-1 rounded-tl-md w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                        active1 === "All" &&
+                        "border-b-2 text-orange-600 border-orange-600"
+                      }`}
+                      onClick={() => {
+                        setActive1("All");
+                        userName.forEach((u) =>
+                          setColumnFromOutsideTable(u, ""),
+                        );
+                      }}
+                    >
+                      All
+                    </div>
 
-            {userName
-              .filter((user) => getJobHolderCount(user) !== 0)
-              .map((user, index) => (
-                <SortableUser
-                  key={user}
-                  id={user}
-                  index={index}
-                  className={`py-1 rounded-tl-md w-fit rounded-tr-md px-1 !cursor-pointer font-[500] text-[14px] ${
-                    active1 === user &&
-                    "border-b-2 text-orange-600 border-orange-600"
-                  }`}
-                  onClick={() => {
-                    setActive1(user);
-                    userName.forEach((u) =>
-                      setColumnFromOutsideTable(u, ""),
-                    );
-                    setColumnFromOutsideTable(user, "Yes");
-                  }}
-                >
-                  {user} ({getJobHolderCount(user)})
-                </SortableUser>
-              ))}
-          </div>
-        </DragDropProvider>
-      </div>
+                    {userName
+                      .filter((user) => getJobHolderCount(user) !== 0)
+                      .map((user, index) => (
+                        <SortableUser
+                          key={user}
+                          id={user}
+                          index={index}
+                          className={`py-1 rounded-tl-md w-fit rounded-tr-md px-1 !cursor-pointer font-[500] text-[14px] ${
+                            active1 === user &&
+                            "border-b-2 text-orange-600 border-orange-600"
+                          }`}
+                          onClick={() => {
+                            setActive1(user);
+                            userName.forEach((u) =>
+                              setColumnFromOutsideTable(u, ""),
+                            );
+                            setColumnFromOutsideTable(user, "Yes");
+                          }}
+                        >
+                          {user} ({getJobHolderCount(user)})
+                        </SortableUser>
+                      ))}
+                  </div>
+                </DragDropProvider>
+              </div>
 
-      {/* Separator */}
-      <span className="flex-none text-gray-300 select-none">|</span>
+              {/* Separator */}
+              <span className="flex-none text-gray-300 select-none">|</span>
 
-      {/* ── Departments ── */}
-      {deparmentsData?.length > 0 && (
-        <div className="flex-1 min-w-0 overflow-x-auto hidden1">
-          <DragDropProvider onDragEnd={handleDepartmentOnDragEnd}>
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              {/* All – not draggable */}
-              <div
-                className={`px-2.5 py-1 rounded-md cursor-pointer text-[13px] font-medium transition-colors flex-none
+              {/* ── Departments ── */}
+              {deparmentsData?.length > 0 && (
+                <div className="flex-1 min-w-0 overflow-x-auto hidden1">
+                  <DragDropProvider onDragEnd={handleDepartmentOnDragEnd}>
+                    <div className="flex items-center gap-2 whitespace-nowrap">
+                      {/* All – not draggable */}
+                      <div
+                        className={`px-2.5 py-1 rounded-md cursor-pointer text-[13px] font-medium transition-colors flex-none
                   ${
                     !departmentFilter
                       ? "bg-orange-500 text-white"
                       : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                   }`}
-                onClick={() => {
-                  setDepartmentFilter("");
-                  setColumnFromOutsideTable("department", "");
-                  table.getColumn("product")?.setFilterValue("");
-                }}
-              >
-                All
-              </div>
+                        onClick={() => {
+                          setDepartmentFilter("");
+                          setColumnFromOutsideTable("department", "");
+                          table.getColumn("product")?.setFilterValue("");
+                        }}
+                      >
+                        All
+                      </div>
 
-              {deparmentsData.map((dep, index) => {
-                const name = dep.departmentName;
-                const isActive = departmentFilter === name;
+                      {deparmentsData.map((dep, index) => {
+                        const name = dep.departmentName;
+                        const isActive = departmentFilter === name;
 
-                return (
-                  <SortableDepartment
-                    key={dep._id}
-                    id={dep._id}
-                    index={index}
-                    className={`px-2.5 py-1 rounded-md !cursor-pointer text-[13px] font-medium transition-colors flex-none
+                        return (
+                          <SortableDepartment
+                            key={dep._id}
+                            id={dep._id}
+                            index={index}
+                            className={`px-2.5 py-1 rounded-md !cursor-pointer text-[13px] font-medium transition-colors flex-none
                       ${
                         isActive
                           ? "bg-orange-500 text-white"
                           : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                       }`}
-                    onClick={() => {
-                      setDepartmentFilter((prev) => {
-                        const isSame = prev === name;
-                        const newValue = isSame ? "" : name;
+                            onClick={() => {
+                              setDepartmentFilter((prev) => {
+                                const isSame = prev === name;
+                                const newValue = isSame ? "" : name;
 
-                        setColumnFromOutsideTable("department", newValue);
-                        table.getColumn("product")?.setFilterValue("");
+                                setColumnFromOutsideTable(
+                                  "department",
+                                  newValue,
+                                );
+                                table.getColumn("product")?.setFilterValue("");
 
-                        return newValue;
-                      });
-                    }}
-                  >
-                    {name}
-                  </SortableDepartment>
-                );
-              })}
+                                return newValue;
+                              });
+                            }}
+                          >
+                            {name}
+                          </SortableDepartment>
+                        );
+                      })}
+                    </div>
+                  </DragDropProvider>
+                </div>
+              )}
             </div>
-          </DragDropProvider>
-        </div>
-      )}
-    </div>
 
-    <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
-  </>
-)}
+            <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
+          </>
+        )}
 
         {/* Update Bulk Jobs */}
         {showEdit && (

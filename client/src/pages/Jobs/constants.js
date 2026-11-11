@@ -33,6 +33,48 @@ export const columnData = [
   "jobFiled",
 ];
 
+
+
+ 
+export const COLUMN_LABELS = {
+  jobRef: "jobRef",
+  companyName: "companyName",
+  clientName: "clientName",
+  Assign: "Assign",
+  Department: "Department",
+  Hrs: "Hrs",
+  Year_End: "Year_End",
+  Deadline: "Deadline",
+  deadlineIn: "deadlineIn",
+  Job_Date: "AffotaxDLN",
+  Status: "Status",
+  Job_Status: "Job_Status",
+  Lead: "Lead",
+  Owner: "Owner",
+  Budget: "Budget",
+  Timer: "Timer",
+
+  Labels: "Labels",
+  Fee: "Fee",
+  Source: "Source",
+  ClientType: "ClientType",
+  POC: "POC",
+  AC: "AC",
+  SignUp_Date: "SignUp_Date",
+  Actions: "Actions",
+  Partner: "Partner",
+  email: "email",
+  phone: "phone",
+
+  jobPrepared: "Prepared By",
+  jobReview: "Reviewed By",
+  jobFiled: "Filed By",
+};
+
+
+
+
+
 export const departments = [
   "All",
   "Bookkeeping",

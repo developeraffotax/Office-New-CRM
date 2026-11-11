@@ -63,7 +63,7 @@ import { SubtaskListManager } from "./SubtaskListManager";
 import OutsideFilter from "./utils/OutsideFilter";
  
 import { openModal } from "../../redux/slices/globalModalSlice";
-import { columnData, departments, statusInit } from "./constants";
+import { COLUMN_LABELS, columnData, departments, statusInit } from "./constants";
 import { buildFilters } from "./utils/utils";
 
 import JobHeaderActions from "./JobHeaderActions";
@@ -272,18 +272,29 @@ const [detailTab, setDetailTab] = useState("subtasks");
   const [showQuickList, setShowQuickList] = useState(false);
   const [qualityData, setQualityData] = useState([]);
 
+  // const [columnVisibility, setColumnVisibility] = useState(() => {
+  //   const savedVisibility = JSON.parse(
+  //     localStorage.getItem("columnVisibility"),
+  //   );
+  //   return (
+  //     savedVisibility ||
+  //     columnData.reduce((acc, col) => {
+  //       acc[col] = true;
+  //       return acc;
+  //     }, {})
+  //   );
+  // });
+
   const [columnVisibility, setColumnVisibility] = useState(() => {
-    const savedVisibility = JSON.parse(
-      localStorage.getItem("columnVisibility"),
-    );
-    return (
-      savedVisibility ||
-      columnData.reduce((acc, col) => {
-        acc[col] = true;
-        return acc;
-      }, {})
-    );
-  });
+  const saved = JSON.parse(localStorage.getItem("columnVisibility") || "null");
+  return (
+    saved ||
+    columnData.reduce((acc, col) => {
+      acc[col] = true;
+      return acc;
+    }, {})
+  );
+});
 
   const toggleColumnVisibility = (column) => {
     const updatedVisibility = {
@@ -1960,24 +1971,28 @@ const renderColumnControls = () => (
         </h4>
 
         <ul className="space-y-1 list-decimal">
-          {Object.keys(columnVisibility)?.map((column) => (
-            <li key={column}>
-              <label
-                className="flex items-center justify-between rounded-md px-2 py-1.5
-                         text-sm text-slate-700 cursor-pointer
-                         hover:bg-slate-50 transition"
-              >
-                <span className="capitalize">{column}</span>
-                <input
-                  type="checkbox"
-                  checked={columnVisibility[column]}
-                  onChange={() => toggleColumnVisibility(column)}
-                  className="h-4 w-4 accent-orange-600"
-                />
-              </label>
-            </li>
-          ))}
-        </ul>
+  {Object.keys(columnVisibility).map((columnId) => (
+    <li key={columnId}>
+      <label
+        className="flex items-center justify-between rounded-md px-2 py-1.5
+                   text-sm text-slate-700 cursor-pointer
+                   hover:bg-slate-50 transition"
+      >
+        {/* Friendly label, fall back to the id if missing */}
+        <span className="capitalize">
+          {COLUMN_LABELS[columnId] ?? columnId}
+        </span>
+
+        <input
+          type="checkbox"
+          checked={columnVisibility[columnId] !== false}
+          onChange={() => toggleColumnVisibility(columnId)}
+          className="h-4 w-4 accent-orange-600"
+        />
+      </label>
+    </li>
+  ))}
+</ul>
       </section>
 
       {/* MIDDLE — Users */}

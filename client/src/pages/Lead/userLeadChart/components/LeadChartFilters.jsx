@@ -15,7 +15,6 @@ import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import ToggleStatsButton from "../../ui/ToggleStatsButton";
 import UserFilterSelect from "../../../../components/KpiDashboard/ui/UserFilterSelect";
 import { DATE_FILTER_OPTIONS, QUICK_RANGE_FILTERS } from "../constants";
- 
 
 const datePickerSlotProps = {
   textField: {
@@ -121,23 +120,6 @@ export default function LeadChartFilters({
         useFlexGap
         alignItems="center"
       >
-        {/* ── Reset (very left) ── */}
-        <Tooltip title="Reset all filters" arrow>
-          <Button
-            variant="outlined"
-             
-            size="small"
-            onClick={onReset}
-            startIcon={<RestartAltIcon sx={{ fontSize: 18 }} />}
-            sx={resetButtonSx}
-
-          >
-            Reset
-          </Button>
-        </Tooltip>
-
-        <Divider orientation="vertical" flexItem sx={{ mx: 0.5, borderColor: "rgba(15,23,42,0.1)" }} />
-
         {/* ── Date controls ── */}
         <Stack
           direction="row"
@@ -183,29 +165,29 @@ export default function LeadChartFilters({
             </Select>
           </FormControl>
 
-{compareOptions.length > 0 && (
-  <Tooltip
-    arrow
-    // title="Also include earlier data, in the same unit as your range (e.g. This month + 2 months)"
-  >
-    <FormControl size="small" sx={{ minWidth: 150 }}>
-      <InputLabel>Compare with</InputLabel>
-      <Select
-        value={compare}
-        label="Compare with"
-        onChange={(e) => onCompareChange?.(e.target.value)}
-        sx={{ bgcolor: "#fff", borderRadius: 1.5 }}
-      >
-        <MenuItem value="none">None</MenuItem>
-        {compareOptions.map(({ value, label }) => (
-          <MenuItem key={value} value={value}>
-            {label}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  </Tooltip>
-)}
+          {compareOptions.length > 0 && (
+            <Tooltip
+              arrow
+              // title="Also include earlier data, in the same unit as your range (e.g. This month + 2 months)"
+            >
+              <FormControl size="small" sx={{ minWidth: 150 }}>
+                <InputLabel>Compare with</InputLabel>
+                <Select
+                  value={compare}
+                  label="Compare with"
+                  onChange={(e) => onCompareChange?.(e.target.value)}
+                  sx={{ bgcolor: "#fff", borderRadius: 1.5 }}
+                >
+                  <MenuItem value="none">None</MenuItem>
+                  {compareOptions.map(({ value, label }) => (
+                    <MenuItem key={value} value={value}>
+                      {label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Tooltip>
+          )}
 
           <ButtonGroup variant="outlined" size="small">
             {QUICK_RANGE_FILTERS.map(({ code, label, filter }) => (
@@ -221,18 +203,21 @@ export default function LeadChartFilters({
           </ButtonGroup>
         </Stack>
 
-        <Divider orientation="vertical" flexItem sx={{ mx: 0.5, borderColor: "rgba(15,23,42,0.1)" }} />
+        <Divider
+          orientation="vertical"
+          flexItem
+          sx={{ mx: 0.5, borderColor: "rgba(15,23,42,0.1)" }}
+        />
 
         {/* ── Stats toggle + Saved views ── */}
         <Stack direction="row" spacing={1} alignItems="center">
-          <ToggleStatsButton showStats={showStats} onToggle={onToggleStats} />
           {savedViews}
         </Stack>
 
         {/* Spacer pushes User filter to the right */}
         <Stack sx={{ flexGrow: 1 }} />
 
-       
+        <ToggleStatsButton showStats={showStats} onToggle={onToggleStats} />
 
         {/* ── User filter (right) ── */}
         <FormControl size="small">
@@ -243,6 +228,30 @@ export default function LeadChartFilters({
             onChange={onUsersChange}
           />
         </FormControl>
+
+        {/* ── Reset (very left) ── */}
+        <Tooltip title="Reset all filters" arrow>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={onReset}
+            startIcon={<RestartAltIcon sx={{ fontSize: 18 }} />}
+            sx={{
+              color: "#d32f2f",
+              borderColor: "#ef9a9a",
+              borderRadius: "8px",
+              textTransform: "none",
+              fontWeight: 500,
+              px: 1.5,
+              "&:hover": {
+                borderColor: "#d32f2f",
+                backgroundColor: "rgba(211, 47, 47, 0.06)",
+              },
+            }}
+          >
+            Reset
+          </Button>
+        </Tooltip>
       </Stack>
     </Paper>
   );

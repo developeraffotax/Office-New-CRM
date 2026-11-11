@@ -9,9 +9,12 @@ import AddIcon from "@mui/icons-material/Add";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
 import { DATE_FILTER_OPTIONS } from "../constants"; // adjust path
+import { COMPARE_OPTIONS } from "../rangeHelpers";
 
 const PAGE = "targets_dashboard";
 const MAX_QUICK = 4;
+
+const DATE_BASIS_LABELS = { created: "Created date", won: "Won date" };
 
 const getView = (f) => f.filters?.[0]?.value || {};
 
@@ -27,6 +30,10 @@ const norm = (v = {}) => {
     c: v.chartType ?? null,
     t: !!v.showTargets,
     st: !!v.showStats,
+    // defaults so views saved before these existed can still match
+    b: v.dateBasis ?? "created",
+    cmp: v.compare ?? "none",
+    h: [...(v.hiddenUsers || [])].sort(),
   });
 };
 
@@ -41,6 +48,8 @@ const summarize = (v = {}) => {
           .join(" – ")
       : DATE_FILTER_OPTIONS.find((o) => o.value === v.dateFilter)?.label;
 
+  const compareLabel = COMPARE_OPTIONS.find((o) => o.value === v.compare)?.label;
+
   const users =
     v.users?.length === 1
       ? v.users[0]
@@ -48,7 +57,17 @@ const summarize = (v = {}) => {
       ? `${v.users.length} users`
       : null;
 
-  return [range, users, v.view, v.metric, v.chartType, v.showTargets ? "Targets" : null]
+  return [
+    range,
+    compareLabel ? `+${compareLabel} earlier` : null,
+    users,
+    v.view,
+    v.metric,
+    v.chartType,
+    v.showTargets ? "Targets" : null,
+    v.dateBasis ? DATE_BASIS_LABELS[v.dateBasis] : null,
+    v.hiddenUsers?.length ? `${v.hiddenUsers.length} hidden` : null,
+  ]
     .filter(Boolean)
     .join(" · ");
 };

@@ -17,7 +17,7 @@ export default function ToggleStatsButton({ showStats, onToggle }) {
         size="medium"
         aria-label="toggle stats"
         sx={{
-          backgroundColor: "rgba(15, 23, 42, 0.04)",
+          // backgroundColor: "rgba(15, 23, 42, 0.04)",
           "&:hover": { backgroundColor: "rgba(15, 23, 42, 0.08)" },
         }}
       >

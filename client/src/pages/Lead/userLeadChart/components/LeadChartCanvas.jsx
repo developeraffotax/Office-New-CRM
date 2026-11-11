@@ -15,8 +15,10 @@ function LeadChartCanvas({
   chartType,
   metric,
   showTargets,
-  selectedUsers,
   userTeamMap,
+  hiddenSeries,
+  onHiddenChange,
+    isLoading = false,          // ← new
 }) {
   const chartRef = useRef(null);
 
@@ -28,17 +30,17 @@ function LeadChartCanvas({
     showTargets,
   });
 
-  const { hiddenSeries, toggleSeries, toggleSeriesGroup } = useLegendVisibility({
+  const { toggleSeries, toggleSeriesGroup } = useLegendVisibility({
     chartRef,
     chartSeries,
-    selectedUsers,
-    showTargetSeries: showTargets,
+    hiddenSeries,
+    setHiddenSeries: onHiddenChange,
     chartType,
     metric,
-    hasLoadedOnce,
+    hasLoadedOnce: hasLoadedOnce && !isLoading,   // ← changed
   });
 
-  if (!hasLoadedOnce) {
+  if (!hasLoadedOnce || isLoading) {      
     return (
       <Box sx={loadingSx} className="animate-pulse">
         Loading chart…

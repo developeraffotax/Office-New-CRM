@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Card, CardContent, Divider } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -29,6 +29,9 @@ export default function UserLeadChart() {
   const filters = useLeadChartFilters(auth);
   const { dateBasis, setDateBasis } = filters;
 
+  // Legend selection (hidden user names) lives here so saved views can store/restore it
+  const [hiddenSeries, setHiddenSeries] = useState(() => new Set());
+
   // dateRange = what the user picked; effectiveRange = picked range widened by "Compare with"
   const dailyAllowed = useMemo(
     () => isDailyAllowed(filters.effectiveRange),
@@ -37,7 +40,7 @@ export default function UserLeadChart() {
   const viewState = useLeadChartView({ dailyAllowed });
 
   const { users, teams, userTeamMap } = useUsersAndTeams();
-  const { categories, rawSeries, hasLoadedOnce } = useWonLeadsData({
+  const { categories, rawSeries, hasLoadedOnce, isLoading } = useWonLeadsData({
     auth,
     selectedUsers: filters.selectedUsers,
     dateRange: filters.effectiveRange,
@@ -45,12 +48,14 @@ export default function UserLeadChart() {
     dateBasis,
   });
 
-// 2) autoView: only apply the compare if it still fits the NEW range
-const autoView = (range) => {
-  const v = suggestView(extendRange(range, resolveCompare(range, filters.compare)));
-  if (v) viewState.setView(v);
-};
-
+  /* ───────── Auto view: pick the best view for the range ───────── */
+  // only apply the compare if it still fits the NEW range
+  const autoView = (range) => {
+    const v = suggestView(
+      extendRange(range, resolveCompare(range, filters.compare)),
+    );
+    if (v) viewState.setView(v);
+  };
 
   // Wrapped handlers: same API as `filters`, but each range change also sets the view.
   // Done here (not in an effect) so saved views and Reset keep their own view.
@@ -68,17 +73,28 @@ const autoView = (range) => {
       filters.setDateRange(range);
       autoView(range);
     },
-setCompare: (value) => {
-  filters.setCompare(value);
-  const v = suggestView(
-    extendRange(filters.dateRange, resolveCompare(filters.dateRange, value)),
-  );
-  if (v) viewState.setView(v);
-},
+    setCompare: (value) => {
+      filters.setCompare(value);
+      const v = suggestView(
+        extendRange(filters.dateRange, resolveCompare(filters.dateRange, value)),
+      );
+      if (v) viewState.setView(v);
+    },
+    // picking different users manually starts with a clean legend
+    setSelectedUsers: (next) => {
+      filters.setSelectedUsers(next);
+      setHiddenSeries(new Set());
+    },
   };
 
   /* ───────── Saved views ───────── */
   const savedFiltersHook = useSavedFilters("targets_dashboard");
+
+  // only names that exist in the current chart, sorted so comparisons are stable
+  const hiddenUsers = useMemo(() => {
+    const present = new Set(rawSeries.map((s) => s.user));
+    return [...hiddenSeries].filter((n) => present.has(n)).sort();
+  }, [hiddenSeries, rawSeries]);
 
   const snapshot = useMemo(
     () => ({
@@ -95,6 +111,7 @@ setCompare: (value) => {
       showStats: viewState.showStats,
       dateBasis,
       compare: filters.compare,
+      hiddenUsers,
     }),
     [
       filters.dateFilter,
@@ -107,13 +124,15 @@ setCompare: (value) => {
       viewState.showTargets,
       viewState.showStats,
       dateBasis,
+      hiddenUsers,
     ],
   );
 
   const { applyFilters } = filters;
   const handleApplyView = useCallback(
     (v) => {
-      applyFilters(v); // also restores v.compare
+      applyFilters(v); // dates, users, dateBasis, compare
+      setHiddenSeries(new Set(v.hiddenUsers || [])); // legend selection (old views: none hidden)
       if (v.view) viewState.setView(v.view);
       if (v.metric) viewState.setMetric(v.metric);
       if (v.chartType) viewState.setChartType(v.chartType);
@@ -137,6 +156,7 @@ setCompare: (value) => {
   const handleReset = useCallback(() => {
     resetFilters();
     resetView();
+    setHiddenSeries(new Set());
   }, [resetFilters, resetView]);
 
   return (
@@ -183,8 +203,10 @@ setCompare: (value) => {
             chartType={viewState.chartType}
             metric={viewState.metric}
             showTargets={viewState.showTargets}
-            selectedUsers={filters.selectedUsers}
             userTeamMap={userTeamMap}
+            hiddenSeries={hiddenSeries}
+            onHiddenChange={setHiddenSeries}
+              isLoading={isLoading}
           />
         </CardContent>
       </Card>

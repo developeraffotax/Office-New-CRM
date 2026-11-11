@@ -1,24 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { TARGET_SUFFIX } from "../constants";
 
-// Holds the set of hidden USER names (hiding a user hides their actual and
-// target series together) and applies it to the ApexCharts instance.
+// Hidden USER names are owned by the parent (so saved views can store/restore
+// them). Hiding a user hides their actual and target series together.
 export default function useLegendVisibility({
   chartRef,
   chartSeries,
-  selectedUsers,
-  showTargetSeries,
+  hiddenSeries,
+  setHiddenSeries,
   chartType,
   metric,
   hasLoadedOnce,
 }) {
-  const [hiddenSeries, setHiddenSeries] = useState(() => new Set());
-
-  // Reset legend toggles when the series set changes
-  useEffect(() => {
-    setHiddenSeries(new Set());
-  }, [selectedUsers, showTargetSeries]);
-
   const toggleSeries = (name) =>
     setHiddenSeries((prev) => {
       const next = new Set(prev);
@@ -47,5 +40,5 @@ export default function useLegendVisibility({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hiddenSeries, chartSeries, chartType, metric, hasLoadedOnce]);
 
-  return { hiddenSeries, toggleSeries, toggleSeriesGroup };
+  return { toggleSeries, toggleSeriesGroup };
 }

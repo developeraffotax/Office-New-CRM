@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { isAdmin } from "../../../../utlis/isAdmin"; // adjust if your folder depth differs
 
@@ -10,28 +10,38 @@ export default function useWonLeadsData({
   view,
   dateBasis,
 }) {
-  const [categories, setCategories] = useState([]);
-  // [{ user, counts, values, targetCounts, targetValues }]
-  const [rawSeries, setRawSeries] = useState([]);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  // One state object so labels + series + the key they belong to update together
+  const [result, setResult] = useState({
+    categories: [],
+    rawSeries: [],
+    key: null, // the request key this data was loaded for
+  });
   const requestId = useRef(0);
 
+  const [start, end] = dateRange;
+  const startISO = start ? start.toISOString() : null;
+  const endISO = end ? end.toISOString() : null;
+
+  const enabled = isAdmin(auth) || selectedUsers.length > 0;
+
+  // Changes the moment any input changes (same render), not one effect later
+  const requestKey = useMemo(
+    () => JSON.stringify([selectedUsers, startISO, endISO, view, dateBasis]),
+    [selectedUsers, startISO, endISO, view, dateBasis],
+  );
+
   const fetchData = useCallback(async () => {
-    if (!isAdmin(auth) && !selectedUsers.length) return;
+    if (!enabled) return;
 
     const id = ++requestId.current;
-    setIsLoading(true);
-
     try {
-      const [start, end] = dateRange;
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/leads/userchart/won`,
         {
           params: {
             users: selectedUsers.length ? selectedUsers.join(",") : "All",
-            startDate: start ? start.toISOString() : null,
-            endDate: end ? end.toISOString() : null,
+            startDate: startISO,
+            endDate: endISO,
             view,
             dateBasis,
           },
@@ -41,20 +51,29 @@ export default function useWonLeadsData({
       // a newer request has started; drop this (stale) response
       if (id !== requestId.current) return;
 
-      setCategories(data.labels);
-      setRawSeries(data.series || []);
-      setHasLoadedOnce(true);
+      setResult({
+        categories: data.labels,
+        rawSeries: data.series || [],
+        key: requestKey,
+      });
     } catch (err) {
       console.error(err);
-    } finally {
-      if (id === requestId.current) setIsLoading(false);
+      // stop the skeleton on error, keep whatever data we had
+      if (id === requestId.current) {
+        setResult((prev) => ({ ...prev, key: requestKey }));
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedUsers, dateRange, view, dateBasis]);
+  }, [requestKey, enabled]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  return { categories, rawSeries, hasLoadedOnce, isLoading };
+  return {
+    categories: result.categories,
+    rawSeries: result.rawSeries,
+    hasLoadedOnce: result.key !== null,
+    isLoading: enabled && result.key !== requestKey,
+  };
 }

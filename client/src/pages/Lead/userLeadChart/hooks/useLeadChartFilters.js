@@ -58,7 +58,7 @@ export default function useLeadChartFilters(auth) {
           ? getDateRange(df)
           : [dr?.start ? dayjs(dr.start) : null, dr?.end ? dayjs(dr.end) : null],
       );
-      if (users?.length) setSelectedUsers(users);
+      if (Array.isArray(users)) setSelectedUsers(users);
     },
     [],
   );

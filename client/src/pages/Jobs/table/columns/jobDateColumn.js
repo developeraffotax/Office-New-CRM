@@ -19,7 +19,7 @@ const DEFAULT_DATE_FILTERS = [
 
 export const jobDateColumn = ({ handleUpdateDates, auth }) => {
   const canEdit =
-    isAdmin(auth?.user) || hasSubrole(auth?.user, "Jobs", "AffotaxDLN");
+    isAdmin(auth?.user) || hasSubrole(auth?.user, "Jobs", "Edit AffotaxDLN");
 
   return {
     id: "Job_Date",

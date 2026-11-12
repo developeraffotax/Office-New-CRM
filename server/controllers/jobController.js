@@ -16,6 +16,7 @@ import { trackUserUsageByName } from "../services/user.service.js";
 import goalModel from "../models/goalModel.js";
 import { buildLabels, getWeeklyGoalTotals, parseRequestedUsers, resolveUsers } from "./shared.utils.js";
 import { buildJobDateRange, getJobGoalTargets, JOB_DATE_BASES, JOB_METRICS, jobsPipeline, MAX_DAILY_RANGE_DAYS, VALID_VIEWS } from "./jobChart.utils.js";
+import { buildCompletedCopy, getNextJobDates } from "./jobController/createDublicateJob.utils.js";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
@@ -1527,172 +1528,373 @@ export const getInactiveClientJobs = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Dublicate Job
-export const createDublicateJob = async (req, res) => {
-  try {
-    const {
-      _id,
-      clientName,
-      regNumber,
-      companyName,
-      email,
-      totalHours,
-      currentDate,
-      source,
-      clientType,
-      country,
-      fee,
-      ctLogin,
-      pyeLogin,
-      trLogin,
-      vatLogin,
-      authCode,
-      utr,
-      isActive,
-      totalTime,
-      comments,
-      job,
-    } = req.body;
+// export const createDublicateJob = async (req, res) => {
+//   try {
+//     const {
+//       _id,
+//       clientName,
+//       regNumber,
+//       companyName,
+//       email,
+//       totalHours,
+//       currentDate,
+//       source,
+//       clientType,
+//       country,
+//       fee,
+//       ctLogin,
+//       pyeLogin,
+//       trLogin,
+//       vatLogin,
+//       authCode,
+//       utr,
+//       isActive,
+//       totalTime,
+//       comments,
+//       job,
+//       activities,
+//     } = req.body;
 
-    // Check for required fields
-    if (!clientName) {
-      return res.status(400).send({
-        success: false,
-        message: "Client name is required!",
-      });
-    }
-    if (!companyName) {
-      return res.status(400).send({
-        success: false,
-        message: "Company name is required!",
-      });
-    }
+//     // Check for required fields
+//     if (!clientName) {
+//       return res.status(400).send({
+//         success: false,
+//         message: "Client name is required!",
+//       });
+//     }
+//     if (!companyName) {
+//       return res.status(400).send({
+//         success: false,
+//         message: "Company name is required!",
+//       });
+//     }
 
-    const clientJob = await jobsModel.create({
-      clientName,
-      regNumber,
-      companyName,
-      email,
-      totalHours,
-      currentDate,
-      source,
-      clientType,
-      country,
-      fee,
-      ctLogin,
-      pyeLogin,
-      trLogin,
-      vatLogin,
-      authCode,
-      utr,
-      isActive,
-      status: "completed",
-      totalTime,
-      comments,
-      job,
-    });
 
-    const isExisting = await jobsModel.findById({ _id: _id });
+//     const newActivities = [...activities];
 
-    let yearEnd = new Date(isExisting.job.yearEnd);
-    let jobDeadline = new Date(isExisting.job.jobDeadline);
-    let workDeadline = new Date(isExisting.job.workDeadline);
+//   newActivities.push({
+//         user: req.user.user._id,
+//         activity: `${req.user.user.name} has completed this job!`,
+//       });
 
-    if (
-      isExisting.job.jobName === "Bookkeeping" ||
-      isExisting.job.jobName === "Payroll"
-    ) {
-      // Add 1 month
-      yearEnd.setMonth(yearEnd.getMonth() + 1);
-      // Add 15 days if Bookkeeping, 5 days if Payroll
-      if (isExisting.job.jobName === "Bookkeeping") {
-        jobDeadline.setDate(jobDeadline.getDate() + 15);
-      } else if (isExisting.job.jobName === "Payroll") {
-        jobDeadline.setDate(jobDeadline.getDate() + 5);
-      }
-      workDeadline.setMonth(workDeadline.getMonth() + 1); // Add 1 month
-    } else if (isExisting.job.jobName === "Vat Return") {
-      // Add 3 months
-      yearEnd.setMonth(yearEnd.getMonth() + 3);
-      jobDeadline.setDate(jobDeadline.getDate() + 37); // Add 37 days
-      workDeadline.setMonth(workDeadline.getMonth() + 3); // Add 3 months
-    } else {
-      // Add 12 months (1 year)
-      yearEnd.setMonth(yearEnd.getMonth() + 12);
+
+
+//     const clientJob = await jobsModel.create({
+//       clientName,
+//       regNumber,
+//       companyName,
+//       email,
+//       totalHours,
+//       currentDate,
+//       source,
+//       clientType,
+//       country,
+//       fee,
+//       ctLogin,
+//       pyeLogin,
+//       trLogin,
+//       vatLogin,
+//       authCode,
+//       utr,
+//       isActive,
+//       status: "completed",
+//       totalTime,
+//       comments,
+//       job,
+//       activities: newActivities,
+//     });
+
+//     const isExisting = await jobsModel.findById({ _id: _id });
+
+//     let yearEnd = new Date(isExisting.job.yearEnd);
+//     let jobDeadline = new Date(isExisting.job.jobDeadline);
+//     let workDeadline = new Date(isExisting.job.workDeadline);
+
+//     if (
+//       isExisting.job.jobName === "Bookkeeping" ||
+//       isExisting.job.jobName === "Payroll"
+//     ) {
+//       // Add 1 month
+//       yearEnd.setMonth(yearEnd.getMonth() + 1);
+//       // Add 15 days if Bookkeeping, 5 days if Payroll
+//       if (isExisting.job.jobName === "Bookkeeping") {
+//         jobDeadline.setDate(jobDeadline.getDate() + 15);
+//       } else if (isExisting.job.jobName === "Payroll") {
+//         jobDeadline.setDate(jobDeadline.getDate() + 5);
+//       }
+//       workDeadline.setMonth(workDeadline.getMonth() + 1); // Add 1 month
+//     } else if (isExisting.job.jobName === "Vat Return") {
+//       // Add 3 months
+//       yearEnd.setMonth(yearEnd.getMonth() + 3);
+//       jobDeadline.setDate(jobDeadline.getDate() + 37); // Add 37 days
+//       workDeadline.setMonth(workDeadline.getMonth() + 3); // Add 3 months
+//     } else {
+//       // Add 12 months (1 year)
+//       yearEnd.setMonth(yearEnd.getMonth() + 12);
 
 
 
        
-      // Specific adjustments for different job names
-      if (isExisting.job.jobName.trim() === "Personal Tax") {
-        jobDeadline.setDate(jobDeadline.getDate() + 301); // Add 301 days
-        // jobDeadline.setFullYear(jobDeadline.getFullYear() + 1);
-      } else if (isExisting.job.jobName.trim() === "Accounts") {
-        jobDeadline.setMonth(jobDeadline.getMonth() + 12); // Add 12 months
-      } else if (isExisting.job.jobName.trim() === "Company Sec") {
-        jobDeadline.setMonth(jobDeadline.getMonth() + 12); // Add 1 year (12 months)
-      } else if (isExisting.job.jobName.trim() === "Address") {
-        // Subtract 1 month from yearEnd for jobDeadline and workDeadline
-        jobDeadline.setMonth(yearEnd.getMonth() - 1);
-        workDeadline.setMonth(yearEnd.getMonth() - 1);
-      } else {
-        // Default case for other job names: add 12 months to jobDeadline and workDeadline
-        jobDeadline.setMonth(jobDeadline.getMonth() + 12);
-        workDeadline.setMonth(workDeadline.getMonth() + 12);
-      }
-    }
+//       // Specific adjustments for different job names
+//       if (isExisting.job.jobName.trim() === "Personal Tax") {
+//         jobDeadline.setDate(jobDeadline.getDate() + 301); // Add 301 days
+//         // jobDeadline.setFullYear(jobDeadline.getFullYear() + 1);
+//       } else if (isExisting.job.jobName.trim() === "Accounts") {
+//         jobDeadline.setMonth(jobDeadline.getMonth() + 12); // Add 12 months
+//       } else if (isExisting.job.jobName.trim() === "Company Sec") {
+//         jobDeadline.setMonth(jobDeadline.getMonth() + 12); // Add 1 year (12 months)
+//       } else if (isExisting.job.jobName.trim() === "Address") {
+//         // Subtract 1 month from yearEnd for jobDeadline and workDeadline
+//         jobDeadline.setMonth(yearEnd.getMonth() - 1);
+//         workDeadline.setMonth(yearEnd.getMonth() - 1);
+//       } else {
+//         // Default case for other job names: add 12 months to jobDeadline and workDeadline
+//         jobDeadline.setMonth(jobDeadline.getMonth() + 12);
+//         workDeadline.setMonth(workDeadline.getMonth() + 12);
+//       }
+//     }
 
-    // Update the job document with the new dates
-    isExisting.job.yearEnd = yearEnd;
-    isExisting.job.jobDeadline = jobDeadline;
-    isExisting.job.workDeadline = workDeadline;
-    isExisting.totalTime = "0s";
+//     // Update the job document with the new dates
+//     isExisting.job.yearEnd = yearEnd;
+//     isExisting.job.jobDeadline = jobDeadline;
+//     isExisting.job.workDeadline = workDeadline;
+//     isExisting.totalTime = "0s";
 
-    // console.log("Y,", yearEnd, "J,", jobDeadline, "W,", workDeadline);
+//     // console.log("Y,", yearEnd, "J,", jobDeadline, "W,", workDeadline);
 
-    await isExisting.save();
+//     await isExisting.save();
 
-    // Add Activity Log
-    const currectUser = req.user.user;
-    if (clientJob) {
-      activityModel.create({
-        user: currectUser._id,
-        action: `${currectUser.name.trim()} complete a job.`,
-        entity: "Jobs",
-        details: `Job Details:
-                 - Company Name: ${
-                   clientJob.companyName || "No company provided"
-                 }
-                 - Job Client: ${clientJob.clientName || "No client provided"}
-                 - Created At: ${currentDateTime}`,
+//     // Add Activity Log
+//     const currectUser = req.user.user;
+//     if (clientJob) {
+//       activityModel.create({
+//         user: currectUser._id,
+//         action: `${currectUser.name.trim()} complete a job.`,
+//         entity: "Jobs",
+//         details: `Job Details:
+//                  - Company Name: ${
+//                    clientJob.companyName || "No company provided"
+//                  }
+//                  - Job Client: ${clientJob.clientName || "No client provided"}
+//                  - Created At: ${currentDateTime}`,
+//       });
+//     }
+
+
+
+//     if (req.user?.user?.name !== clientJob?.job?.jobHolder) {
+//         const notiUser = await userModel
+//           .findOne({ name: clientJob?.job?.jobHolder })
+//           .select("_id");
+//         if (notiUser) {
+//           emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+//         }
+//       }
+//     // await redisClient.del('all_jobs');
+//     return res.status(200).send({
+//       success: true,
+//       message: "status completed!",
+//       jobs: clientJob,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send({
+//       success: false,
+//       message: "Error while complete job!",
+//       error: error.message,
+//     });
+//   }
+// };
+
+
+
+
+
+
+
+
+
+
+
+// ---------- controller ----------
+
+// Dublicate Job
+export const createDublicateJob = async (req, res) => {
+  try {
+    const { _id } = req.body;
+    const currentUser = req.user.user;
+
+    if (!_id) {
+      return res.status(400).send({
+        success: false,
+        message: "Job id is required!",
       });
     }
 
+    const existing = await jobsModel.findById(_id);
+    if (!existing) {
+      return res.status(404).send({
+        success: false,
+        message: "Job not found!",
+      });
+    }
 
+    // 1. Work out the new dates first, so a failure here doesn't leave an orphan copy
+    const nextDates = getNextJobDates(existing.job);
 
-    if (req.user?.user?.name !== clientJob?.job?.jobHolder) {
-        const notiUser = await userModel
-          .findOne({ name: clientJob?.job?.jobHolder })
-          .select("_id");
-        if (notiUser) {
-          emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
-        }
+    // 2. Create the completed copy (old dates, + "completed" activity)
+    const completedJob = await jobsModel.create(
+      buildCompletedCopy(existing, currentUser)
+    );
+
+    // 3. Roll the original job forward + add its own activity
+    existing.job.yearEnd = nextDates.yearEnd;
+    existing.job.jobDeadline = nextDates.jobDeadline;
+    existing.job.workDeadline = nextDates.workDeadline;
+    existing.totalTime = "0s";
+    existing.activities.push({
+      user: currentUser._id,
+      activity: `${currentUser.name} has completed this job and moved it to the next cycle.`,
+    });
+    await existing.save();
+
+    // 4. Activity log
+    activityModel
+      .create({
+        user: currentUser._id,
+        action: `${currentUser.name.trim()} complete a job.`,
+        entity: "Jobs",
+        details: `Job Details:
+                 - Company Name: ${completedJob.companyName || "No company provided"}
+                 - Job Client: ${completedJob.clientName || "No client provided"}
+                 - Created At: ${currentDateTime}`,
+      })
+      .catch(console.error);
+
+    // 5. Notify job holder
+    if (currentUser.name !== completedJob.job?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: completedJob.job?.jobHolder })
+        .select("_id");
+
+      if (notiUser) {
+        emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
       }
-    // await redisClient.del('all_jobs');
+    }
+
     return res.status(200).send({
       success: true,
       message: "status completed!",
-      jobs: clientJob,
+      jobs: completedJob,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send({
+    return res.status(500).send({
       success: false,
       message: "Error while complete job!",
       error: error.message,
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Update Client_Job Complete Status
 export const updateClientStatus = async (req, res) => {

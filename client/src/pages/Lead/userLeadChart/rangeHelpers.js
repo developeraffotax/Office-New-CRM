@@ -5,17 +5,28 @@ import dayjs from "dayjs";
 // First row whose maxDays >= selected span wins. Tune freely.
 export const VIEW_THRESHOLDS = [
   { maxDays: 31, view: "daily" },
-  { maxDays: 100, view: "weekly" },
+  { maxDays: 80, view: "weekly" },
   { maxDays: 400, view: "monthly" },
   { maxDays: 800, view: "quarterly" },
   { maxDays: Infinity, view: "yearly" },
 ];
 
+// Used when a "Compare with" option is selected: the view follows its unit.
+// Tune freely, e.g. week: "daily" if two weekly bars feel too sparse.
+export const COMPARE_VIEW = {
+  week: "weekly",
+  month: "monthly",
+  quarter: "quarterly",
+  year: "yearly",
+};
+
 export const rangeDays = ([start, end]) =>
   dayjs(end).startOf("day").diff(dayjs(start).startOf("day"), "day") + 1;
 
+// range = the range the user picked (NOT widened); compareOption = resolved option or null
 // returns null until both dates are set (custom range half-picked)
-export function suggestView(range) {
+export function suggestView(range, compareOption = null) {
+  if (compareOption) return COMPARE_VIEW[compareOption.group] ?? null;
   if (!range?.[0] || !range?.[1]) return null;
   const days = rangeDays(range);
   return VIEW_THRESHOLDS.find((t) => days <= t.maxDays).view;

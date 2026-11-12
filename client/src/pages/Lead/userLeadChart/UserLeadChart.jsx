@@ -50,13 +50,10 @@ export default function UserLeadChart() {
 
   /* ───────── Auto view: pick the best view for the range ───────── */
   // only apply the compare if it still fits the NEW range
-  const autoView = (range) => {
-    const v = suggestView(
-      extendRange(range, resolveCompare(range, filters.compare)),
-    );
-    if (v) viewState.setView(v);
-  };
-
+const autoView = (range) => {
+  const v = suggestView(range, resolveCompare(range, filters.compare));
+  if (v) viewState.setView(v);
+};
   // Wrapped handlers: same API as `filters`, but each range change also sets the view.
   // Done here (not in an effect) so saved views and Reset keep their own view.
   const toolbarFilters = {
@@ -73,13 +70,14 @@ export default function UserLeadChart() {
       filters.setDateRange(range);
       autoView(range);
     },
-    setCompare: (value) => {
-      filters.setCompare(value);
-      const v = suggestView(
-        extendRange(filters.dateRange, resolveCompare(filters.dateRange, value)),
-      );
-      if (v) viewState.setView(v);
-    },
+setCompare: (value) => {
+  filters.setCompare(value);
+  const v = suggestView(
+    filters.dateRange,
+    resolveCompare(filters.dateRange, value),
+  );
+  if (v) viewState.setView(v);
+},
     // picking different users manually starts with a clean legend
     setSelectedUsers: (next) => {
       filters.setSelectedUsers(next);

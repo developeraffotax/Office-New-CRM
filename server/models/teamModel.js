@@ -25,6 +25,12 @@ const teamSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Users",
     },
+
+     order: {
+      type: Number,
+      default: 0,
+      index: true,
+    },
   },
   { timestamps: true }
 );

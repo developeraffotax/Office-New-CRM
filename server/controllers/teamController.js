@@ -30,6 +30,40 @@ export const getAllTeams = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
+export const reorderTeams = async (req, res) => {
+  try {
+    const { orderedIds } = req.body;
+    if (!Array.isArray(orderedIds) || orderedIds.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "orderedIds array is required" });
+    }
+    await teamService.reorderTeams(orderedIds);
+    return res.status(200).json({ success: true, message: "Order saved" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
 export const getTeamById = async (req, res) => {
   try {
     const team = await teamService.getTeamWithMembers(req.params.id);

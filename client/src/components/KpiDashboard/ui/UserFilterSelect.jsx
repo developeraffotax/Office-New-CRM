@@ -53,33 +53,39 @@ export default function UserFilterSelect({ users, teams = [], selected, onChange
   // back populated ({_id, name, ...}) or as a raw id — either way we
   // resolve it against the `teams` list. Users with no team (or a team
   // that isn't in the `teams` list, e.g. inactive) fall into "No Team".
-  const groups = useMemo(() => {
-    const teamNameById = Object.fromEntries(teams.map((t) => [t._id, t.name]));
-    const byTeamId = {};
-    const noTeam = [];
+const groups = useMemo(() => {
+  const teamNameById = Object.fromEntries(
+    teams.map((t) => [String(t._id), t.name]),
+  );
+  const byTeamId = {};
+  const noTeam = [];
 
-    users.forEach((u) => {
-      const teamId = typeof u.team === "object" ? u.team?._id : u.team;
-      const teamName = teamId ? teamNameById[teamId] : null;
+  users.forEach((u) => {
+    const teamId = typeof u.team === "object" ? u.team?._id : u.team;
+    const id = teamId != null ? String(teamId) : null;
+    const teamName = id ? teamNameById[id] : null;
 
-      if (teamId && teamName) {
-        if (!byTeamId[teamId]) {
-          byTeamId[teamId] = { teamId, teamName, members: [] };
-        }
-        byTeamId[teamId].members.push(u);
-      } else {
-        noTeam.push(u);
+    if (id && teamName) {
+      if (!byTeamId[id]) {
+        byTeamId[id] = { teamId: id, teamName, members: [] };
       }
-    });
-
-    const sorted = Object.values(byTeamId).sort((a, b) =>
-      a.teamName.localeCompare(b.teamName)
-    );
-    if (noTeam.length > 0) {
-      sorted.push({ teamId: null, teamName: "No Team", members: noTeam });
+      byTeamId[id].members.push(u);
+    } else {
+      noTeam.push(u);
     }
-    return sorted;
-  }, [users, teams]);
+  });
+
+  // Follow the order of `teams` (backend order), not alphabetical
+  const sorted = teams
+    .map((t) => byTeamId[String(t._id)])
+    .filter(Boolean); // skip teams that have no members in this user list
+
+  if (noTeam.length > 0) {
+    sorted.push({ teamId: null, teamName: "No Team", members: noTeam });
+  }
+
+  return sorted;
+}, [users, teams]);
 
   // Search matches either a team name (showing all its members) or an
   // individual member's name (showing just the matches within that team).

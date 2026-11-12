@@ -4,13 +4,20 @@ import Users from "../models/userModel.js";
 // ---------------- Team CRUD ----------------
 
 export async function createTeam({ name, description, createdBy }) {
-  return Team.create({ name, description, createdBy });
+  // new teams go to the end of the list
+  const last = await Team.findOne({ isActive: true })
+    .sort({ order: -1 })
+    .select("order")
+    .lean();
+  const order = (last?.order ?? -1) + 1;
+
+  return Team.create({ name, description, createdBy, order });
 }
 
 export async function getAllTeams() {
-  const teams = await Team.find({ isActive: true })
+   const teams = await Team.find({ isActive: true })
     .populate("teamLead", "name email avatar")
-    .sort({ createdAt: -1 })
+    .sort({ order: 1, createdAt: -1 }) // createdAt is the fallback for teams without an order yet
     .lean();
 
   // member counts via aggregation instead of populating a members array on Team
@@ -28,6 +35,34 @@ export async function getAllTeams() {
     memberCount: countMap[t._id.toString()] || 0,
   }));
 }
+
+
+
+
+
+
+
+
+
+export async function reorderTeams(orderedIds) {
+  const ops = orderedIds.map((id, index) => ({
+    updateOne: {
+      filter: { _id: id },
+      update: { $set: { order: index } },
+    },
+  }));
+  if (ops.length) await Team.bulkWrite(ops);
+  return true;
+}
+
+
+
+
+
+
+
+
+
 
 export async function getTeamWithMembers(teamId) {
   const [team, members] = await Promise.all([

@@ -8,6 +8,7 @@ import {
   addUserToTeam,
   removeUserFromTeam,
   setTeamLead,
+  reorderTeams,
 } from "../controllers/teamController.js";
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 // import your auth middleware here, e.g. { isAuth, isAdmin } from "../middlewares/auth.js"
@@ -18,6 +19,9 @@ const router = express.Router();
 
 router.post("/create",  requiredSignIn, createTeam);
 router.get("/get_all", requiredSignIn, getAllTeams);
+
+
+router.put("/reorder", requiredSignIn, reorderTeams);
 router.get("/:id", requiredSignIn, getTeamById);
 router.put("/update/:id", requiredSignIn, updateTeam);
 router.delete("/delete/:id", requiredSignIn, deleteTeam);

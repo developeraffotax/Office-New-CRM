@@ -1,22 +1,20 @@
 import React from "react";
-import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
 
-export default function Loader() {
+export default function RingLoader({ text = "Loading..." }) {
   return (
-    <div className="w-full min-h-[60vh]">
-      <div className="w-full h-full">
-        <SkeletonTheme baseColor="#ccc" highlightColor="#777">
-          <p>
-            <Skeleton
-              count={10}
-              height={60}
-              width="100%"
-              className="animate-pulse"
-            />
-          </p>
-        </SkeletonTheme>
+    <div
+      role="status"
+      aria-live="polite"
+      className="w-full min-h-[60vh] flex flex-col items-center justify-center gap-4"
+    >
+      <div className="relative h-10 w-10">
+        <div className="absolute inset-0 rounded-full border-4 border-orange-100" />
+        <div className="absolute inset-0 rounded-full border-4 border-orange-500 border-t-transparent animate-spin" />
       </div>
+
+      <p className="font-google text-lg font-medium text-gray-600 tracking-wide">
+        {text}
+      </p>
     </div>
   );
 }

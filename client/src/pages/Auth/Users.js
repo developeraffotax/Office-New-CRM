@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import { IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
@@ -17,11 +17,171 @@ import { RiEdit2Line } from "react-icons/ri";
 import Swal from "sweetalert2";
 import UserLabelModal from "../../components/user/UserLabelModal";
 import QuickAccess from "../../utlis/QuickAccess";
-import { LuFilter } from "react-icons/lu";
+import { LuDatabase, LuFilter } from "react-icons/lu";
+import { GoEye, GoEyeClosed } from "react-icons/go";
 import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { Link } from "react-router-dom";
-import { HiOutlineUserGroup } from "react-icons/hi";
+import { HiOutlineDotsVertical, HiOutlineUserGroup } from "react-icons/hi";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import {
+  columnOrderingOptions,
+  headCellHoverSx,
+} from "../../utlis/columnOrdering";
+import {
+  getSavedColumnOrder,
+  usePersistedColumnOrder,
+} from "../../hooks/usePersistedColumnOrder";
+import { FiPlus } from "react-icons/fi";
+
+// ---------------------------------------------------------------------------
+// Storage keys
+// ---------------------------------------------------------------------------
+const COLUMN_ORDER_KEY = "users:column_order";
+const COLUMN_VISIBILITY_KEY = "users:column_visibility";
+const DEPARTMENT_ORDER_KEY = "users:department_order";
+
+// ---------------------------------------------------------------------------
+// Columns shown in the "View settings" popover (id must match the column id)
+// ---------------------------------------------------------------------------
+const COLUMN_OPTIONS = [
+  { id: "avatar", label: "Avatar" },
+  { id: "name", label: "Employee Name" },
+  { id: "username", label: "User Name" },
+  { id: "email", label: "Email" },
+  { id: "phone", label: "Phone Number" },
+  { id: "emergency_contact", label: "E.Contact" },
+  { id: "address", label: "Address" },
+  { id: "role", label: "Roles" },
+  { id: "Team", label: "Team" },
+  { id: "isActive", label: "Status" },
+  { id: "createdAt", label: "Joining Date" },
+  { id: "updatedAt", label: "Last Date" },
+  { id: "Durations", label: "Duration" },
+  { id: "Data", label: "Department" },
+  { id: "actions", label: "Actions" },
+];
+
+const getSavedColumnVisibility = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(COLUMN_VISIBILITY_KEY));
+    return saved && typeof saved === "object" && !Array.isArray(saved)
+      ? saved
+      : {};
+  } catch {
+    return {};
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Draggable department chips (order saved to localStorage by name)
+// ---------------------------------------------------------------------------
+const readSavedOrder = (key) => {
+  try {
+    const raw = localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeSavedOrder = (key, names) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(names));
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// Saved order first (only names that still exist), then any new ones
+const mergeWithSavedOrder = (items, saved) => {
+  const existing = new Set(items);
+  const ordered = saved.filter((name) => existing.has(name));
+
+  const savedSet = new Set(saved);
+  const fresh = items.filter((name) => !savedSet.has(name));
+
+  return [...ordered, ...fresh];
+};
+
+const reorderList = (list, startIndex, endIndex) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+  return result;
+};
+
+const DraggableDepartmentChips = ({
+  departments = [],
+  activeDepartment = "",
+  onSelect,
+  storageKey = DEPARTMENT_ORDER_KEY,
+}) => {
+  const [savedOrder, setSavedOrder] = useState(() => readSavedOrder(storageKey));
+
+  const names = useMemo(
+    () => [...new Set(departments.map((d) => d?.name).filter(Boolean))],
+    [departments]
+  );
+
+  const orderedNames = useMemo(
+    () => mergeWithSavedOrder(names, savedOrder),
+    [names, savedOrder]
+  );
+
+  const handleDragEnd = (result) => {
+    const { source, destination } = result;
+    if (!destination) return;
+    if (source.index === destination.index) return;
+
+    const reordered = reorderList(
+      orderedNames,
+      source.index,
+      destination.index
+    );
+
+    setSavedOrder(reordered);
+    writeSavedOrder(storageKey, reordered);
+  };
+
+  return (
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <Droppable droppableId="user-departments" direction="horizontal">
+        {(dropProvided) => (
+          <ul
+            ref={dropProvided.innerRef}
+            {...dropProvided.droppableProps}
+            className="flex items-center gap-2 list-none"
+          >
+            {orderedNames.map((name, index) => (
+              <Draggable key={name} draggableId={name} index={index}>
+                {(dragProvided, snapshot) => (
+                  <li
+                    ref={dragProvided.innerRef}
+                    {...dragProvided.draggableProps}
+                    {...dragProvided.dragHandleProps}
+                    onClick={() => onSelect(name)}
+                    className={`${
+                      activeDepartment === name
+                        ? "bg-orange-500 text-white"
+                        : "bg-gray-200 text-gray-700"
+                    } px-2 py-1 rounded-md !cursor-pointer m-0 select-none ${
+                      snapshot.isDragging ? "shadow-lg" : ""
+                    }`}
+                  >
+                    {name}
+                  </li>
+                )}
+              </Draggable>
+            ))}
+            {dropProvided.placeholder}
+          </ul>
+        )}
+      </Droppable>
+    </DragDropContext>
+  );
+};
 
 export default function Users() {
   const auth = useSelector((state) => state.auth.auth);
@@ -34,10 +194,74 @@ export default function Users() {
   const [labelData, setLabelData] = useState([]);
   const [showLabel, setShowLabel] = useState(false);
 
-  const [showDepartmentFilter, setShowDepartmentFilter] = useState(false);
+  const [showDepartmentFilter, setShowDepartmentFilter] = useState(true);
   const [departmentFilter, setDepartmentFilter] = useState("");
 
   const [teamsData, setTeamsData] = useState([]);
+
+
+
+  // --- Actions menu ---
+const [actionsOpen, setActionsOpen] = useState(false);
+const actionsRef = useRef(null);
+
+useEffect(() => {
+  const handleClickOutside = (e) => {
+    if (actionsRef.current && !actionsRef.current.contains(e.target)) {
+      setActionsOpen(false);
+    }
+  };
+  if (actionsOpen) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+  return () => document.removeEventListener("mousedown", handleClickOutside);
+}, [actionsOpen]);
+
+
+
+
+
+  // Column visibility (saved locally)
+  const [showColumnControls, setShowColumnControls] = useState(false);
+  const [columnVisibility, setColumnVisibility] = useState(
+    getSavedColumnVisibility
+  );
+  const boxRef = useRef(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        COLUMN_VISIBILITY_KEY,
+        JSON.stringify(columnVisibility)
+      );
+    } catch {}
+  }, [columnVisibility]);
+
+  const toggleColumnVisibility = (columnId) => {
+    setColumnVisibility((prev) => ({
+      ...prev,
+      [columnId]: prev[columnId] === false, // hidden -> visible, otherwise -> hidden
+    }));
+  };
+
+  const showAllColumns = () => setColumnVisibility({});
+
+  // Close the View settings popover on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (boxRef.current && !boxRef.current.contains(event.target)) {
+        setShowColumnControls(false);
+      }
+    };
+
+    if (showColumnControls) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showColumnControls]);
 
   // All Users
   const getAllUsers = async () => {
@@ -47,7 +271,7 @@ export default function Users() {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all`
       );
       setUserData(data?.users);
- 
+
       setLoading(false);
     } catch (error) {
       console.log(error);
@@ -132,7 +356,6 @@ export default function Users() {
 
   //   Update Role
   const handleChange = (e, id) => {
- 
     UpdateRole(e.target.value, id);
   };
 
@@ -289,32 +512,26 @@ export default function Users() {
     }
   };
 
-
-
-
-
-
-
-
-    
-    const setColumnFromOutsideTable = (colKey, filterVal) => {
-
+  const setColumnFromOutsideTable = (colKey, filterVal) => {
     const col = table.getColumn(colKey);
+    if (!col) return;
 
- 
     return col.setFilterValue(filterVal);
-  }
+  };
 
-
-
-
-
+  // Department chip click: toggle on/off
+  const handleDepartmentSelect = (departmentName) => {
+    const newValue = departmentFilter === departmentName ? "" : departmentName;
+    setDepartmentFilter(newValue);
+    setColumnFromOutsideTable("Data", newValue);
+  };
 
   //   -------------------Table Data------------->
 
   const columns = useMemo(
     () => [
       {
+        id: "avatar",
         accessorKey: "jobHolder",
         header: "Job Holder",
         Header: ({ column }) => {
@@ -334,7 +551,6 @@ export default function Users() {
         },
         Cell: ({ cell, row }) => {
           const avatar = row.original.avatar;
- 
 
           return (
             <div className="w-full h-[2.4rem] flex items-center justify-center ">
@@ -640,6 +856,7 @@ export default function Users() {
       },
       //   Role
       {
+        id: "role",
         accessorKey: "role.name",
         minSize: 120,
         maxSize: 250,
@@ -666,7 +883,9 @@ export default function Users() {
               >
                 <option value="">Select</option>
                 {userRoles.map((role) => (
-                  <option value={role.name}>{role.name}</option>
+                  <option value={role.name} key={role._id}>
+                    {role.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -771,11 +990,9 @@ export default function Users() {
         size: 100,
         grow: false,
         Header: ({ column }) => {
-          useEffect(() => {
-            column.setFilterValue(true);
-
-            // eslint-disable-next-line
-          }, []);
+          // NOTE: the default "Active" filter now lives in the table's
+          // initialState (columnFilters), so hiding/showing this column
+          // no longer resets the filter.
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -832,7 +1049,10 @@ export default function Users() {
             </div>
           );
         },
-        filterFn: "equals",
+        // String compare: the default filter is boolean `true`, while the
+        // dropdown sends "true"/"false" strings.
+        filterFn: (row, columnId, filterValue) =>
+          String(row.getValue(columnId)) === String(filterValue),
         filterSelectOptions: isActive?.map((active) => active),
         filterVariant: "select",
       },
@@ -1330,63 +1550,136 @@ export default function Users() {
     table.setColumnFilters([]);
     table.setGlobalFilter("");
 
-     
     setDepartmentFilter("");
   };
 
-  const table = useMaterialReactTable({
-    columns,
-    data: userData || [],
-    enableStickyHeader: true,
-    enableStickyFooter: true,
-    muiTableContainerProps: { sx: { maxHeight: "800px" } },
-    enableColumnActions: false,
-    enableColumnFilters: false,
-    enableSorting: false,
-    enableGlobalFilter: true,
-    enableRowNumbers: true,
-    enableColumnResizing: true,
-    enableTopToolbar: true,
-    enableBottomToolbar: true,
-    enablePagination: true,
-    initialState: {
-      pagination: { pageSize: 20 },
-      pageSize: 20,
-      density: "compact",
-    },
+ 
 
-    muiTableHeadCellProps: {
-      style: {
-        fontWeight: "600",
-        fontSize: "14px",
-        backgroundColor: "rgb(193, 183, 173, 0.8)",
-        color: "#000",
-        padding: ".7rem 0.3rem",
-      },
+// ---------------------------------------------------------------------------
+// Inside the Users component
+// ---------------------------------------------------------------------------
+
+const table = useMaterialReactTable({
+  columns,
+  data: userData || [],
+
+  enableStickyHeader: true,
+  enableStickyFooter: true,
+  muiTableContainerProps: { sx: { maxHeight: "900px" } },
+
+  enableColumnActions: false,
+  enableColumnFilters: false,
+  enableSorting: false,
+  enableGlobalFilter: true,
+  enableRowNumbers: true,
+  enableColumnResizing: true,
+  enableTopToolbar: true,
+  enableBottomToolbar: true,
+  enablePagination: true,
+
+  // ---------- Your custom column ordering ----------
+  ...columnOrderingOptions,          // ← enableColumnOrdering + custom drag icon + styles
+
+  initialState: {
+    pagination: { pageSize: 20 },
+    density: "compact",
+    columnFilters: [{ id: "isActive", value: true }],
+    // restore saved order (or undefined → MRT uses default order)
+    columnOrder: getSavedColumnOrder(COLUMN_ORDER_KEY),
+  },
+
+  // column visibility (you already have this)
+  state: {
+    columnVisibility,
+  },
+  onColumnVisibilityChange: setColumnVisibility,
+
+  // head cell styles + hover to show drag handle
+  muiTableHeadCellProps: {
+    style: {
+      fontWeight: "600",
+      fontSize: "14px",
+      backgroundColor: "#E5E7EB",
+      color: "#000",
+      padding: ".7rem 0.3rem",
     },
-    muiTableBodyCellProps: {
-      sx: {
-        border: "1px solid rgba(203, 201, 201, 0.5)",
-      },
+    sx: {
+      ...headCellHoverSx,               // ← shows the drag handle on hover
+      position: "relative",             // needed so the absolute drag handle positions correctly
     },
-    muiTableProps: {
-      sx: {
-        "& .MuiTableHead-root": {
-          backgroundColor: "#f0f0f0",
-        },
-        tableLayout: "auto",
-        fontSize: "13px",
-        border: "1px solid rgb(193, 183, 173, 0.8)",
-        caption: {
-          captionSide: "top",
-        },
-      },
+  },
+
+  muiTableBodyCellProps: {
+    sx: {
+      border: "1px solid rgba(203, 201, 201, 0.5)",
     },
-  });
+  },
+
+  muiTableProps: {
+    sx: {
+      "& .MuiTableHead-root": {
+        backgroundColor: "#f0f0f0",
+      },
+      tableLayout: "auto",
+      fontSize: "13px",
+      border: "1px solid rgba(203, 201, 201, 0.5)",
+    },
+  },
+
+  // Optional safety: hide the big toolbar drop zone (reduces rare crashes)
+  positionToolbarDropZone: "none",
+});
+
+// Persist the order whenever the user reorders columns
+const { resetColumnOrder } = usePersistedColumnOrder(table, COLUMN_ORDER_KEY);
+
+  // ---------------- View settings (column controls) ----------------
+  const renderColumnControls = () => (
+    <section className="w-[420px] rounded-lg bg-white border border-slate-200 shadow-sm">
+      {/* Header */}
+      <header className="flex items-center justify-between px-5 py-3 border-b">
+        <h3 className="text-sm font-semibold text-slate-800">View settings</h3>
+        <button
+          type="button"
+          onClick={showAllColumns}
+          className="text-xs font-medium text-orange-600 hover:underline cursor-pointer"
+        >
+          Show all
+        </button>
+      </header>
+
+      {/* Columns */}
+      <section className="px-5 py-4">
+        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+          Columns
+        </h4>
+
+        <ul className="grid grid-cols-2 gap-x-4 gap-y-1 list-none m-0 p-0">
+          {COLUMN_OPTIONS.map(({ id, label }) => (
+            <li key={id} className="list-none m-0">
+              <label
+                className="flex items-center justify-between rounded-md px-2 py-1.5
+                           text-sm text-slate-700 cursor-pointer
+                           hover:bg-slate-50 transition"
+              >
+                <span>{label}</span>
+                <input
+                  type="checkbox"
+                  checked={columnVisibility[id] !== false}
+                  onChange={() => toggleColumnVisibility(id)}
+                  className="h-4 w-4 accent-orange-600"
+                />
+              </label>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </section>
+  );
 
   return (
     <>
-      <div className=" relative w-full h-[100%] py-4 px-2 sm:px-4 overflow-y-auto">
+     <div className="relative w-full h-full flex flex-col py-4 px-2 sm:px-4 overflow-hidden">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
@@ -1402,89 +1695,127 @@ export default function Users() {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
-            <span className="mt-2"><QuickAccess /></span>
-              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
+            <span className="mt-2">
+              <QuickAccess />
+            </span>
+            {isAdmin(auth) && (
+              <span className=" ">
+                {" "}
+                <OverviewForPages />{" "}
+              </span>
+            )}
 
-             <span
-                                              className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${showDepartmentFilter && 'bg-orange-500 text-white '}  `}
-                                              onClick={() => {
-                                                
-                                                setShowDepartmentFilter(!showDepartmentFilter);
-                                
-                                              }}
-                                              title="Filter by Department"
-                                            >
-                                              <LuFilter  className="h-6 w-6  cursor-pointer " />
-                                            </span>
+            <span
+              className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${
+                showDepartmentFilter && "bg-orange-500 text-white "
+              }  `}
+              onClick={() => {
+                setShowDepartmentFilter(!showDepartmentFilter);
+              }}
+              title="Filter by Department"
+            >
+              <LuFilter className="h-6 w-6  cursor-pointer " />
+            </span>
+
+            {/* Show / hide columns */}
+            <div className="relative" ref={boxRef}>
+              <span
+                className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1 cursor-pointer border inline-flex ${
+                  showColumnControls && "bg-orange-500 text-white"
+                }`}
+                onClick={() => setShowColumnControls((prev) => !prev)}
+                title="Show / Hide Columns"
+              >
+                {showColumnControls ? (
+                  <GoEyeClosed className="text-[22px]" />
+                ) : (
+                  <GoEye className="text-[22px]" />
+                )}
+              </span>
+
+              {showColumnControls && (
+                <div className="absolute top-full left-0 mt-2 z-[99] max-h-[80vh] overflow-y-auto">
+                  {renderColumnControls()}
+                </div>
+              )}
+            </div>
+          </div>
+ 
+{/* ---------Template Buttons + Actions Menu (Jobs style) */}
+<div className="flex items-center gap-2">
+  {/* Actions dropdown */}
+  <div className="relative" ref={actionsRef}>
+    <button
+      type="button"
+      onClick={() => setActionsOpen((prev) => !prev)}
+      className="p-2 transition-all duration-200 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 shadow-sm active:scale-95 flex items-center gap-1"
+      title="More actions"
+    >
+      <HiOutlineDotsVertical className="w-5 h-5" />
+    </button>
+
+    {actionsOpen && (
+      <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden ring-1 ring-black ring-opacity-5 animate-in fade-in zoom-in duration-150">
+        {/* Section */}
+        <div className="p-1.5">
+          <div className="px-3 py-2 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+            Management
           </div>
 
-          {/* ---------Template Buttons */}
-          <div className="flex items-center gap-4">
-            <Link
-              to="/teams"
-              className={`${style.button1} text-[15px] flex items-center gap-1`}
-              style={{ padding: ".4rem 1rem" }}
-            >
-              <HiOutlineUserGroup className="h-4 w-4" />
-              Manage Teams
-            </Link>
-            <button
-              className={`${style.button1} text-[15px] `}
-              onClick={() => setShowLabel(true)}
-              style={{ padding: ".4rem 1rem" }}
-            >
-              Add Data
-            </button>
-            <button
-              className={`${style.button1} text-[15px] `}
-              onClick={() => setIsOpen(true)}
-              style={{ padding: ".4rem 1rem" }}
-            >
-              New User
-            </button>
-          </div>
+          <Link
+            to="/teams"
+            onClick={() => setActionsOpen(false)}
+            className="group flex items-center gap-3 w-full px-3 py-2 text-sm text-gray-700 rounded-md hover:bg-orange-50 hover:text-orange-600 transition-colors"
+          >
+            <HiOutlineUserGroup className="h-4 w-4 text-gray-400 group-hover:text-orange-500" />
+            <span>Manage Teams</span>
+          </Link>
 
+          <button
+            type="button"
+            onClick={() => {
+              setShowLabel(true);
+              setActionsOpen(false);
+            }}
+            className="group flex items-center gap-3 w-full px-3 py-2 text-sm text-gray-700 rounded-md hover:bg-orange-50 hover:text-orange-600 transition-colors text-left"
+          >
+            <LuDatabase className="h-4 w-4 text-gray-400 group-hover:text-orange-500" />
+            <span>Add Data</span>
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
 
+  {/* Primary Action Button – same style as Jobs "Add Client" */}
+  <button
+    onClick={() => setIsOpen(true)}
+    className="group relative flex items-center justify-center gap-2 px-4 py-2 text-[14px] font-[500] 
+               text-white bg-orange-500 rounded-lg shadow-md shadow-orange-200
+               hover:bg-orange-600 hover:shadow-orange-300
+               active:transform active:scale-95 transition-all duration-150"
+  >
+    <FiPlus className="w-4 h-4 transition-transform group-hover:rotate-90" />
+    New User
+  </button>
+</div>
 
-          
-             
 
 
 
         </div>
 
-         {showDepartmentFilter && <div className="flex items-center gap-4 pt-4">
-                 
-                <ul className="flex items-center gap-2 list-none  ">
-                  {labelData?.map((department, i) => (
-                    <li
-                      key={`department-${i}-${department.name}`}
-                      className={`${
-                        departmentFilter === department.name
-                          ? "bg-orange-500 text-white"
-                          : "bg-gray-200 text-gray-700"
-                      } px-2 py-1 rounded-md cursor-pointer m-0 `}
-                      onClick={() => {
-                        setDepartmentFilter(prev => {
-                          const isSameDpt = prev === department.name
-                          const newValue = isSameDpt ? "" : department.name;
+        {showDepartmentFilter && (
+          <div className="flex items-center gap-4 my-3">
+            <DraggableDepartmentChips
+              departments={labelData}
+              activeDepartment={departmentFilter}
+              onSelect={handleDepartmentSelect}
+            />
+          </div>
+        )}
 
-
-                          
-                          setColumnFromOutsideTable("Data", newValue);
-                          return newValue;
-                        });
-                         
-                      }}
-                    >
-                      {department?.name}
-                    </li>
-                  ))}
-                </ul>
-              </div>}
-
-              
-        <hr className="w-full h-[1px] bg-gray-300 my-4" />
+        {/* <hr className="w-full h-[1px] bg-gray-300 my-4" /> */}
 
         {/* ---------Table Detail---------- */}
         <div className="w-full h-full">

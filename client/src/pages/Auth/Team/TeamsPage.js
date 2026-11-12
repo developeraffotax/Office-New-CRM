@@ -20,6 +20,10 @@ function SortableTeamCard({ team, index, onEdit, onDelete, onMembers }) {
     index,
   });
 
+
+
+  console.log("THE TEAM DATA", team);
+
   return (
     <div
       ref={ref}
@@ -89,24 +93,40 @@ export default function TeamsPage() {
   // Snapshot of the list when a drag starts (for cancel / rollback)
   const snapshotRef = useRef([]);
 
-  const getAllTeams = async () => {
-    try {
+const getAllTeams = async ({ withLoading = true } = {}) => {
+  try {
+    if (withLoading) {
       setLoading(true);
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/team/get_all`
-      );
-      setTeamsData(data?.teams || []);
-    } catch (error) {
-      console.log(error);
-      toast.error("Failed to load teams");
-    } finally {
+    }
+
+    const { data } = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/v1/team/get_all`
+    );
+
+    setTeamsData(data?.teams || []);
+  } catch (error) {
+    console.log(error);
+    toast.error("Failed to load teams");
+  } finally {
+    if (withLoading) {
       setLoading(false);
     }
-  };
+  }
+};
 
   useEffect(() => {
     getAllTeams();
   }, []);
+
+
+  // Show only the loader while teams are loading
+if (loading) {
+  return (
+    <div className="w-full min-h-[60vh] flex items-center justify-center">
+      <Loader />
+    </div>
+  );
+}
 
   const handleDragStart = () => {
     // Deep enough for our purposes (array of objects)
@@ -193,11 +213,7 @@ export default function TeamsPage() {
 
       <hr className="w-full h-[1px] bg-gray-300 my-4" />
 
-      {loading ? (
-        <div className="flex items-center justify-center w-full h-[40vh]">
-          <Loader />
-        </div>
-      ) : (
+ 
         <DragDropProvider
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
@@ -228,14 +244,14 @@ export default function TeamsPage() {
             )}
           </div>
         </DragDropProvider>
-      )}
+ 
 
       {isOpen && (
         <TeamModal
           setIsOpen={setIsOpen}
           teamId={teamId}
           setTeamId={setTeamId}
-          refreshTeams={getAllTeams}
+          refreshTeams={() => getAllTeams({ withLoading: false })}
           teamsData={teamsData}
         />
       )}
@@ -244,7 +260,7 @@ export default function TeamsPage() {
         <TeamMembersModal
           setIsOpen={setMembersOpen}
           teamId={activeTeamId}
-          refreshTeams={getAllTeams}
+          refreshTeams={() => getAllTeams({ withLoading: false })}
         />
       )}
     </div>

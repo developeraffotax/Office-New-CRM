@@ -22,7 +22,7 @@ export async function getAllTeams() {
 
   // member counts via aggregation instead of populating a members array on Team
   const counts = await Users.aggregate([
-    { $match: { team: { $ne: null } } },
+    { $match: { team: { $ne: null }, isActive: true } },
     { $group: { _id: "$team", count: { $sum: 1 } } },
   ]);
   const countMap = counts.reduce((acc, c) => {

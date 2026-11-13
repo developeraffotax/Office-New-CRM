@@ -9,7 +9,7 @@ import AddIcon from "@mui/icons-material/Add";
 import toast from "react-hot-toast";
 
 const PAGE = "kpi_dashboard";
-const MAX_QUICK = 4; // chips shown before collapsing into "+N"
+const MAX_QUICK = 8; // chips shown before collapsing into "+N"
 
 const getView = (f) => f.filters?.[0]?.value || {};
 

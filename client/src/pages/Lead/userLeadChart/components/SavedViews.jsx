@@ -12,7 +12,7 @@ import { DATE_FILTER_OPTIONS } from "../constants"; // adjust path
 import { COMPARE_OPTIONS } from "../rangeHelpers";
 
 const PAGE = "targets_dashboard";
-const MAX_QUICK = 4;
+const MAX_QUICK = 8;
 
 const DATE_BASIS_LABELS = { created: "Created date", won: "Won date" };
 

@@ -39,7 +39,6 @@ import { useEscapeKey } from "../../utlis/useEscapeKey";
 import TaskReminders from "../../utlis/TaskReminders";
 import JobWorkflowPanel from "../../components/workflow/JobWorkflowPanel";
 import { isAdmin } from "../../utlis/isAdmin";
- 
 
 export default function JobDetail({
   clientId,
@@ -59,7 +58,9 @@ export default function JobDetail({
 
   const [activeTab, setActiveTab] = useState(initialTab);
 
+  console.log("clientDetail✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️✔️", clientDetail);
 
+  const isCompleted = clientDetail?.status?.toLowerCase() === "completed";
 
   const auth = useSelector((state) => state.auth.auth);
   const anyTimerRunning = useSelector((state) => state.auth.anyTimerRunning);
@@ -93,9 +94,7 @@ export default function JobDetail({
     }
   };
 
-
   useEscapeKey(() => setShowDetail(false));
- 
 
   useEffect(() => {
     if (clientDetail) {
@@ -119,7 +118,6 @@ export default function JobDetail({
         setLoading(false);
         setClientDetail(data.clientJob);
 
-        
         setSubTaskData(
           (data?.clientJob?.subtasks || []).sort(
             (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
@@ -129,8 +127,6 @@ export default function JobDetail({
           (a, b) => a?.order - b?.order,
         );
         setQualityData(sortedData);
-
-
       }
     } catch (error) {
       console.log(error);
@@ -157,7 +153,6 @@ export default function JobDetail({
     return accessObject?.subRoles?.includes(subRole) || false;
   };
 
- 
   // ---------------Handle Status Change---------->
   // const handleStatusChange = async (rowId, newStatus) => {
   //   if (!rowId) {
@@ -242,10 +237,10 @@ export default function JobDetail({
       if (data) {
         setClientDetail(data?.job);
         setSubTaskData(
-        (data?.job?.subtasks || []).sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-        ),
-      );
+          (data?.job?.subtasks || []).sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+          ),
+        );
         setSubtask("");
         toast.success("Subtask added successfully!");
         setSubTaskLoading(false);
@@ -268,10 +263,10 @@ export default function JobDetail({
       if (data) {
         setClientDetail(data?.job);
         setSubTaskData(
-        (data?.job?.subtasks || []).sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-        ),
-      );
+          (data?.job?.subtasks || []).sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+          ),
+        );
         setSubtask("");
         toast.success("Subtask added successfully!");
         setSubTaskLoading(false);
@@ -324,11 +319,11 @@ export default function JobDetail({
       );
       if (data.success) {
         setClientDetail(data?.job);
-       setSubTaskData(
-        (data?.job?.subtasks || []).sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-        ),
-      );
+        setSubTaskData(
+          (data?.job?.subtasks || []).sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+          ),
+        );
       }
     } catch (error) {
       console.log(error);
@@ -551,8 +546,6 @@ export default function JobDetail({
               <DepartmentTab clientDetail={clientDetail} />
             )}
 
-
-
             {/* {activeTab === "workflow" && (
   <div className="flex-1 min-h-0 overflow-y-auto pr-1">
     <JobWorkflowPanel
@@ -570,26 +563,33 @@ export default function JobDetail({
               <span className="flex items-center gap-1 text-gray-500 w-[30%]">
                 <GoGoal className="h-4 w-4 text-gray-500" /> Status
               </span>
-              <select
-                value={clientDetail?.job?.jobStatus}
-                onChange={(e) => {
-                  // handleStatusChange(clientDetail._id, e.target.value);
-                  handleStatus(clientDetail._id, e.target.value);
-                }}
-                className="w-[8rem] h-[2rem] rounded-md border border-sky-500 outline-none"
-              >
-                <option value="empty"></option>
-                <option value="Quote">Quote</option>
-                <option value="Data">Data</option>
-                <option value="Progress">Progress</option>
-                {/* <option value="Queries">Queries</option> */}
-                <option value="Revision">Revision</option>
-                <option value="Approval">Approval</option>
-                <option value="Submission">Submission</option>
-                <option value="Billing">Billing</option>
-                <option value="Feedback">Feedback</option>
-                <option value="Missing Info">Missing Info</option>
-              </select>
+
+              {isCompleted ? (
+                <span className="inline-flex items-center gap-1 px-3 h-[2rem] rounded-md bg-green-50 border border-green-300 text-green-700 text-sm font-medium">
+                  <MdCheckCircle className="h-4 w-4" /> Completed
+                </span>
+              ) : (
+                <select
+                  value={clientDetail?.job?.jobStatus}
+                  onChange={(e) => {
+                    // handleStatusChange(clientDetail._id, e.target.value);
+                    handleStatus(clientDetail._id, e.target.value);
+                  }}
+                  className="w-[8rem] h-[2rem] rounded-md border border-sky-500 outline-none"
+                >
+                  <option value="empty"></option>
+                  <option value="Quote">Quote</option>
+                  <option value="Data">Data</option>
+                  <option value="Progress">Progress</option>
+                  {/* <option value="Queries">Queries</option> */}
+                  <option value="Revision">Revision</option>
+                  <option value="Approval">Approval</option>
+                  <option value="Submission">Submission</option>
+                  <option value="Billing">Billing</option>
+                  <option value="Feedback">Feedback</option>
+                  <option value="Missing Info">Missing Info</option>
+                </select>
+              )}
             </div>
             {/*  */}
             <div className="flex items-center gap-4">
@@ -616,45 +616,54 @@ export default function JobDetail({
               </span>
             </div>
             {/* Timer  */}
-            <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1 text-gray-500 w-[30%]">
-                <RiTimerLine className="h-4 w-4 text-gray-500" /> Start Timer
-              </span>
-              <span className="text-[17px] font-medium text-gray-800">
-                <Timer
-                  ref={timerRef}
-                  clientId={auth?.user?.id}
-                  jobId={clientDetail?._id}
-                  setIsShow={setIsShow}
-                  note={note}
-                  setNote={setNote}
-                  taskLink={"/job-planning"}
-                  pageName={"Jobs"}
-                  taskName={clientDetail?.job?.jobName || " "}
-                  department={clientDetail?.job?.jobName || " "}
-                  clientName={clientDetail?.clientName || " "}
-                  JobHolderName={clientDetail?.job?.jobHolder || " "}
-                  projectName={""}
-                  task={""}
-                  companyName={clientDetail?.companyName}
-                />
-              </span>
-            </div>
+            {!isCompleted && (
+              <div className="flex items-center gap-4">
+                <span className="flex items-center gap-1 text-gray-500 w-[30%]">
+                  <RiTimerLine className="h-4 w-4 text-gray-500" /> Start Timer
+                </span>
+                <span className="text-[17px] font-medium text-gray-800">
+                  <Timer
+                    ref={timerRef}
+                    clientId={auth?.user?.id}
+                    jobId={clientDetail?._id}
+                    setIsShow={setIsShow}
+                    note={note}
+                    setNote={setNote}
+                    taskLink={"/job-planning"}
+                    pageName={"Jobs"}
+                    taskName={clientDetail?.job?.jobName || " "}
+                    department={clientDetail?.job?.jobName || " "}
+                    clientName={clientDetail?.clientName || " "}
+                    JobHolderName={clientDetail?.job?.jobHolder || " "}
+                    projectName={""}
+                    task={""}
+                    companyName={clientDetail?.companyName}
+                  />
+                </span>
+              </div>
+            )}
             {/* Reminder */}
-            <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1 text-gray-500 w-[30%]">
-                <BiBellPlus className="h-4 w-4 text-gray-500" />
-                Reminder
-              </span>
-              <span
-                onClick={() => setShowReminder(true)}
-                className=" text-pink-500 hover:text-pink-600"
-              >
-                <BiSolidBellPlus className="h-7 w-7 cursor-pointer " />
-              </span>
-            </div>
+            {!isCompleted && (
+              <div className="flex items-center gap-4">
+                <span className="flex items-center gap-1 text-gray-500 w-[30%]">
+                  <BiBellPlus className="h-4 w-4 text-gray-500" />
+                  Reminder
+                </span>
+                <span
+                  onClick={() => setShowReminder(true)}
+                  className=" text-pink-500 hover:text-pink-600"
+                >
+                  <BiSolidBellPlus className="h-7 w-7 cursor-pointer " />
+                </span>
+              </div>
+            )}
 
-             <TaskReminders taskId={clientDetail?._id} refreshKey={reminderRefreshKey} />
+            {!isCompleted && (
+              <TaskReminders
+                taskId={clientDetail?._id}
+                refreshKey={reminderRefreshKey}
+              />
+            )}
 
             {/*  */}
           </div>
@@ -742,7 +751,7 @@ export default function JobDetail({
         </div>
 
         <div className="absolute w-full flex justify-end  items-center gap-4 bottom-2 right-2 ">
-          {hasSubAccess(auth?.user, "Jobs", "Edit") && (
+          {!isCompleted && hasSubAccess(auth?.user, "Jobs", "Edit") && (
             <span
               className=""
               title="Edit Job"
@@ -755,25 +764,30 @@ export default function JobDetail({
             </span>
           )}
 
-          <span
-            className="  hidden  sm:block"
-            title="Copy Job"
-            onClick={() => {
-              setJobId(clientDetail._id);
-              setOpenCopy(true);
-            }}
-          >
-            <FaRegCopy className="h-5 w-5 cursor-pointer text-sky-500 hover:text-sky-600" />
-          </span>
-          <span
-            className=""
-            title="Complete Job"
-            onClick={() => {
-              handleUpdateStatus();
-            }}
-          >
-            <MdCheckCircle className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
-          </span>
+          {!isCompleted && (
+            <span
+              className="  hidden  sm:block"
+              title="Copy Job"
+              onClick={() => {
+                setJobId(clientDetail._id);
+                setOpenCopy(true);
+              }}
+            >
+              <FaRegCopy className="h-5 w-5 cursor-pointer text-sky-500 hover:text-sky-600" />
+            </span>
+          )}
+
+          {!isCompleted && (
+            <span
+              className=""
+              title="Complete Job"
+              onClick={() => {
+                handleUpdateStatus();
+              }}
+            >
+              <MdCheckCircle className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
+            </span>
+          )}
 
           {hasSubAccess(auth?.user, "Jobs", "Delete") && (
             <button
@@ -877,7 +891,7 @@ export default function JobDetail({
               setShowReminder={setShowReminder}
               taskId={clientId}
               link={"/job-planning"}
-              onReminderAdded={() => setReminderRefreshKey(prev => prev + 1)}
+              onReminderAdded={() => setReminderRefreshKey((prev) => prev + 1)}
             />
           </div>
         )}

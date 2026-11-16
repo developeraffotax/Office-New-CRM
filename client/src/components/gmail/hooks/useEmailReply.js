@@ -130,7 +130,8 @@ export function useEmailReply({
 
   jobHolder,
 }) {
-  const [mode, setMode] = useState("reply");
+  // const [mode, setMode] = useState("reply");
+  const [mode, setMode] = useState("replyAll");
   const [to, setTo] = useState([]);
   const [cc, setCc] = useState([]);
   const [bcc, setBcc] = useState([]);

@@ -4,7 +4,7 @@ import { IoArrowBackOutline } from "react-icons/io5";
 import { FaRegCircleCheck } from "react-icons/fa6";
 import { LiaUndoAltSolid } from "react-icons/lia";
 import { MdDeleteOutline } from "react-icons/md";
-import { FiClock, FiInfo, FiMessageSquare } from "react-icons/fi";
+import { FiActivity, FiClock, FiFileText, FiInfo, FiMessageSquare } from "react-icons/fi";
 import IconButtonWithBadge from "../shared/ui/IconButtonWithBadge.js";
 import AssignUser from "../shared/ui/AssignUser.js";
 import AssignCategory from "../shared/ui/AssignCategory.js";
@@ -197,15 +197,15 @@ export default function ThreadHeader({
         <span className="w-[1px] h-8 bg-slate-300 rounded-full"></span>
 
         <IconButtonWithBadge
-          icon={FiInfo}
-          title="Show Summary"
-          onClick={onShowSummary}
-        />
-        <IconButtonWithBadge
-          icon={FiClock}
-          title="View Activity"
-          onClick={onShowActivity}
-        />
+  icon={FiFileText}
+  title="Show Summary"
+  onClick={onShowSummary}
+/>
+<IconButtonWithBadge
+  icon={FiActivity}
+  title="View Activity"
+  onClick={onShowActivity}
+/>
         
 
         <span className="w-[1px] h-8 bg-slate-300 rounded-full"></span>
@@ -214,7 +214,7 @@ export default function ThreadHeader({
 
         {status === "progress" ? (
           <button
-            className="p-2 rounded-lg hover:bg-gray-200 text-gray-500 hover:text-green-500"
+            className="p-2.5 rounded-xl   text-gray-500 hover:text-green-500 hover:bg-green-50"
             title="Complete Thread"
             onClick={() => onUpdateStatus("completed")}
           >
@@ -222,7 +222,7 @@ export default function ThreadHeader({
           </button>
         ) : (
           <button
-            className="p-2 rounded-lg hover:bg-gray-200 text-gray-500 hover:text-red-500"
+            className="p-2.5 rounded-xl   text-gray-500 hover:text-orange-500 hover:bg-orange-50"
             title="Undo Complete"
             onClick={() => onUpdateStatus("progress")}
           >

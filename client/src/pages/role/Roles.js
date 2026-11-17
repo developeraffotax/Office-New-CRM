@@ -55,6 +55,8 @@ export default function Roles() {
     "Activity",
     "Inbox",
     "Whatsapp",
+
+    "Misc"
   ];
 
   const subRolesMapping = {
@@ -69,8 +71,12 @@ export default function Roles() {
     HR: [ "Edit", "Delete", ],
 
     Activity: [  "All Users",  ],
-    Inbox: [  "Edit", "Delete", "Unassigned"],
+    Inbox: [  "Edit", "Delete", "Unassigned", "Ai Automation"],
     Whatsapp: [  "Edit", "Delete", "Unassigned"],
+
+
+
+    Misc: [  "Timer Puzzle", ],
     // Add other pages and subroles as necessary
   };
 

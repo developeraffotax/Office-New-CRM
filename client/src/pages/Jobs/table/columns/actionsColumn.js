@@ -1,7 +1,7 @@
 import { Popover, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { FiPlusSquare } from "react-icons/fi";
-import { IoRemoveCircle, IoTicketOutline } from "react-icons/io5";
+import { IoMailOutline, IoRemoveCircle, IoTicketOutline } from "react-icons/io5";
 import { MdDriveFileMoveOutline, MdErrorOutline } from "react-icons/md";
 import { MdInsertComment } from "react-icons/md";
 import TicketsPopUp from "../../../../components/shared/TicketsPopUp";
@@ -128,12 +128,13 @@ export const actionsColumn = ({
           {isProgress && (
             <div>
               <span
-                title="Ticket"
+                title="Tickets"
                 onClick={handleClick}
                 id={id}
-                className="text-2xl text-orange-500 cursor-pointer"
+                className="text-xl text-orange-500 cursor-pointer"
               >
-                <IoTicketOutline />
+                {/* <IoTicketOutline /> */}
+                 <IoMailOutline className="  " />
               </span>
 
               <Popover

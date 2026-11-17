@@ -524,9 +524,9 @@ export const getTicketsByClientName = async (req, res, next) => {
       });
     }
 
-    const emails = await ticketModel.find(filter).select(
-      "clientId companyName clientName company jobHolder subject status jobDate mailThreadId sent received"
-    );
+    const emails = await ticketModel.find(filter).sort({ createdAt: -1 }).select(
+      "clientId companyName clientName company jobHolder subject status jobDate mailThreadId sent received createdAt"
+    ).lean();
 
  
 

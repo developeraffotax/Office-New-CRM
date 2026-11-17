@@ -181,6 +181,48 @@ const TicketsPopUp = ({ clientName, email, handleClose, selectedTab }) => {
 
   const columns = useMemo(() => {
     const arr = [
+
+          {
+  accessorKey: "createdAt",
+  minSize: 100,
+  maxSize: 300,
+  size: 150,
+  grow: false,
+  header: "Created At",
+  Cell: ({ row }) => {
+    const createdAt = row.original.createdAt;
+    if (!createdAt) return <span>-</span>;
+
+    const date = new Date(createdAt);
+
+    // Display format: 12 Apr 2025
+    const formattedDate = date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+
+    // Hover tooltip: full date + time
+    const fullDateTime = date.toLocaleString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+
+    return (
+      <div className="w-full px-1 " title={fullDateTime}>
+        <span>{formattedDate}</span>
+      </div>
+    );
+  },
+},
+
+
+
       {
         accessorKey: "companyName",
         minSize: 100,

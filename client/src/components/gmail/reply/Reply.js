@@ -141,7 +141,7 @@ export default function Reply({
 
 
   return (
-    <div className="w-full h-[600px] flex justify-start items-start gap-4">
+    <div className="w-full h-[600px] flex justify-start items-start gap-4 ">
       <div
         className={` ${
           inline ? "w-full" : "w-[70%] rounded-xl "

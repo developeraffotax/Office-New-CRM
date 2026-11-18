@@ -13,5 +13,5 @@ export function resolveModel(tier = "fast", provider = aiConfig.provider) {
 
 /** Stream one model turn. Yields text / tool_call / done events (see providers/anthropic.js). */
 export function streamLLM({ tier = "fast", provider = aiConfig.provider, ...opts }) {
-  return getProvider(provider).stream({ model: resolveModel(tier, provider), ...opts });
+  return getProvider(provider).stream({ model: resolveModel(tier, provider), tier, ...opts });
 }

@@ -61,6 +61,7 @@ export async function runAgent({ user, question, history = [], scope = {}, attac
     for (let step = 0; step < profile.maxSteps && !finished; step++) {
       audit.steps++;
       const calls = [];
+      const states = []; // provider-specific raw items (e.g. OpenAI reasoning) that must go back unchanged
       let text = "";
 
       for await (const ev of streamLLM({ tier: profile.tier, system, messages, tools: toolSpecs, maxTokens: profile.maxTokens, signal: sse.signal })) {
@@ -68,6 +69,7 @@ export async function runAgent({ user, question, history = [], scope = {}, attac
           text += ev.delta;
           sse.send("token", { t: ev.delta });
         } else if (ev.type === "tool_call") calls.push(ev);
+        else if (ev.type === "state") states.push({ type: "provider_state", provider: ev.provider, items: ev.items });
         else if (ev.type === "done") {
           audit.usage.input += ev.usage?.input ?? 0;
           audit.usage.output += ev.usage?.output ?? 0;
@@ -82,7 +84,7 @@ export async function runAgent({ user, question, history = [], scope = {}, attac
 
       messages.push({
         role: "assistant",
-        content: [...(text ? [{ type: "text", text }] : []), ...calls.map((c) => ({ type: "tool_call", id: c.id, name: c.name, input: c.input }))],
+        content: [...states, ...(text ? [{ type: "text", text }] : []), ...calls.map((c) => ({ type: "tool_call", id: c.id, name: c.name, input: c.input }))],
       });
       const results = await Promise.all(calls.map((c) => runTool(c)));
       messages.push({ role: "user", content: results });

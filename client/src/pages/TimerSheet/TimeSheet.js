@@ -26,6 +26,8 @@ import RunningTimers from "./RunningTimers";
 import UsersTimeSheet from "./UsersTimeSheet";
 import QuickAccess from "../../utlis/QuickAccess";
 import DraggableUserList from "../../utlis/DraggableUserList";
+import { LuFilter } from "react-icons/lu";
+import DraggableDepartmentChips from "../../utlis/DraggableDepartmentChips";
 
 import {
   FiCalendar,
@@ -140,6 +142,9 @@ export default function TimeSheet() {
   const [showNote, setShowNote] = useState(false);
   const [note, setNote] = useState("");
 
+  const [showDepartmentFilter, setShowDepartmentFilter] = useState(true);
+  const [departmentFilter, setDepartmentFilter] = useState("");
+
   const [showExternalFilters, setShowExternalFilters] = useState(true);
   const [filter1, setFilter1] = useState("");
 
@@ -217,6 +222,13 @@ export default function TimeSheet() {
       color: "bg-orange-100 text-orange-800 border-orange-200 font-semibold",
     },
   ];
+
+  const handleDepartmentSelect = (departmentName) => {
+    const newValue = departmentFilter === departmentName ? "" : departmentName;
+    setDepartmentFilter(newValue);
+    table.getColumn("department")?.setFilterValue(newValue);
+    filterByDep("", "", newValue); // keeps the Mon–Sun totals cards in sync, same as the header select
+  };
 
   // Converts "HH:MM" string into decimal hours (e.g., "07:30" → 7.5)
   const parseTimeToDecimal = (timeStr) => {
@@ -1254,6 +1266,7 @@ export default function TimeSheet() {
                 title="Clear Filter"
                 onClick={() => {
                   column.setFilterValue("");
+                  setDepartmentFilter("");
                   setCall(true);
                 }}
               >
@@ -1261,8 +1274,10 @@ export default function TimeSheet() {
               </span>
               <select
                 value={column.getFilterValue() || ""}
+                // select onChange
                 onChange={(e) => {
                   column.setFilterValue(e.target.value);
+                  setDepartmentFilter(e.target.value);
                   filterByDep("", "", e.target.value);
                 }}
                 className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none "
@@ -1853,9 +1868,8 @@ export default function TimeSheet() {
   // Clear table Filter
   const handleClearFilters = () => {
     table.setColumnFilters([]);
-
     table.setGlobalFilter("");
-    // table.resetColumnFilters();
+    setDepartmentFilter("");
   };
 
   const table = useMaterialReactTable({
@@ -2138,7 +2152,8 @@ export default function TimeSheet() {
               <BsPieChartFill className="h-6 w-6" />
             </span>
 
-            {(isAdmin(auth.user) || auth?.user?.role?.name === "HR/Fin/Admin") && (
+            {(isAdmin(auth.user) ||
+              auth?.user?.role?.name === "HR/Fin/Admin") && (
               <button
                 onClick={() => navigate("/timesheet/attendance-chart")}
                 title="Employee In/Out Chart"
@@ -2238,6 +2253,18 @@ export default function TimeSheet() {
               <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
             </span>
           )}
+
+          {hasPermission.jobHolders && (
+            <span
+              className={`p-1 rounded-md hover:shadow-md bg-gray-50 mb-1 cursor-pointer border ${
+                showDepartmentFilter && "bg-orange-500 text-white "
+              }`}
+              onClick={() => setShowDepartmentFilter(!showDepartmentFilter)}
+              title="Filter by Department"
+            >
+              <LuFilter className="h-6 w-6 cursor-pointer" />
+            </span>
+          )}
         </div>
 
         {isload && (
@@ -2255,6 +2282,18 @@ export default function TimeSheet() {
               usersArray={users.map((el) => el.name)}
               filterColName="jobHolderName"
               setColumnFromOutsideTableFn={setColumnFromOutsideTable}
+            />
+          </div>
+        )}
+
+        {hasPermission.jobHolders && showDepartmentFilter && (
+          <div className="w-full flex items-center gap-4 mt-3">
+            <DraggableDepartmentChips
+              departments={projects}
+              activeDepartment={departmentFilter}
+              onSelect={handleDepartmentSelect}
+              storageKey="timesheet:department_order"
+              droppableId="timesheet-departments"
             />
           </div>
         )}

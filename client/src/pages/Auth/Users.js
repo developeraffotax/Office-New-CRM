@@ -33,6 +33,7 @@ import {
   usePersistedColumnOrder,
 } from "../../hooks/usePersistedColumnOrder";
 import { FiPlus } from "react-icons/fi";
+import DraggableDepartmentChips from "../../utlis/DraggableDepartmentChips";
 
 // ---------------------------------------------------------------------------
 // Storage keys
@@ -112,76 +113,76 @@ const reorderList = (list, startIndex, endIndex) => {
   return result;
 };
 
-const DraggableDepartmentChips = ({
-  departments = [],
-  activeDepartment = "",
-  onSelect,
-  storageKey = DEPARTMENT_ORDER_KEY,
-}) => {
-  const [savedOrder, setSavedOrder] = useState(() => readSavedOrder(storageKey));
+// const DraggableDepartmentChips = ({
+//   departments = [],
+//   activeDepartment = "",
+//   onSelect,
+//   storageKey = DEPARTMENT_ORDER_KEY,
+// }) => {
+//   const [savedOrder, setSavedOrder] = useState(() => readSavedOrder(storageKey));
 
-  const names = useMemo(
-    () => [...new Set(departments.map((d) => d?.name).filter(Boolean))],
-    [departments]
-  );
+//   const names = useMemo(
+//     () => [...new Set(departments.map((d) => d?.name).filter(Boolean))],
+//     [departments]
+//   );
 
-  const orderedNames = useMemo(
-    () => mergeWithSavedOrder(names, savedOrder),
-    [names, savedOrder]
-  );
+//   const orderedNames = useMemo(
+//     () => mergeWithSavedOrder(names, savedOrder),
+//     [names, savedOrder]
+//   );
 
-  const handleDragEnd = (result) => {
-    const { source, destination } = result;
-    if (!destination) return;
-    if (source.index === destination.index) return;
+//   const handleDragEnd = (result) => {
+//     const { source, destination } = result;
+//     if (!destination) return;
+//     if (source.index === destination.index) return;
 
-    const reordered = reorderList(
-      orderedNames,
-      source.index,
-      destination.index
-    );
+//     const reordered = reorderList(
+//       orderedNames,
+//       source.index,
+//       destination.index
+//     );
 
-    setSavedOrder(reordered);
-    writeSavedOrder(storageKey, reordered);
-  };
+//     setSavedOrder(reordered);
+//     writeSavedOrder(storageKey, reordered);
+//   };
 
-  return (
-    <DragDropContext onDragEnd={handleDragEnd}>
-      <Droppable droppableId="user-departments" direction="horizontal">
-        {(dropProvided) => (
-          <ul
-            ref={dropProvided.innerRef}
-            {...dropProvided.droppableProps}
-            className="flex items-center gap-2 list-none"
-          >
-            {orderedNames.map((name, index) => (
-              <Draggable key={name} draggableId={name} index={index}>
-                {(dragProvided, snapshot) => (
-                  <li
-                    ref={dragProvided.innerRef}
-                    {...dragProvided.draggableProps}
-                    {...dragProvided.dragHandleProps}
-                    onClick={() => onSelect(name)}
-                    className={`${
-                      activeDepartment === name
-                        ? "bg-orange-500 text-white"
-                        : "bg-gray-200 text-gray-700"
-                    } px-2 py-1 rounded-md !cursor-pointer m-0 select-none ${
-                      snapshot.isDragging ? "shadow-lg" : ""
-                    }`}
-                  >
-                    {name}
-                  </li>
-                )}
-              </Draggable>
-            ))}
-            {dropProvided.placeholder}
-          </ul>
-        )}
-      </Droppable>
-    </DragDropContext>
-  );
-};
+//   return (
+//     <DragDropContext onDragEnd={handleDragEnd}>
+//       <Droppable droppableId="user-departments" direction="horizontal">
+//         {(dropProvided) => (
+//           <ul
+//             ref={dropProvided.innerRef}
+//             {...dropProvided.droppableProps}
+//             className="flex items-center gap-2 list-none"
+//           >
+//             {orderedNames.map((name, index) => (
+//               <Draggable key={name} draggableId={name} index={index}>
+//                 {(dragProvided, snapshot) => (
+//                   <li
+//                     ref={dragProvided.innerRef}
+//                     {...dragProvided.draggableProps}
+//                     {...dragProvided.dragHandleProps}
+//                     onClick={() => onSelect(name)}
+//                     className={`${
+//                       activeDepartment === name
+//                         ? "bg-orange-500 text-white"
+//                         : "bg-gray-200 text-gray-700"
+//                     } px-2 py-1 rounded-md !cursor-pointer m-0 select-none ${
+//                       snapshot.isDragging ? "shadow-lg" : ""
+//                     }`}
+//                   >
+//                     {name}
+//                   </li>
+//                 )}
+//               </Draggable>
+//             ))}
+//             {dropProvided.placeholder}
+//           </ul>
+//         )}
+//       </Droppable>
+//     </DragDropContext>
+//   );
+// };
 
 export default function Users() {
   const auth = useSelector((state) => state.auth.auth);
@@ -1807,11 +1808,15 @@ const { resetColumnOrder } = usePersistedColumnOrder(table, COLUMN_ORDER_KEY);
 
         {showDepartmentFilter && (
           <div className="flex items-center gap-4 my-3">
+            
+
             <DraggableDepartmentChips
-              departments={labelData}
-              activeDepartment={departmentFilter}
-              onSelect={handleDepartmentSelect}
-            />
+  departments={labelData}
+  activeDepartment={departmentFilter}
+  onSelect={handleDepartmentSelect}
+  storageKey={DEPARTMENT_ORDER_KEY}   // "users:department_order"
+  droppableId="user-departments"
+/>
           </div>
         )}
 

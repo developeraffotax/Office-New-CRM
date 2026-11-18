@@ -36,6 +36,9 @@ import SidebarDesktop from "./SidebarDesktop";
 import SidebarMobile from "./SidebarMobile";
 import { isNotificationAllowed } from "../header/getNotificationCategory";
 import { useWhatsappUnread } from "../../../context/WhatsappUnreadContext";
+import { BsRobot } from "react-icons/bs";
+import { LuBrain } from "react-icons/lu";
+import { FiDatabase } from "react-icons/fi";
 
 
 const EMPTY_ARRAY = [];
@@ -308,6 +311,21 @@ const whatsappUnreadMessages = unread.messages;
           "/affotax-analytics",
           TbDeviceDesktopAnalytics,
         ),
+
+        // New item
+ (hasAccess("Affotax-Ai") || isAdmin(user)) &&
+  common(
+    "Affotax-Ai",
+    "affotax-ai",
+    "Affotax AI",
+    "/ai/chat",
+    BsRobot,
+    {
+      matchPath: "/ai/chat",          // ← important
+    }
+  ),
+
+
     ].filter(Boolean);
 
     const settings = [
@@ -345,6 +363,18 @@ const whatsappUnreadMessages = unread.messages;
           VscSettings,
         ),
 
+
+       isAdmin(user) &&
+  common(
+    "Manage AI",
+    "manage-ai",
+    "Manage AI",
+    "/ai/data",
+    FiDatabase,
+    {
+      matchPath: "/ai/data",           // ← important
+    }
+  ),
 
     isAdmin(user) &&
     common("Sheets", "manage-sheets", "Manage Sheets", "/google-sheets/manage", FiEdit, {

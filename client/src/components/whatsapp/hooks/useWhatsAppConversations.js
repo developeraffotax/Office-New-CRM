@@ -213,7 +213,7 @@ const updateConversation = async (_id, updateData) => {
       }
 
 
-      refreshUnread()
+      refreshUnread({ broadcast: true });
       toast.success("Conversation marked as read");
     } catch (err) {
       console.error("Failed to mark read", err);

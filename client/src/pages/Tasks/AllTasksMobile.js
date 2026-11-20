@@ -60,6 +60,7 @@ export default function AllTasksMobile({ c }) {
           c.getAllProjects();
         }}
         onStatusChange={c.handleMobileStatusChange}
+        onDateChange={c.handleMobileDateChange}
         onComplete={c.handleCompleteStatus}
         onDelete={c.handleDeleteTaskConfirmation}
         adminActions={{
@@ -68,6 +69,12 @@ export default function AllTasksMobile({ c }) {
           onAddLabel: () => c.setShowlabel(true),
           onAddDepartment: () => c.setOpenAddProject(true),
         }}
+
+     
+
+
+
+
       />
     </div>
   );

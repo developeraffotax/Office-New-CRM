@@ -9,6 +9,8 @@ import BottomSheet from "./components/BottomSheet";
 import MobileTaskCard from "./components/MobileTaskCard";
 import OutsideFilter from "../Jobs/utils/OutsideFilter";
 import { dotColors, textColors } from "./constants";
+import { addDays, format } from "date-fns";
+
 
 const noScrollbar = {
   scrollbarWidth: "none",
@@ -109,6 +111,7 @@ export default function MobileTasksView({
   onComplete,
   onDelete,
   adminActions, // { onImport, onExport, onAddLabel, onAddDepartment, importing }
+  onDateChange
 }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -118,6 +121,28 @@ export default function MobileTasksView({
   const isCompleted = status === "completed";
   const activeCount = columnFilters?.length || 0;
   const hasMore = (tasksData?.length || 0) < (rowCount || 0);
+
+
+
+  const [dateTask, setDateTask] = useState(null);
+const [dateValue, setDateValue] = useState("");
+const [savingDate, setSavingDate] = useState(false);
+
+const openDate = (task) => {
+  setDateTask(task);
+  setDateValue(format(new Date(task.taskDate || Date.now()), "yyyy-MM-dd"));
+};
+
+const saveDate = async () => {
+  if (!dateValue) return;
+  setSavingDate(true);
+  const ok = await onDateChange(dateTask, dateValue);
+  setSavingDate(false);
+  if (ok) setDateTask(null);
+};
+
+
+
 
   // debounced search
   const [q, setQ] = useState(searchValue || "");
@@ -288,6 +313,7 @@ export default function MobileTasksView({
                   onMore={setActionTask}
                   onStatus={setStatusTask}
                   onComment={onComment}
+                  onDate={openDate}
                 />
               ))}
             </div>
@@ -492,6 +518,62 @@ export default function MobileTasksView({
           ))}
         </ul>
       </BottomSheet>
+
+
+      {/* ───────── Task date sheet ───────── */}
+<BottomSheet
+  open={!!dateTask}
+  onClose={() => setDateTask(null)}
+  title="Change task date"
+  footer={
+    <div className="flex gap-2 p-3">
+      <button
+        onClick={() => setDateTask(null)}
+        className="h-11 flex-1 rounded-xl border border-slate-200 text-[14px] font-medium text-slate-700"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={saveDate}
+        disabled={!dateValue || savingDate}
+        className="flex h-11 flex-[1.4] items-center justify-center gap-2 rounded-xl bg-orange-500 text-[14px] font-medium text-white disabled:opacity-60"
+      >
+        {savingDate && <TbLoader2 className="h-4 w-4 animate-spin" />}
+        Save
+      </button>
+    </div>
+  }
+>
+  <div className="p-4">
+  <div className="mb-3 flex gap-2">
+    {[["Today", 0], ["Tomorrow", 1]].map(([label, n]) => {
+      const value = format(addDays(new Date(), n), "yyyy-MM-dd");
+      return (
+        <button
+          key={label}
+          type="button"
+          onClick={() => setDateValue(value)}
+          className={`h-9 rounded-full border px-4 text-[13px] font-medium active:bg-slate-100 ${
+            dateValue === value
+              ? "border-orange-300 bg-orange-50 text-orange-700"
+              : "border-slate-200 text-slate-700"
+          }`}
+        >
+          {label}
+        </button>
+      );
+    })}
+  </div>
+  <input
+    type="date"
+    value={dateValue}
+    onChange={(e) => setDateValue(e.target.value)}
+    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-[16px] outline-none focus:border-orange-300"
+  />
+</div>
+</BottomSheet>
+
+
 
       {/* ───────── More (admin) sheet ───────── */}
       {canManage && (

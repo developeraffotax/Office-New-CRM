@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
-import { format } from "date-fns";
+ 
 import { useLocation, useSearchParams } from "react-router-dom";
 import { generateCsv, download } from "export-to-csv";
 import { useDispatch, useSelector } from "react-redux";
@@ -18,6 +18,14 @@ import { useTaskFilters } from "./useTaskFilters";
 import { useTasksData } from "./useTasksData";
 import { useTaskStats } from "./useTaskStats";
 import { useTaskActions } from "./useTaskActions";
+import { format, isValid } from "date-fns";
+
+const toDay = (d) => {
+  if (!d) return "";
+  const x = new Date(d);
+  return isValid(x) ? format(x, "yyyy-MM-dd") : "";
+};
+
 
 export function useAllTasksController() {
   const dispatch = useDispatch();
@@ -401,6 +409,53 @@ export function useAllTasksController() {
     }
   };
 
+
+  
+  const handleMobileDateChange = async (task, dateStr) => {
+  const api = process.env.REACT_APP_API_URL;
+  try {
+    // Same read TaskDetail does, so the full payload below is built from complete data
+    // (the list row may not carry label / recurring / docLink etc.)
+    const { data: single } = await axios.get(
+      `${api}/api/v1/tasks/get/single/${task._id}`,
+    );
+    const t = single?.task;
+    if (!t) throw new Error("Task not found");
+
+    if (toDay(t.taskDate) === dateStr) return true; // nothing changed
+
+    // Same payload shape as patchTask in TaskDetail
+    await axios.put(`${api}/api/v1/tasks/update/task/${t._id}`, {
+      projectId: t.project?._id,
+      jobHolder: t.jobHolder,
+      task: t.task,
+      hours: t.hours,
+      startDate: toDay(t.startDate),
+      deadline: toDay(t.deadline),
+      taskDate: dateStr, // the patch
+      lead: t.lead,
+      label: t.label,
+      recurring: t.recurring,
+      nextRecurringDate: toDay(t.nextRecurringDate),
+      deleteCompletedRecurringSubtasks: !!t.deleteCompletedRecurringSubtasks,
+      docLink: t.docLink || "",
+    });
+
+    toast.success("Updated");
+    refetchTasks();
+    refetchStats();
+    return true;
+  } catch (error) {
+    toast.error(error?.response?.data?.message || "Failed to update");
+    return false;
+  }
+};
+
+
+
+
+
+
   // ─────────── Effects ───────────
   useEffect(() => {
     getAllProjects();
@@ -483,7 +538,7 @@ export function useAllTasksController() {
     setColumnFromOutsideTable, createComplaint,
     handleClearFilters, clearAllFilters,
     applySavedFilter, toggleSavedFilter, setSearch,
-    openTaskDetail, openCommentFor, handleMobileStatusChange,
+    openTaskDetail, openCommentFor, handleMobileStatusChange, handleMobileDateChange, 
     fLoading,
   };
 }

@@ -50,6 +50,7 @@ function MobileTaskCard({
   onMore,
   onStatus,
   onComment,
+  onDate, 
 }) {
   const due = !isCompleted ? getDue(task.deadline) : null;
   const statusKey = isCompleted ? "completed" : task.status;
@@ -69,12 +70,29 @@ function MobileTaskCard({
 
         <div className="flex items-center gap-1.5">
           {/* Task Date */}
-          {task.taskDate && (
+          {/* {task.taskDate && (
             <span className="flex items-center gap-1 rounded-md bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600">
               <FiCalendar className="h-3 w-3" />
               {format(new Date(task.taskDate), "dd MMM yyyy")}
             </span>
-          )}
+          )} */}
+
+          {task.taskDate && (
+  <button
+    type="button"
+    disabled={isCompleted}
+    onClick={(e) => {
+      e.stopPropagation(); // don't trigger the card's onOpen
+      onDate(task);
+    }}
+    className="flex items-center gap-1 rounded-md bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600 active:bg-slate-200"
+  >
+    <FiCalendar className="h-3 w-3" />
+    {format(new Date(task.taskDate), "dd MMM yyyy")}
+  </button>
+)}
+
+
 
           {isTimerRunning && (
             <span className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-medium text-green-700">

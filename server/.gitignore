@@ -7,6 +7,9 @@ creds/
 # Ignore Credentials Folder
 migrations/
 
+# Ignore Uploads Folder
+uploads/
+
 # Ignore environment variables files
 .env
 

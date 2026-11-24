@@ -1080,7 +1080,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">CL. Owner</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1100,7 +1100,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job Owner</option>
+                <option value="">Lead</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1281,7 +1281,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">CL. Owner</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1301,7 +1301,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job Owner</option>
+                <option value="">Lead</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1482,7 +1482,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">CL. Owner</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1502,7 +1502,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job Owner</option>
+                <option value="">Lead</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1682,7 +1682,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">CL. Owner</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1702,7 +1702,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job Owner</option>
+                <option value="">Lead</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1882,7 +1882,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">CL. Owner</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1902,7 +1902,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job Owner</option>
+                <option value="">Lead</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -2082,7 +2082,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">CL. Owner</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -2102,7 +2102,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job Owner</option>
+                <option value="">Lead</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -2282,7 +2282,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">CL. Owner</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -2302,7 +2302,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job Owner</option>
+                <option value="">Lead</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}

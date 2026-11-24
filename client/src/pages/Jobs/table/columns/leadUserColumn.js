@@ -8,7 +8,7 @@ export const leadUserColumn = ({ users, handleUpdateLeadUser, auth }) => {
 
     accessorFn: (row) => row.job?.leadUser || "",
 
-            header: "Job.Owner", 
+            header: "Lead", 
     Header: ({ column }) => {
       return (
         <div className=" flex flex-col gap-[2px]">
@@ -19,7 +19,8 @@ export const leadUserColumn = ({ users, handleUpdateLeadUser, auth }) => {
               column.setFilterValue("");
             }}
           >
-            Job.Owner
+            {/* Job.Owner */}
+            Lead
           </span>
           <select
             value={column.getFilterValue() || ""}

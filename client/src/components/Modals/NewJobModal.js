@@ -760,7 +760,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   clientBookKeepingFormData.jobName,
                 )}
               >
-                <option value="">CL. Owner</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -789,7 +789,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   clientBookKeepingFormData.jobName,
                 )}
               >
-                <option value="">Job Owner</option>
+                <option value="">Lead</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -976,7 +976,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }`}
                 required={isJobSelected(jobs, clientPayRollFormData.jobName)}
               >
-                <option value="">CL. Owner</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1002,7 +1002,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }`}
                 required={isJobSelected(jobs, clientPayRollFormData.jobName)}
               >
-                <option value="">Job Owner</option>
+                <option value="">Lead</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1192,7 +1192,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }`}
                 required={isJobSelected(jobs, clientVatReturnFormData.jobName)}
               >
-                <option value="">CL. Owner</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1218,7 +1218,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }`}
                 required={isJobSelected(jobs, clientVatReturnFormData.jobName)}
               >
-                <option value="">Job Owner</option>
+                <option value="">Lead</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1410,7 +1410,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   clientPersonalTaxFormData.jobName,
                 )}
               >
-                <option value="">CL. Owner</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1439,7 +1439,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   clientPersonalTaxFormData.jobName,
                 )}
               >
-                <option value="">Job Owner</option>
+                <option value="">Lead</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1625,7 +1625,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }`}
                 required={isJobSelected(jobs, clientAccountsFormData.jobName)}
               >
-                <option value="">CL. Owner</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1651,7 +1651,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }`}
                 required={isJobSelected(jobs, clientAccountsFormData.jobName)}
               >
-                <option value="">Job Owner</option>
+                <option value="">Lead</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1840,7 +1840,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }`}
                 required={isJobSelected(jobs, clientCompanySecFormData.jobName)}
               >
-                <option value="">CL. Owner</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1866,7 +1866,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }`}
                 required={isJobSelected(jobs, clientCompanySecFormData.jobName)}
               >
-                <option value="">Job Owner</option>
+                <option value="">Lead</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -2052,7 +2052,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }`}
                 required={isJobSelected(jobs, clientAddressFormData.jobName)}
               >
-                <option value="">CL. Owner</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -2078,7 +2078,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }`}
                 required={isJobSelected(jobs, clientAddressFormData.jobName)}
               >
-                <option value="">Job Owner</option>
+                <option value="">Lead</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}

@@ -4,7 +4,8 @@ import mongoose from "mongoose";
 import { protect } from "../middleware/aiAuth.js";
 import { rateLimit } from "../core/rateLimit.js";
 import { initSSE } from "../core/stream.js";
-import { runAgent } from "../agent/runtime.js";
+import { runChatTurn } from "../agent/chatTurn.js";
+import { startTurn } from "../services/history.service.js";
 import { getForm, canUseForm, validateValues } from "../agent/forms/registry.js";
 import { resolveAction } from "../agent/tools/actions.js";
 import { ToolError } from "../agent/toolkit.js";
@@ -12,19 +13,9 @@ import { getOwnAttachment, publicAttachment, loadImageParts } from "../attachmen
 
 const router = Router();
 
-// Last 6 turns, valid roles only, must start with a user turn.
-function cleanHistory(h) {
-  if (!Array.isArray(h)) return [];
-  const out = h
-    .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && m.content.trim())
-    .slice(-6)
-    .map((m) => ({ role: m.role, content: m.content.slice(0, 2000) }));
-  while (out.length && out[0].role !== "user") out.shift();
-  return out;
-}
 const validId = (v) => (v && mongoose.isValidObjectId(v) ? String(v) : undefined);
 
-// Chat + actions in one endpoint. Streams SSE: sources | token | tool | draft | proposal | done | error
+// Chat + actions in one endpoint. Streams SSE: conversation | sources | token | tool | draft | file | proposal | done | error
 router.post("/agent", protect, rateLimit({ name: "agent", limit: 20, windowSec: 60 }), async (req, res) => {
   const question = String(req.body?.question || "").trim();
   if (!question || question.length > 2000) return res.status(400).json({ message: "Question must be 1–2000 characters" });
@@ -36,9 +27,19 @@ router.post("/agent", protect, rateLimit({ name: "agent", limit: 20, windowSec: 
   const attachments = docs.map(publicAttachment);
   const images = await loadImageParts(docs);
 
+  // Open or create the saved chat. The server (not the browser) decides what history the model sees.
+  let turn;
+  try {
+    turn = await startTurn({ user: req.user, conversationId: validId(req.body.conversationId), question, attachments });
+  } catch (err) {
+    if (err.status === 404) return res.status(404).json({ message: "Chat not found. Start a new one." });
+    console.error("[agent]", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+
   const sse = initSSE(res);
   try {
-    const { ms } = await runAgent({ user: req.user, question, history: cleanHistory(req.body.history), scope, attachments, images, sse });
+    const { ms } = await runChatTurn({ turn, user: req.user, question, scope, attachments, images, sse });
     sse.send("done", { ms });
   } catch (err) {
     if (!sse.signal.aborted) {

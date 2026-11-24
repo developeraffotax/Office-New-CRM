@@ -62,4 +62,37 @@ const AiAttachment = mongoose.model(
   )
 );
 
-export { AiAudit, AiAction, AiAttachment };
+// Saved chats. Each person only ever sees their own. Deleted automatically after AI_HISTORY_DAYS (TTL index).
+const conversationSchema = new Schema(
+  {
+    userId: { type: Schema.Types.ObjectId, required: true },
+    title: { type: String, default: "New chat", maxlength: 120 },
+    lastMessageAt: { type: Date, default: Date.now },
+    expiresAt: Date,
+  },
+  { timestamps: true }
+);
+conversationSchema.index({ userId: 1, lastMessageAt: -1 });
+conversationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+const AiConversation = mongoose.model("AiConversation", conversationSchema);
+
+const messageSchema = new Schema(
+  {
+    conversationId: { type: Schema.Types.ObjectId, required: true },
+    userId: { type: Schema.Types.ObjectId, required: true },
+    role: { type: String, enum: ["user", "assistant"], required: true },
+    content: { type: String, default: "" },
+    sources: { type: [Schema.Types.Mixed], default: [] }, // only the sources the answer actually cited
+    files: { type: [Schema.Types.Mixed], default: [] }, // files the agent produced (download expires with the file)
+    attachments: { type: [Schema.Types.Mixed], default: [] }, // [{ filename }] shown on the user's message
+    toolsUsed: { type: Number, default: 0 },
+    partial: { type: Boolean, default: false }, // stopped or failed part-way
+    expiresAt: Date,
+  },
+  { timestamps: { createdAt: true, updatedAt: false } }
+);
+messageSchema.index({ conversationId: 1, createdAt: 1 });
+messageSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+const AiMessage = mongoose.model("AiMessage", messageSchema);
+
+export { AiAudit, AiAction, AiAttachment, AiConversation, AiMessage };

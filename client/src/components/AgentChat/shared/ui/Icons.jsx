@@ -129,3 +129,13 @@ export const UsersIcon = (p) => (
     <path d="M2.5 20a6.5 6.5 0 0113 0M16 4.6a3.5 3.5 0 010 6.8M18 14.5a6.5 6.5 0 013.5 5.5" />
   </Svg>
 );
+export const ChatIcon = (p) => (
+  <Svg {...p}>
+    <path d="M4 5a2 2 0 012-2h12a2 2 0 012 2v9a2 2 0 01-2 2H10l-5 4v-4H6a2 2 0 01-2-2V5z" />
+  </Svg>
+);
+export const MenuIcon = (p) => (
+  <Svg {...p}>
+    <path d="M4 6h16M4 12h16M4 18h16" />
+  </Svg>
+);

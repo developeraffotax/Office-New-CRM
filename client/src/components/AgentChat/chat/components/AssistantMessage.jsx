@@ -1,5 +1,5 @@
 import Avatar from "../../shared/ui/Avatar.jsx";
-import { AlertIcon } from "../../shared/ui/Icons.jsx";
+import { AlertIcon, SparklesIcon } from "../../shared/ui/Icons.jsx";
 import ToolProgress from "./ToolProgress.jsx";
 import TypingIndicator from "./TypingIndicator.jsx";
 import DraftForm from "./DraftForm.jsx";
@@ -14,6 +14,10 @@ export default function AssistantMessage({ m }) {
   const hasOutput = Boolean(m.content || m.error || m.draft || m.files?.length || m.proposals?.length);
   // Nothing to show yet and no tool is running: the model is thinking.
   const thinking = streaming && !hasOutput && running.length === 0;
+  // Only list the sources the answer actually cites, not everything that was searched.
+  const cited = (m.sources || []).filter((s) => (m.content || "").includes(`[${s.n}]`));
+  // No cited company source and no data tools: this answer came from the model's general knowledge.
+  const general = m.done && !m.error && Boolean(m.content) && cited.length === 0 && !(m.toolsUsed > 0) && !m.draft && !m.files?.length && !m.proposals?.length;
 
   return (
     <div className="flex gap-3">
@@ -39,7 +43,13 @@ export default function AssistantMessage({ m }) {
         {m.draft && <DraftForm draft={m.draft} />}
         {m.files?.map((f) => <FileCard key={f.id} file={f} />)}
         {m.proposals?.map((p) => <ProposalCard key={p.id} proposal={p} />)}
-        {m.sources?.length > 0 && m.done && <SourceList sources={m.sources} />}
+        {cited.length > 0 && m.done && <SourceList sources={cited} />}
+        {general && (
+          <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-gray-400">
+            <SparklesIcon className="h-3 w-3" /> General answer, not from your company data
+          </p>
+        )}
+        {m.partial && m.done && <p className="mt-2 text-[11px] text-gray-400">Stopped before finishing</p>}
       </div>
     </div>
   );

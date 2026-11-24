@@ -1,13 +1,13 @@
 import Avatar from "../../shared/ui/Avatar.jsx";
 import { ArrowRightIcon } from "../../shared/ui/Icons.jsx";
 
-export default function EmptyState({ suggestions, onPick }) {
+export default function EmptyState({ suggestions, onPick, name }) {
   return (
     <div className="mx-auto flex max-w-xl flex-col items-center pt-12 text-center sm:pt-20">
       <Avatar size="h-14 w-14" iconSize="h-7 w-7" />
-      <h1 className="mt-6 text-2xl font-semibold tracking-tight text-gray-900">Ask me anything</h1>
+      <h1 className="mt-6 text-2xl font-semibold tracking-tight text-gray-900">{name ? `Welcome, ${name}` : "Welcome"}</h1>
       <p className="mt-2 text-sm leading-6 text-gray-500">
-        I can answer from your company's documents and spreadsheets. Attach a PDF, Word, Excel, CSV or image and I'll read it, fill it in from your stored data, or work on it.
+        How can I help today? I answer from your company's documents and spreadsheets, and from general knowledge when your company data has nothing on it. Attach a PDF, Word, Excel, CSV or image and I'll read it, fill it in from your stored data, or work on it.
       </p>
       <div className="mt-8 grid w-full gap-2.5 sm:grid-cols-2">
         {suggestions.map((s) => (

@@ -34,6 +34,17 @@ export const aiConfig = {
   // Used to turn "this month" into real dates. Minutes ahead of UTC (e.g. UTC+5 → 300).
   utcOffsetMinutes: Number(env.AI_UTC_OFFSET_MINUTES || 0),
 
+  // true: if the company data has nothing on a question, answer from general knowledge like a normal AI
+  // assistant (ChatGPT / Claude style). false: only ever answer from company data.
+  generalAnswers: env.AI_GENERAL_ANSWERS !== "false",
+
+  // Saved chats (and their messages) are deleted after this many days. 0 = keep forever.
+  historyDays: Number(env.AI_HISTORY_DAYS ?? 90),
+
+  // Ignore vector-search matches weaker than this (0 = off). The right value depends on your embedding model,
+  // so start at 0 and tune it from real questions.
+  minScore: Number(env.KB_MIN_SCORE || 0),
+
   // Role names that get the admin profile (strong model, all tools, CRM data). Matches Role.name.
   adminRoles: (env.AI_ADMIN_ROLES || "Admin").split(",").map((s) => s.trim()).filter(Boolean),
 };

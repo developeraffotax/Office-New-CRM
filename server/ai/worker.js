@@ -4,21 +4,33 @@ import "dotenv/config";
 import mongoose from "mongoose";
 import { startIngestWorker } from "./queue/ingest.queue.js";
 import { startAttachmentCleanup } from "./attachments/attachments.service.js";
+import { connectDB } from "../config/db.js";
 
-const uri = process.env.MONGO_URI || process.env.MONGO_URL || process.env.MONGODB_URI; // ⚠ use the env var your app uses
-if (!uri) {
-  console.error("[ai worker] Set MONGO_URI (or edit this file to match your env var).");
-  process.exit(1);
+ 
+
+async function runWorker() {
+  // 1. Connect MongoDB
+  try {
+    await connectDB();
+    console.log("[ai worker] MongoDB connected");
+  } catch (err) {
+    console.error("[ai worker] MongoDB connection failed", err.message);
+    process.exit(1);
+  }
+
+  // 2. Start workers
+  startIngestWorker();
+  startAttachmentCleanup();
+  console.log("[ai worker] running");
 }
 
-await mongoose.connect(uri);
-startIngestWorker();
-startAttachmentCleanup();
-console.log("[ai worker] running");
-
+// Graceful shutdown
 for (const sig of ["SIGINT", "SIGTERM"]) {
   process.on(sig, async () => {
     await mongoose.disconnect();
     process.exit(0);
   });
 }
+
+// Start the worker
+await runWorker();

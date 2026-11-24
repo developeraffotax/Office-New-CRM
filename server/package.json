@@ -10,7 +10,8 @@
     "notificationWorker": "node jobs/workers/notificationWorker.js",
     "gmailWorker": "node emailModule/jobs/workers/historySync.worker.js",
     "followUpWorker": "node emailModule/jobs/workers/index.js",
-    "whatsappWorker": "node whatsappModule/jobs/workers/whatsappWorker.js"
+    "whatsappWorker": "node whatsappModule/jobs/workers/whatsappWorker.js",
+    "ai_ingestion_worker": "node ai/worker.js"
   },
   "keywords": [],
   "author": "",

@@ -66,6 +66,7 @@ import tableRoutes from "../kpiTableModule/routes/table.routes.js";
 
 
 import workflowRoutes from "../workflow/routes/workflowRoutes.js";
+import { aiRouter } from "../ai/index.js";
 
 
 
@@ -177,6 +178,12 @@ export const registerRoutes = (app) => {
 
 
       app.use("/api/v1/workflow", workflowRoutes);
+
+
+
+
+
+      app.use("/api/v2/ai", aiRouter);
 
 
 

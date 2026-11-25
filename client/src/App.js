@@ -79,6 +79,8 @@ import PendingApprovals from "./components/gmail/approvals/PendingApprovals";
 import JobWorkflowPanel from "./components/workflow/JobWorkflowPanel";
 import WorkflowTemplatesPage from "./components/workflow/WorkflowTemplatesPage";
 import MyWorkflowSteps from "./components/workflow/MyWorkflowSteps";
+import AgentChat from "./components/AgentChat/AgentChat";
+import KnowledgeBase from "./components/AgentChat/KnowledgeBase";
  
  
  
@@ -259,6 +261,12 @@ function App() {
             <Route path="/jobs/workflow" element={<JobWorkflowPanel /> } />
             <Route path="/jobs/manage-workflow" element={<WorkflowTemplatesPage /> } />
             <Route path="/jobs/my-workflow" element={<MyWorkflowSteps /> } />
+
+
+
+
+            <Route path="/ai/chat" element={<AgentChat /> } />
+            <Route path="/ai/data" element={<KnowledgeBase /> } />
             
             
             

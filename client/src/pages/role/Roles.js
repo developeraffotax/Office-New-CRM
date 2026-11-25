@@ -51,6 +51,7 @@ export default function Roles() {
     "Meeting",
     "HR",
     "Affotax-Analytics",
+    "Affotax-Ai",
     "Users",
     "Activity",
     "Inbox",

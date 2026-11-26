@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import axios from "axios";
 import { style } from "../../utlis/CommonStyle";
@@ -145,8 +145,84 @@ export default function TimeSheet() {
   const [showDepartmentFilter, setShowDepartmentFilter] = useState(true);
   const [departmentFilter, setDepartmentFilter] = useState("");
 
+
+
   const [showExternalFilters, setShowExternalFilters] = useState(true);
   const [filter1, setFilter1] = useState("");
+
+
+
+  const [labelData, setLabelData] = useState([]);
+
+// Names of the users who have the selected label (null = no filter)
+const departmentUserNames = useMemo(() => {
+  if (!departmentFilter) return null;
+
+  return new Set(
+    (userData || [])
+      .filter((user) => {
+        // works whether user.data is populated or just an ObjectId
+        const labelName =
+          user?.data?.name ||
+          labelData.find((label) => label._id === user?.data)?.name;
+
+        return labelName === departmentFilter;
+      })
+      .map((user) => user.name),
+  );
+}, [departmentFilter, userData, labelData]);
+
+const isInDepartment = useCallback(
+  (entry) =>
+    !departmentUserNames || departmentUserNames.has(entry.jobHolderName),
+  [departmentUserNames],
+);
+
+// If a job holder outside the selected department is picked, release the chip
+const clearDepartmentIfNotMember = (name) => {
+  if (name && !isInDepartment({ jobHolderName: name })) {
+    setDepartmentFilter("");
+  }
+};
+
+// For the "Multiple" tab
+const departmentTimerData = useMemo(
+  () => timerData?.filter(isInDepartment),
+  [timerData, isInDepartment],
+);
+
+const departmentUsers = useMemo(
+  () =>
+    userData?.filter(
+      (user) => !departmentUserNames || departmentUserNames.has(user.name),
+    ),
+  [userData, departmentUserNames],
+);
+
+
+
+const getDatalabel = async () => {
+  try {
+    const { data } = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/v1/label/user/labels`,
+    );
+    setLabelData(data?.labels || []);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+useEffect(() => {
+  getDatalabel();
+  // eslint-disable-next-line
+}, []);
+
+
+
+
+
+
+
 
   const { weekdayCounts, totalWorkdays, requiredHours } =
     useWorkdayStats(active);
@@ -223,13 +299,16 @@ export default function TimeSheet() {
     },
   ];
 
-  const handleDepartmentSelect = (departmentName) => {
-    const newValue = departmentFilter === departmentName ? "" : departmentName;
-    setDepartmentFilter(newValue);
-    table.getColumn("department")?.setFilterValue(newValue);
-    filterByDep("", "", newValue); // keeps the Mon–Sun totals cards in sync, same as the header select
-  };
+const handleDepartmentSelect = (departmentName) => {
+  const newValue = departmentFilter === departmentName ? "" : departmentName;
+  setDepartmentFilter(newValue);
 
+  // show everyone in the department, not only the currently selected user
+  if (newValue) {
+    setUsername("");
+    table.getColumn("jobHolderName")?.setFilterValue("");
+  }
+};
   // Converts "HH:MM" string into decimal hours (e.g., "07:30" → 7.5)
   const parseTimeToDecimal = (timeStr) => {
     if (!timeStr || typeof timeStr !== "string") return 0;
@@ -610,13 +689,13 @@ export default function TimeSheet() {
         return (
           entryDateWithoutTime >= fdowWithoutTime &&
           entryDateWithoutTime <= ldowWithoutTime &&
-          (!userName || entry.jobHolderName === userName)
+          (!userName || entry.jobHolderName === userName) && isInDepartment(entry)
         );
       });
 
       setTableFilterDate(filteredData); // Update the filtered data for the table
     }
-  }, [week, timerData, userName, active]);
+  }, [week, timerData, userName, active, isInDepartment]);
 
   // ------------------Filter By Month---------->
   useEffect(() => {
@@ -640,13 +719,13 @@ export default function TimeSheet() {
         return (
           entryDate >= fdomWithoutTime &&
           entryDate <= ldomWithoutTime &&
-          (!userName || entry.jobHolderName === userName)
+          (!userName || entry.jobHolderName === userName) && isInDepartment(entry)
         );
       });
 
       setTableFilterDate(filteredByMonth);
     }
-  }, [month, timerData, userName, active]);
+  }, [month, timerData, userName, active, isInDepartment]);
 
   // Handle previous and next navigation for months
   const goToPrevMonth = () => {
@@ -679,13 +758,13 @@ export default function TimeSheet() {
         return (
           entryDate >= fdoyWithoutTime &&
           entryDate <= ldoyWithoutTime &&
-          (!userName || entry.jobHolderName === userName)
+          (!userName || entry.jobHolderName === userName) && isInDepartment(entry)
         );
       });
 
       setTableFilterDate(filteredByYear);
     }
-  }, [year, timerData, userName, active]);
+  }, [year, timerData, userName, active, isInDepartment]);
 
   // Handle previous and next navigation for years
   const goToPrevYear = () => {
@@ -1051,6 +1130,8 @@ export default function TimeSheet() {
           const user = auth?.user?.name;
 
           useEffect(() => {
+            if (departmentFilter) return; // don't override an active department
+
             column.setFilterValue(user);
             setUsername(user);
           }, []);
@@ -1074,11 +1155,15 @@ export default function TimeSheet() {
                 access.includes("Job-holder")) && (
                 <select
                   value={column.getFilterValue() || ""}
+                  
+
                   onChange={(e) => {
+                    clearDepartmentIfNotMember(e.target.value);
                     column.setFilterValue(e.target.value);
                     setUsername(e.target.value);
                     filterByDep("", e.target.value, "");
                   }}
+
                   className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
                 >
                   <option value="">Select</option>
@@ -1266,7 +1351,7 @@ export default function TimeSheet() {
                 title="Clear Filter"
                 onClick={() => {
                   column.setFilterValue("");
-                  setDepartmentFilter("");
+                  // setDepartmentFilter("");
                   setCall(true);
                 }}
               >
@@ -1277,7 +1362,7 @@ export default function TimeSheet() {
                 // select onChange
                 onChange={(e) => {
                   column.setFilterValue(e.target.value);
-                  setDepartmentFilter(e.target.value);
+                  // setDepartmentFilter(e.target.value);
                   filterByDep("", "", e.target.value);
                 }}
                 className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none "
@@ -1866,11 +1951,11 @@ export default function TimeSheet() {
   };
 
   // Clear table Filter
-  const handleClearFilters = () => {
-    table.setColumnFilters([]);
-    table.setGlobalFilter("");
-    setDepartmentFilter("");
-  };
+const handleClearFilters = () => {
+  table.setColumnFilters([]);
+  table.setGlobalFilter("");
+  setDepartmentFilter("");
+};
 
   const table = useMaterialReactTable({
     columns,
@@ -1974,13 +2059,14 @@ export default function TimeSheet() {
     },
   });
 
-  const setColumnFromOutsideTable = (colKey, filterVal) => {
-    const col = table.getColumn(colKey);
+const setColumnFromOutsideTable = (colKey, filterVal) => {
+  const col = table.getColumn(colKey);
 
-    setUsername(filterVal);
+  clearDepartmentIfNotMember(filterVal);
+  setUsername(filterVal);
 
-    return col.setFilterValue(filterVal);
-  };
+  return col?.setFilterValue(filterVal);
+};
 
   if (isRunning) {
     return (
@@ -2289,12 +2375,12 @@ export default function TimeSheet() {
         {hasPermission.jobHolders && showDepartmentFilter && (
           <div className="w-full flex items-center gap-4 mt-3">
             <DraggableDepartmentChips
-              departments={projects}
-              activeDepartment={departmentFilter}
-              onSelect={handleDepartmentSelect}
-              storageKey="timesheet:department_order"
-              droppableId="timesheet-departments"
-            />
+                departments={labelData}
+                activeDepartment={departmentFilter}
+                onSelect={handleDepartmentSelect}
+                storageKey="timesheet:label_order"
+                droppableId="timesheet-departments"
+              />
           </div>
         )}
 
@@ -2320,11 +2406,17 @@ export default function TimeSheet() {
               <div
                 className={`w-full h-full relative overflow-y-auto hidden1  `}
               >
-                <UsersTimeSheet
+                {/* <UsersTimeSheet
                   timerData={timerData}
                   userData={userData}
                   active={active}
-                />
+                /> */}
+
+                <UsersTimeSheet
+                    timerData={departmentTimerData}
+                    userData={departmentUsers}
+                    active={active}
+                  />
               </div>
             )}
           </>

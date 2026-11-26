@@ -145,21 +145,8 @@ export default function ThreadHeader({
           showLabel
         />
 
-          {
-            (isAdmin(user) || hasSubrole(user, 'Inbox', "Ai Automation")) && ( <FollowUpControl companyName={company} threadId={threadId} /> )
-          }
-
-
-
-      </div>
-
-      <div className="flex justify-center items-center gap-3">
-
           
-
-
-
-         {scope.delete && (
+        {scope.delete && (
           <button
             className="p-2 rounded-lg hover:bg-gray-200 text-gray-500 hover:text-red-500"
             title="Delete Thread"
@@ -169,6 +156,19 @@ export default function ThreadHeader({
           </button>
         )}
 
+
+
+      </div>
+
+      <div className="flex justify-center items-center gap-3">
+
+          
+
+{
+            (isAdmin(user) || hasSubrole(user, 'Inbox', "Ai Automation")) && ( <FollowUpControl companyName={company} threadId={threadId} /> )
+          }
+
+        
         
 
         <TicketButton

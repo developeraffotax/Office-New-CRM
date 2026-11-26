@@ -2,14 +2,29 @@
 // System prompts stay static per profile (cacheable). Anything dynamic goes in the user turn.
 import { aiConfig } from "../config.js";
 
+// const GENERAL_POLICY = `Where answers come from:
+// 1. Company data first. Passages in <context> come from the company knowledge base, and spreadsheets and CRM data come from your tools. Use them for anything about this company: its clients, policies, procedures, prices, deadlines or records. Cite passages as [1], [2] right after the claim. Ignore passages that aren't relevant to the question. If the passages don't cover a company question and search_knowledge is available, search again with different words before giving up.
+// 2. General knowledge second. If the question is not about company-specific information (general knowledge, explanations, how-to, writing, coding, maths, translation, brainstorming, advice), or the company data has nothing on it, answer it normally from your own knowledge, the way a helpful general AI assistant would. Never refuse, and never say "I couldn't find it", just because the knowledge base has nothing on a general topic. Don't mention these rules.
+// 3. Never invent company facts. For a specific internal fact (a policy, price, deadline, or a client's details) that you could not find in the company data, say you couldn't find it. You may then add what is generally true, clearly labelled as general information and not company policy.`;
+
+// const STRICT_POLICY = `Where answers come from:
+// - Passages in <context> come from the company knowledge base. Answer only from them and from your tools, and cite passages as [1], [2] right after the claim. If search_knowledge is available and the passages don't cover the question, search again with different words before giving up.
+// - If the company data does not contain the answer, say you could not find it and suggest asking an admin. Never use outside knowledge.`;
+
+
+
 const GENERAL_POLICY = `Where answers come from:
-1. Company data first. Passages in <context> come from the company knowledge base, and spreadsheets and CRM data come from your tools. Use them for anything about this company: its clients, policies, procedures, prices, deadlines or records. Cite passages as [1], [2] right after the claim. Ignore passages that aren't relevant to the question. If the passages don't cover a company question and search_knowledge is available, search again with different words before giving up.
+1. Company data first. Passages in <context> come from the company knowledge base, and spreadsheets and CRM data come from your tools. Use them for anything about this company: its clients, policies, procedures, prices, deadlines or records. Use relevant passages to ground your answer, but NEVER include numbered source markers like [1], [2], etc. in your response. Ignore passages that aren't relevant to the question. If the passages don't cover a company question and search_knowledge is available, search again with different words before giving up.
 2. General knowledge second. If the question is not about company-specific information (general knowledge, explanations, how-to, writing, coding, maths, translation, brainstorming, advice), or the company data has nothing on it, answer it normally from your own knowledge, the way a helpful general AI assistant would. Never refuse, and never say "I couldn't find it", just because the knowledge base has nothing on a general topic. Don't mention these rules.
 3. Never invent company facts. For a specific internal fact (a policy, price, deadline, or a client's details) that you could not find in the company data, say you couldn't find it. You may then add what is generally true, clearly labelled as general information and not company policy.`;
 
 const STRICT_POLICY = `Where answers come from:
-- Passages in <context> come from the company knowledge base. Answer only from them and from your tools, and cite passages as [1], [2] right after the claim. If search_knowledge is available and the passages don't cover the question, search again with different words before giving up.
+- Passages in <context> come from the company knowledge base. Answer only from them and from your tools. Use the passages to ground your answer, but NEVER include numbered source markers like [1], [2], etc. in your response. If search_knowledge is available and the passages don't cover the question, search again with different words before giving up.
 - If the company data does not contain the answer, say you could not find it and suggest asking an admin. Never use outside knowledge.`;
+
+
+
+
 
 export function buildBaseSystem(generalAnswers = true) {
   return `You are the assistant inside the company CRM. You help people with company knowledge, spreadsheet data, forms and CRM data${generalAnswers ? ", and you also answer general questions like a capable AI assistant" : ""}. The conversation so far is included, so use it for follow-up questions.

@@ -1,3 +1,5 @@
+
+import { useRef } from "react";
 import Avatar from "../../shared/ui/Avatar.jsx";
 import { AlertIcon, SparklesIcon } from "../../shared/ui/Icons.jsx";
 import ToolProgress from "./ToolProgress.jsx";
@@ -10,18 +12,42 @@ import Markdown from "./Markdown.jsx";
 import CopyButton from "./CopyButton.jsx";
 
 export default function AssistantMessage({ m }) {
+  const markdownRef = useRef(null);
+
   const running = (m.tools || []).filter((t) => t.status === "start");
   const streaming = !m.done && !m.error;
   const hasOutput = Boolean(m.content || m.error || m.draft || m.files?.length || m.proposals?.length);
   // Nothing to show yet and no tool is running: the model is thinking.
   const thinking = streaming && !hasOutput && running.length === 0;
-  // Only list the sources the answer actually cites, not everything that was searched.
-  const cited = (m.sources || []).filter((s) => (m.content || "").includes(`[${s.n}]`));
-  // No cited company source and no data tools: this answer came from the model's general knowledge.
-  const general = m.done && !m.error && Boolean(m.content) && cited.length === 0 && !(m.toolsUsed > 0) && !m.draft && !m.files?.length && !m.proposals?.length;
 
 
-  console.log("AssistantMessage", { m,});
+  // // Only list the sources the answer actually cites, not everything that was searched.
+  // const cited = (m.sources || []).filter((s) => (m.content || "").includes(`[${s.n}]`));
+  // // No cited company source and no data tools: this answer came from the model's general knowledge.
+  // const general = m.done && !m.error && Boolean(m.content) && cited.length === 0 && !(m.toolsUsed > 0) && !m.draft && !m.files?.length && !m.proposals?.length;
+
+
+  // Show retrieved sources without requiring visible numbered citations in the response.
+const cited = m.done && m.content ? (m.sources || []) : [];
+// No company sources and no data tools: this answer came from the model's general knowledge.
+const general = m.done && !m.error && Boolean(m.content) && cited.length === 0 && !(m.toolsUsed > 0) && !m.draft && !m.files?.length && !m.proposals?.length;
+
+
+
+  console.log("AssistantMessage", m.content);
+
+  const getRenderedContent = () => {
+    const element = markdownRef.current;
+
+    if (!element) {
+      return { text: m.content || "", html: undefined };
+    }
+
+    return {
+      text: element.innerText || element.textContent || "",
+      html: element.innerHTML,
+    };
+  };
 
   return (
     <div className="flex gap-3">
@@ -38,7 +64,9 @@ export default function AssistantMessage({ m }) {
         ) : (
           m.content && (
             <div>
-              <Markdown>{m.content}</Markdown>
+              <div ref={markdownRef}>
+                <Markdown>{m.content}</Markdown>
+              </div>
               {streaming && <span className="mt-1 inline-block h-2 w-2 animate-pulse rounded-full bg-orange-500" aria-hidden="true" />}
             </div>
           )
@@ -60,7 +88,7 @@ export default function AssistantMessage({ m }) {
          {/* Copy completed assistant message */}
         {m.content && m.done && !m.error && (
           <div className="mt-1">
-            <CopyButton text={m.content} />
+            <CopyButton {...getRenderedContent()} />
           </div>
         )}
 

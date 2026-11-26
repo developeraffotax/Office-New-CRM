@@ -2,16 +2,25 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-export default function CopyButton({ text, align = "left" }) {
+export default function CopyButton({ text, html, align = "left" }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    if (!text) return;
+    if (!text && !html) return;
 
     try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
+      if (html && window.ClipboardItem && navigator.clipboard.write) {
+        const clipboardItem = new ClipboardItem({
+          "text/html": new Blob([html], { type: "text/html" }),
+          "text/plain": new Blob([text || ""], { type: "text/plain" }),
+        });
 
+        await navigator.clipboard.write([clipboardItem]);
+      } else {
+        await navigator.clipboard.writeText(text || "");
+      }
+
+      setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error("Unable to copy message");

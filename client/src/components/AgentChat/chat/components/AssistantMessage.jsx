@@ -7,6 +7,7 @@ import FileCard from "./FileCard.jsx";
 import ProposalCard from "./ProposalCard.jsx";
 import SourceList from "./SourceList.jsx";
 import Markdown from "./Markdown.jsx";
+import CopyButton from "./CopyButton.jsx";
 
 export default function AssistantMessage({ m }) {
   const running = (m.tools || []).filter((t) => t.status === "start");
@@ -18,6 +19,9 @@ export default function AssistantMessage({ m }) {
   const cited = (m.sources || []).filter((s) => (m.content || "").includes(`[${s.n}]`));
   // No cited company source and no data tools: this answer came from the model's general knowledge.
   const general = m.done && !m.error && Boolean(m.content) && cited.length === 0 && !(m.toolsUsed > 0) && !m.draft && !m.files?.length && !m.proposals?.length;
+
+
+  console.log("AssistantMessage", { m,});
 
   return (
     <div className="flex gap-3">
@@ -50,6 +54,17 @@ export default function AssistantMessage({ m }) {
           </p>
         )}
         {m.partial && m.done && <p className="mt-2 text-[11px] text-gray-400">Stopped before finishing</p>}
+
+
+
+         {/* Copy completed assistant message */}
+        {m.content && m.done && !m.error && (
+          <div className="mt-1">
+            <CopyButton text={m.content} />
+          </div>
+        )}
+
+        
       </div>
     </div>
   );

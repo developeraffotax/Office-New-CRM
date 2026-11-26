@@ -9,7 +9,16 @@ export const TOOL_LABELS = {
   propose_form_fill: "Filling in the form",
   find_user: "Finding the person",
   get_task_stats: "Counting tasks",
+  list_tasks: "Looking up tasks",
+  get_job_stats: "Counting jobs",
   list_jobs: "Looking up jobs",
+  get_lead_stats: "Counting leads",
+  list_leads: "Looking up leads",
+  get_ticket_stats: "Counting tickets",
+  list_tickets: "Looking up tickets",
+  read_attachment: "Reading the file",
+  fill_sheet_from_dataset: "Filling the spreadsheet",
+  write_sheet_cells: "Writing to the spreadsheet",
 };
 
 export const toolLabel = (n) => TOOL_LABELS[n] || n.replaceAll("_", " ");

@@ -31,7 +31,7 @@ export const BASE_SYSTEM = buildBaseSystem(aiConfig.generalAnswers);
 
 export const EMPLOYEE_SYSTEM = `You are talking to an employee. For company data you can only use what your tools return. If they ask you to read or change company data your tools don't cover, say you can't do that here and suggest asking an admin. General questions are always fine to answer.`;
 
-export const ADMIN_SYSTEM = `You are talking to an admin. Use find_user to resolve a person's name to an id before using their id. If a name matches more than one person, ask which one. For dates, use the period values the tools accept (this_month, last_week, ...) instead of working out dates yourself.`;
+export const ADMIN_SYSTEM = `You are talking to an admin. Use find_user to resolve a person's name to an id before using their id. If a name matches more than one person, ask which one. For counts and lists of tasks, jobs, leads and tickets use the matching get_*_stats and list_* tools: stats tools for "how many", list tools for "which ones". Jobs are the client records. "X's tasks / leads / jobs / tickets" means the ones assigned to X; only set as=lead when asked about the ones X leads (as the team lead). For dates, use the period values the tools accept (this_month, last_week, ...) instead of working out dates yourself. Always give the numbers the tools return and mention any note they include, such as when a figure is approximate.`;
 
 const oneLine = (s, n) => String(s ?? "").replace(/\s+/g, " ").trim().slice(0, n);
 

@@ -21,35 +21,56 @@ async function roleName(roleId) {
   return name;
 }
 
-export async function protect(req, res, next) {
-  const header = req.headers.authorization;
-  const token = header?.startsWith("Bearer ") ? header.slice(7) : header; // your app sends it raw
-  if (!token) return res.status(401).json({ success: false, message: "JWT_Token must be provided!" });
+function authError(message, status) {
+  const err = new Error(message);
+  err.status = status;
+  return err;
+}
 
+/** The user shape the AI tools expect: _id, id, name, email, team, roleId, role (Role name). */
+async function userFromDoc(user, decoded = {}) {
+  return {
+    ...decoded,
+    _id: user._id,
+    id: String(user._id),
+    name: user.name,
+    email: user.email,
+    team: user.team,
+    roleId: String(user.role),
+    role: await roleName(user.role),
+  };
+}
+
+/** Verify a CRM JWT (Bearer or raw, same as the app) and load the user. Throws with .status 401. */
+export async function loadAiUser(token) {
+  if (!token) throw authError("JWT_Token must be provided!", 401);
   let decoded;
   try {
     decoded = JWT.verify(token, process.env.JWT_SECRET);
   } catch {
-    return res.status(401).json({ success: false, message: "Invalid JWT Token" });
+    throw authError("Invalid JWT Token", 401);
   }
+  const user = await mongoose.model("Users").findById(decoded.id).select("name email role team isActive").lean();
+  if (!user || user.isActive === false) throw authError("Unauthorized Access! User not found or inactive.", 401);
+  return userFromDoc(user, decoded);
+}
 
+/** Load a user by id (stdio MCP, or a static MCP API key mapped to MCP_USER_ID). Throws with .status. */
+export async function loadAiUserById(userId) {
+  if (!userId || !mongoose.isValidObjectId(userId)) throw authError("MCP_USER_ID is missing or not a valid user id.", 500);
+  const user = await mongoose.model("Users").findById(userId).select("name email role team isActive").lean();
+  if (!user || user.isActive === false) throw authError("Unauthorized Access! User not found or inactive.", 401);
+  return userFromDoc(user);
+}
+
+export async function protect(req, res, next) {
+  const header = req.headers.authorization;
+  const token = header?.startsWith("Bearer ") ? header.slice(7) : header; // your app sends it raw
   try {
-    const user = await mongoose.model("Users").findById(decoded.id).select("name email role team isActive").lean();
-    if (!user || user.isActive === false) {
-      return res.status(401).json({ success: false, message: "Unauthorized Access! User not found or inactive." });
-    }
-    req.user = {
-      ...decoded, // keeps `id`, so any shared code still works
-      _id: user._id,
-      id: String(user._id),
-      name: user.name,
-      email: user.email,
-      team: user.team,
-      roleId: String(user.role),
-      role: await roleName(user.role), // the Role NAME, used for knowledge access and the admin profile
-    };
+    req.user = await loadAiUser(token);
     next();
   } catch (err) {
+    if (err.status) return res.status(err.status).json({ success: false, message: err.message });
     console.error("[ai auth]", err);
     res.status(500).json({ success: false, message: "Could not verify your account." });
   }

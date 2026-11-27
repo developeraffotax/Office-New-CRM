@@ -11,7 +11,9 @@
     "gmailWorker": "node emailModule/jobs/workers/historySync.worker.js",
     "followUpWorker": "node emailModule/jobs/workers/index.js",
     "whatsappWorker": "node whatsappModule/jobs/workers/whatsappWorker.js",
-    "ai_ingestion_worker": "node ai/worker.js"
+    "ai_ingestion_worker": "node ai/worker.js",
+    "mcp": "node ai/mcp/stdio.js",
+    "mcp:http": "node ai/mcp/http.js"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +27,7 @@
     "@bull-board/express": "^6.16.4",
     "@google-cloud/local-auth": "^2.1.0",
     "@google-cloud/pubsub": "^4.10.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@socket.io/redis-adapter": "^8.3.0",
     "@xmldom/xmldom": "^0.9.12",
     "agenda": "^5.0.0",

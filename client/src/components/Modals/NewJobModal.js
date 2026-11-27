@@ -253,6 +253,22 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     });
   };
 
+
+
+    const isInvalid = (value) => submitted && !value?.trim();
+
+
+  // helper – put it near isInvalid
+const isPaidFeeInvalid = (value) => {
+  if (!value?.trim()) return true;          // empty
+  const num = Number(value);
+  return isNaN(num) || num <= 0;            // 0 or negative / non-numeric
+};
+
+
+
+
+
   //   Add Job
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -294,7 +310,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
       !trimmedPayload.companyName.trim() ||
       !trimmedPayload.source.trim() ||
       !trimmedPayload.partner.trim() ||
-      !trimmedPayload.clientPaidFee.trim()
+      isPaidFeeInvalid(trimmedPayload.clientPaidFee)
     ) {
       return toast.error("Fill the required fields!");
     }
@@ -338,7 +354,9 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     setCurrentDate(date);
   }, []);
 
-  const isInvalid = (value) => submitted && !value?.trim();
+
+
+
 
   return (
     <div className="relative w-full sm:w-full lg:w-[95%] xl:w-[85%] 2xl:w-[80%] 3xl:w-[70%]    z-[50]  px-12 py-5 shadow-md shadow-black/25 rounded-xl bg-gray-200 hidden1   ">
@@ -480,14 +498,14 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
 
               <div className="w-full flex items-center justify-between gap-2">
                 <input
-                  type="text"
-                  placeholder="Paid Fee"
-                  className={`${style.input} w-[50%] ${
-                    isInvalid(clientPaidFee) ? "border-red-500" : ""
-                  }`}
-                  value={clientPaidFee}
-                  onChange={(e) => setClientPaidFee(e.target.value)}
-                />
+                    type="text"
+                    placeholder="Paid Fee"
+                    className={`${style.input} w-[50%] ${
+                      isPaidFeeInvalid(clientPaidFee) && submitted ? "border-red-500" : ""
+                    }`}
+                    value={clientPaidFee}
+                    onChange={(e) => setClientPaidFee(e.target.value)}
+                  />
 
                 <input
                   type="text"

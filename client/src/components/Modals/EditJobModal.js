@@ -557,6 +557,20 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     //eslint-disable-next-line
   }, []);
 
+
+
+    const isInvalid = (value) => submitted && !value?.trim();
+
+    // helper – put it near isInvalid
+const isPaidFeeInvalid = (value) => {
+  if (!value?.trim()) return true;          // empty
+  const num = Number(value);
+  return isNaN(num) || num <= 0;            // 0 or negative / non-numeric
+};
+
+
+
+
   //   Update Job
   const handleUpdateJob = async (e) => {
     e.preventDefault();
@@ -598,7 +612,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
       !trimmedPayload.companyName.trim() ||
       !trimmedPayload.source.trim() ||
       !trimmedPayload.partner.trim() ||
-      !trimmedPayload.clientPaidFee.trim()
+      isPaidFeeInvalid(trimmedPayload.clientPaidFee)
     ) {
       return toast.error("Fill the required fields!");
     }
@@ -652,7 +666,9 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     );
   };
 
-  const isInvalid = (value) => submitted && !value?.trim();
+
+
+
 
   return (
     <div className="relative w-full sm:w-full lg:w-[95%] xl:w-[85%] 2xl:w-[80%] 3xl:w-[70%]    z-[50]  px-12 py-5 shadow-md shadow-black/25 rounded-xl bg-gray-200 hidden1  ">
@@ -814,7 +830,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
               </select>
 
               <div className="w-full flex items-center justify-between gap-2">
-                <input
+                {/* <input
                   type="text"
                   placeholder="Paid Fee"
                   className={`${style.input} w-[50%] ${
@@ -822,7 +838,17 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                   }`}
                   value={clientPaidFee}
                   onChange={(e) => setClientPaidFee(e.target.value)}
-                />
+                /> */}
+
+                <input
+                                    type="text"
+                                    placeholder="Paid Fee"
+                                    className={`${style.input} w-[50%] ${
+                                      isPaidFeeInvalid(clientPaidFee) && submitted ? "border-red-500" : ""
+                                    }`}
+                                    value={clientPaidFee}
+                                    onChange={(e) => setClientPaidFee(e.target.value)}
+                                  />
 
                 <input
                   type="text"

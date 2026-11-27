@@ -273,6 +273,32 @@ export default function Row({
             </button>
 
 
+
+           
+
+
+             {scope.edit && (
+                 <div className={clsx(
+                " transition-all duration-150 group",
+                isRowActive ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+              )}>
+
+
+                <AssignUser
+                  users={users}
+                  mongoThreadId={thread?._id}
+                  currentUserId={thread?.userId}
+                  handleUpdateThread={handleUpdateThread}
+                  onToggle={(isOpen) => setAssignOpen(isOpen)}
+                  align="left"
+                />
+
+            </div>
+
+              )}
+
+
+
           </div>
 
           {/* Sub-labels: Assigned & Category */}
@@ -341,16 +367,7 @@ export default function Row({
         >
           {/* Reply Button Container */}
 
-          {scope.edit && (
-            <AssignUser
-              users={users}
-              mongoThreadId={thread?._id}
-              currentUserId={thread?.userId}
-              handleUpdateThread={handleUpdateThread}
-              onToggle={(isOpen) => setAssignOpen(isOpen)}
-            />
-          )}
-
+         
           {scope.edit && (
             <AssignCategory
               categories={categories}
